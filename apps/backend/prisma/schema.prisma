@@ -151,7 +151,6 @@ model Document {
   category     DocumentCategory     @relation(fields: [categoryId], references: [id])
   uploadedBy   User                 @relation(fields: [uploadedById], references: [id])
   accessRules  DocumentAccessRule[]
-  activityLogs ActivityLog[]
 
   @@index([categoryId])
   @@index([uploadedById])

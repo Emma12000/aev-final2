@@ -35,7 +35,7 @@ export class AuthService {
         ? await bcrypt.compare(dto.password, user.passwordHash)
         : false;
 
-    if (!passwordValid) {
+    if (!user || !passwordValid) {
       if (user) {
         await this.activity.log({ userId: user.id, action: 'LOGIN_FAILED', resourceType: 'auth', ipAddress: ip, userAgent: ua });
       }

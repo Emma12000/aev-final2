@@ -67,6 +67,6 @@ export class UsersService {
       this.prisma.user.count(),
       this.prisma.user.groupBy({ by: ['role'], _count: { id: true } }),
     ]);
-    return { total, byRole: byRole.map((r) => ({ role: r.role, count: r._count.id })) };
+    return { total, byRole: byRole.map((r: { role: Role; _count: { id: number } }) => ({ role: r.role, count: r._count.id })) };
   }
 }

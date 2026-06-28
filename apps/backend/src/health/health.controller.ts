@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation } from '@nestjs/swagger';
 import {
   HealthCheck,
   HealthCheckService,
-  PrismaHealthIndicator,
+  HealthIndicatorResult,
   MemoryHealthIndicator,
 } from '@nestjs/terminus';
 import { PrismaService } from '../prisma/prisma.service';
@@ -13,7 +13,6 @@ import { PrismaService } from '../prisma/prisma.service';
 export class HealthController {
   constructor(
     private readonly health: HealthCheckService,
-    private readonly prismaHealth: PrismaHealthIndicator,
     private readonly memory: MemoryHealthIndicator,
     private readonly prisma: PrismaService,
   ) {}
@@ -23,7 +22,10 @@ export class HealthController {
   @ApiOperation({ summary: 'Vérification de l\'état de l\'API' })
   check() {
     return this.health.check([
-      () => this.prismaHealth.pingCheck('database', this.prisma),
+      async (): Promise<HealthIndicatorResult> => {
+        await this.prisma.$queryRaw`SELECT 1`;
+        return { database: { status: 'up' } };
+      },
       () => this.memory.checkHeap('memory_heap', 300 * 1024 * 1024),
     ]);
   }

@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { Action } from '@prisma/client';
+import { Action, Prisma } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 interface LogParams {
@@ -17,9 +17,10 @@ export class ActivityService {
   constructor(private readonly prisma: PrismaService) {}
 
   async log(params: LogParams): Promise<void> {
-    await this.prisma.activityLog.create({ data: params }).catch(() => {
-      // Ne jamais faire échouer la requête principale à cause du log
-    });
+    const { metadata, ...rest } = params;
+    await this.prisma.activityLog
+      .create({ data: { ...rest, metadata: metadata as Prisma.InputJsonValue } })
+      .catch(() => undefined);
   }
 
   async findAll(page = 1, limit = 50) {
