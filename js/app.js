@@ -1061,7 +1061,7 @@ function renderAdmin(sec="dashboard") {
             </div>
             <div style="background:var(--blue-deep);border-radius:var(--r-xl);padding:16px">
               <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Actions rapides</div>
-              ${[["ti-user-plus","Inviter un membre","renderAdmin('users')"],["ti-folder-plus","Créer une catégorie","toast('Catégorie créée !','ok')"],["ti-chart-bar","Exporter les statistiques","toast('Export en cours…','info')"]].map(([ic,lbl,action])=>`
+              ${[["ti-user-plus","Inviter un membre","renderAdmin('users')"],["ti-folder-plus","Créer une catégorie","renderAdmin('cats')"],["ti-chart-bar","Exporter les statistiques","toast('Export en cours…','info')"]].map(([ic,lbl,action])=>`
                 <div class="flex-c gap-10" style="padding:9px 12px;background:rgba(255,255,255,.07);border-radius:var(--r-md);cursor:pointer;margin-bottom:7px;transition:var(--t)" onclick="${action}" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
                   <i class="ti ${ic}" style="color:var(--blue);font-size:18px"></i>
                   <span style="font-size:13px;color:white;font-weight:500">${lbl}</span>
@@ -1144,6 +1144,46 @@ function renderAdmin(sec="dashboard") {
       </div>`;
   }
 
+  if (sec==="cats") {
+    const confCls  = { public:"tag-green", interne:"tag-blue", confidentiel:"tag-red" };
+    const confLbl  = { public:"PUBLIC",    interne:"INTERNE",  confidentiel:"CONFIDENTIEL" };
+    c.innerHTML = `
+      <div class="topbar">
+        <div><div class="topbar-title">Catégories documentaires</div><div class="topbar-sub">${DB.cats.length} familles · ${DB.docs.length} documents archivés</div></div>
+        <button class="btn btn-primary btn-sm" onclick="openCatForm()"><i class="ti ti-folder-plus"></i>Nouvelle catégorie</button>
+      </div>
+      <div class="page-inner">
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+          ${DB.cats.map(cat=>{
+            const docCount = DB.docs.filter(d=>d.cat===cat.id).length;
+            return `
+            <div class="card card-body" id="cat-card-${cat.id}">
+              <div class="flex-b mb-10">
+                <div class="flex-c gap-12">
+                  <div style="width:46px;height:46px;border-radius:12px;background:${cat.bg};color:${cat.color};display:flex;align-items:center;justify-content:center;font-size:22px;flex-shrink:0">
+                    <i class="ti ${cat.icon}"></i>
+                  </div>
+                  <div>
+                    <div style="font-weight:700;font-size:14px;color:var(--text)">${cat.name}</div>
+                    <div style="font-size:11px;color:var(--text-sec);margin-top:2px;font-family:monospace">/${cat.id}</div>
+                  </div>
+                </div>
+                <div class="flex-c gap-6">
+                  <div class="btn-icon" onclick="openCatForm('${cat.id}')" title="Modifier"><i class="ti ti-pencil"></i></div>
+                  <div class="btn-icon red" onclick="deleteCat('${cat.id}')" title="Supprimer"><i class="ti ti-trash"></i></div>
+                </div>
+              </div>
+              <div style="font-size:12px;color:var(--text-sec);margin-bottom:12px;line-height:1.5">${cat.tags.join(' · ')}</div>
+              <div class="flex-b">
+                <span class="tag ${confCls[cat.conf]||'tag-gray'}">${confLbl[cat.conf]||cat.conf}</span>
+                <span style="font-size:12px;font-weight:700;color:var(--blue)">${docCount} document${docCount!==1?'s':''}</span>
+              </div>
+            </div>`;
+          }).join("")}
+        </div>
+      </div>`;
+  }
+
   if (sec==="stats") {
     c.innerHTML = `
       <div class="topbar"><div><div class="topbar-title">Statistiques & Analyses</div><div class="topbar-sub">Vue d'ensemble de la plateforme</div></div><button class="btn btn-outline btn-sm" onclick="toast('Export CSV généré','ok')"><i class="ti ti-download"></i>Exporter</button></div>
@@ -1208,6 +1248,87 @@ function renderAdmin(sec="dashboard") {
         </div>
       </div>`;
   }
+}
+
+// ─── CRUD CATÉGORIES ─────────────────────────────────────
+function openCatForm(id) {
+  const cat = id ? DB.cats.find(c=>c.id===id) : null;
+  openModal(`
+    <div class="flex-col gap-12">
+      <div class="form-group">
+        <label class="form-label">Nom <span class="req">*</span></label>
+        <input id="cf-name" class="form-control" value="${cat?cat.name:''}" placeholder="Ex. Contrats et conventions">
+      </div>
+      <div class="grid-2 gap-12">
+        <div class="form-group">
+          <label class="form-label">Identifiant (slug) <span class="req">*</span></label>
+          <input id="cf-id" class="form-control" value="${cat?cat.id:''}" placeholder="contrat" ${cat?"disabled":""}>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Icône Tabler</label>
+          <input id="cf-icon" class="form-control" value="${cat?cat.icon:"ti-folder"}" placeholder="ti-folder">
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Confidentialité par défaut</label>
+        <select id="cf-conf" class="form-control">
+          <option value="public"        ${cat?.conf==="public"       ?"selected":""}>PUBLIC — visible par tous</option>
+          <option value="interne"       ${!cat||cat.conf==="interne" ?"selected":""}>INTERNE — membres uniquement</option>
+          <option value="confidentiel"  ${cat?.conf==="confidentiel" ?"selected":""}>CONFIDENTIEL — accès restreint</option>
+        </select>
+      </div>
+      <div class="flex-c gap-10 mt-8">
+        <button class="btn btn-primary" onclick="saveCat('${id||""}')"><i class="ti ti-device-floppy"></i>${cat?"Enregistrer":"Créer"}</button>
+        <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+      </div>
+    </div>`, cat ? `Modifier — ${cat.name}` : "Nouvelle catégorie");
+}
+function saveCat(id) {
+  const name = document.getElementById("cf-name").value.trim();
+  const slug = (document.getElementById("cf-id").value||"").trim();
+  const icon = document.getElementById("cf-icon").value.trim() || "ti-folder";
+  const conf = document.getElementById("cf-conf").value;
+  if (!name) { toast("Le nom est requis.", "err"); return; }
+  if (id) {
+    const cat = DB.cats.find(c=>c.id===id);
+    if (cat) { cat.name=name; cat.icon=icon; cat.conf=conf; }
+    toast(`Catégorie "${name}" modifiée.`, "ok");
+  } else {
+    if (!slug) { toast("L'identifiant est requis.", "err"); return; }
+    if (DB.cats.find(c=>c.id===slug)) { toast("Cet identifiant existe déjà.", "err"); return; }
+    DB.cats.push({ id:slug, name, icon, color:"#475569", bg:"#F8FAFC", conf, tags:[] });
+    toast(`Catégorie "${name}" créée !`, "ok");
+  }
+  closeModal();
+  renderAdmin("cats");
+}
+function deleteCat(id) {
+  const cat = DB.cats.find(c=>c.id===id);
+  if (!cat) return;
+  const count = DB.docs.filter(d=>d.cat===id).length;
+  if (count>0) {
+    openModal(`
+      <p style="font-size:14px;color:var(--text-sec);line-height:1.7">
+        La catégorie <strong>${cat.name}</strong> contient <strong>${count} document${count>1?"s":""}</strong>.<br>
+        Déplacez ou supprimez ces documents avant de supprimer la catégorie.
+      </p>
+      <button class="btn btn-outline mt-16" onclick="closeModal()">Compris</button>`,
+      "Suppression impossible");
+  } else {
+    openModal(`
+      <p style="font-size:14px;color:var(--text-sec);line-height:1.7">
+        Supprimer <strong>${cat.name}</strong> ? Cette action est irréversible.
+      </p>
+      <div class="flex-c gap-10 mt-20">
+        <button class="btn btn-danger" onclick="confirmDelCat('${id}')"><i class="ti ti-trash"></i>Supprimer</button>
+        <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+      </div>`,
+      "Supprimer cette catégorie ?");
+  }
+}
+function confirmDelCat(id) {
+  const i = DB.cats.findIndex(c=>c.id===id);
+  if (i>-1) { DB.cats.splice(i,1); toast("Catégorie supprimée.","err"); closeModal(); renderAdmin("cats"); }
 }
 
 // ─── ACTIONS DOCS ────────────────────────────────────────
