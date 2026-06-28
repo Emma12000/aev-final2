@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Portail des Archives — Association Espoir & Vie | espoiretvie.td</title>
+<meta name="description" content="Portail officiel des archives documentaires de l'Association Espoir & Vie. Consultez et téléchargez contrats, rapports et factures. Solidarité - Humanité - Dignité.">
+<meta name="keywords" content="Association Espoir Vie, AEV, archives, documents, Tchad, N'Djamena, santé, solidarité">
+<meta property="og:title" content="Association Espoir & Vie — Portail des Archives">
+<meta property="og:description" content="Portail officiel des archives documentaires — espoiretvie.td">
+<meta property="og:type" content="website">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.0.0/tabler-icons.min.css">
+<link rel="icon" href="assets/logo-aev.png" type="image/png">
+</head>
+<body>
+
+<!-- ═══════════════════════════════════════════════════
+     NAVBAR
+════════════════════════════════════════════════════ -->
+<nav class="navbar" role="navigation" aria-label="Navigation principale">
+  <a class="navbar-brand" onclick="navigate('home')" tabindex="0" aria-label="Accueil Association Espoir et Vie">
+    <div class="navbar-logo"><img src="assets/logo-aev.png" alt="Logo Association Espoir & Vie"></div>
+    <div>
+      <div class="navbar-name">Association Espoir &amp; Vie</div>
+      <div class="navbar-tagline">Solidarité - Humanité - Dignité</div>
+    </div>
+  </a>
+  <div class="navbar-links">
+    <button class="nav-link" data-p="home"      onclick="navigate('home')">Accueil</button>
+    <button class="nav-link" data-p="catalogue" onclick="navigate('catalogue')">Catalogue</button>
+    <button class="nav-link" data-p="search"    onclick="navigate('search')">Recherche</button>
+    <button class="nav-link" data-p="about"     onclick="navigate('about')">À propos</button>
+    <div id="navbar-user-zone">
+      <button class="btn-nav-login" onclick="navigate('auth')"><i class="ti ti-login" style="margin-right:5px"></i>Connexion</button>
+    </div>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : ACCUEIL
+════════════════════════════════════════════════════ -->
+<div id="page-home" class="page">
+
+  <!-- HERO -->
+  <section class="hero" aria-label="Bannière principale">
+    <div style="position:relative;z-index:1">
+      <div class="hero-badge"><i class="ti ti-archive"></i>Portail documentaire officiel — espoiretvie.td</div>
+      <h1 class="hero-title">Accédez aux archives officielles<br>de l'<span>Association Espoir &amp; Vie</span></h1>
+      <p class="hero-sub">Contrats, rapports, factures — consultez et téléchargez librement dans la transparence et la dignité.</p>
+      <div class="hero-search-wrap">
+        <div class="hero-search">
+          <div class="hero-search-icon"><i class="ti ti-search"></i></div>
+          <input type="text" id="home-q" placeholder="Rechercher un document, une date, un auteur…" onkeydown="if(event.key==='Enter')homeSearch()" aria-label="Rechercher un document">
+          <button onclick="homeSearch()"><i class="ti ti-search" style="margin-right:6px"></i>Rechercher</button>
+        </div>
+      </div>
+      <div class="hero-chips">
+        <span style="font-size:12px;color:rgba(255,255,255,.35)">Recherches fréquentes :</span>
+        <span class="hero-chip" onclick="navigate('search',{q:'Rapport annuel'})">Rapports annuels</span>
+        <span class="hero-chip" onclick="navigate('search',{q:'Contrat'})">Contrats</span>
+        <span class="hero-chip" onclick="navigate('search',{q:'Santé'})">Santé communautaire</span>
+        <span class="hero-chip" onclick="navigate('catalogue')">Tous les documents</span>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS BAR -->
+  <div class="stats-bar" aria-label="Statistiques de la plateforme">
+    <div class="stats-bar-item"><div class="stats-bar-val">1 284</div><div class="stats-bar-label">Documents archivés</div></div>
+    <div class="stats-bar-item"><div class="stats-bar-val">3</div><div class="stats-bar-label">Catégories</div></div>
+    <div class="stats-bar-item"><div class="stats-bar-val">47</div><div class="stats-bar-label">Ajoutés ce mois</div></div>
+    <div class="stats-bar-item"><div class="stats-bar-val">12k+</div><div class="stats-bar-label">Téléchargements</div></div>
+  </div>
+
+  <!-- CATEGORIES -->
+  <section class="section">
+    <h2 class="section-title">Parcourir par catégorie</h2>
+    <div class="cat-grid mb-24">
+      <div class="cat-card" onclick="navigate('catalogue',{cat:'contrat'})" role="button" tabindex="0">
+        <div class="cat-icon" style="background:var(--blue-light);color:var(--blue-dark)"><i class="ti ti-writing"></i></div>
+        <div class="cat-name">Contrats</div>
+        <div class="cat-count">423 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-blue">Prestation</span><span class="tag tag-blue">Partenariat</span><span class="tag tag-blue">Don</span></div>
+      </div>
+      <div class="cat-card" onclick="navigate('catalogue',{cat:'rapport'})" role="button" tabindex="0">
+        <div class="cat-icon" style="background:var(--red-light);color:var(--red-dark)"><i class="ti ti-chart-line"></i></div>
+        <div class="cat-name">Rapports</div>
+        <div class="cat-count">581 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-red">Annuel</span><span class="tag tag-red">Activité</span><span class="tag tag-red">Financier</span></div>
+      </div>
+      <div class="cat-card" onclick="navigate('catalogue',{cat:'facture'})" role="button" tabindex="0">
+        <div class="cat-icon" style="background:#DCFCE7;color:#166534"><i class="ti ti-receipt"></i></div>
+        <div class="cat-name">Factures</div>
+        <div class="cat-count">280 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-green">Fournisseurs</span><span class="tag tag-green">Prestataires</span></div>
+      </div>
+    </div>
+
+    <!-- DERNIERS DOCUMENTS -->
+    <div class="flex-b mb-16">
+      <h2 class="section-title" style="margin-bottom:0">Derniers documents ajoutés</h2>
+      <button class="btn btn-outline btn-sm" onclick="navigate('catalogue')">Voir tout le catalogue →</button>
+    </div>
+    <div class="card"><div id="home-recent"></div></div>
+
+    <!-- BANNIERE AEV -->
+    <div style="background:linear-gradient(135deg,var(--blue-deep),var(--blue-darker));border-radius:var(--r-2xl);padding:36px 40px;display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap;margin-top:24px;box-shadow:var(--shadow-xl)">
+      <div class="flex-c gap-16">
+        <div style="width:60px;height:60px;border-radius:50%;overflow:hidden;border:3px solid var(--blue);background:white;flex-shrink:0"><img src="assets/logo-aev.png" alt="AEV" style="width:100%;height:100%;object-fit:cover"></div>
+        <div>
+          <div style="font-size:18px;font-weight:700;color:white;margin-bottom:4px">Association Espoir &amp; Vie</div>
+          <div style="font-size:13px;color:var(--blue);font-style:italic">« Servir avec le Cœur, Agir avec Sens »</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">Solidarité · Humanité · Dignité — N'Djaména, Tchad</div>
+        </div>
+      </div>
+      <div class="flex-c gap-10">
+        <button class="btn btn-white" onclick="navigate('about')"><i class="ti ti-info-circle"></i>En savoir plus</button>
+        <button class="btn btn-red" onclick="navigate('auth')"><i class="ti ti-user-plus"></i>Rejoindre l'association</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer class="site-footer">
+    <div class="footer-brand">
+      <div class="footer-logo"><img src="assets/logo-aev.png" alt="AEV"></div>
+      <div>
+        <div class="footer-name">Association Espoir &amp; Vie — espoiretvie.td</div>
+        <div class="footer-dev">Plateforme conçue par <strong style="color:rgba(255,255,255,.5)">Akora Agency</strong> pour AEV · N'Djaména, Tchad</div>
+      </div>
+    </div>
+    <div class="footer-links">
+      <span class="footer-link" onclick="navigate('about')">À propos</span>
+      <span class="footer-link" onclick="navigate('catalogue')">Catalogue</span>
+      <span class="footer-link" onclick="navigate('auth')">Espace membre</span>
+      <span class="footer-link" onclick="openModal('<p style=\'font-size:14px;line-height:1.8;color:var(--text-sec)\'>Pour toute question : <strong>contact@espoiretvie.td</strong><br>Siège : N\'Djaména, République du Tchad<br>Statuts adoptés le 20 Avril 2026</p>','Contact')">Contact</span>
+    </div>
+    <div style="font-size:11px;color:rgba(255,255,255,.25)">© 2026 AEV · Tous droits réservés</div>
+  </footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : CATALOGUE
+════════════════════════════════════════════════════ -->
+<div id="page-catalogue" class="page">
+  <div style="background:linear-gradient(135deg,var(--blue-deep),var(--blue-dark));padding:24px 36px">
+    <div class="flex-b gap-12" style="flex-wrap:wrap">
+      <div>
+        <div class="breadcrumb mb-8"><i class="ti ti-home"></i><span onclick="navigate('home')">Accueil</span><i class="ti ti-chevron-right"></i><span style="color:rgba(255,255,255,.85)">Catalogue</span></div>
+        <h1 style="font-family:var(--font-display);font-size:24px;color:white;font-weight:700;margin-bottom:4px">Catalogue des documents</h1>
+        <div id="cat-count" style="font-size:13px;color:rgba(255,255,255,.6)">Chargement…</div>
+      </div>
+      <div class="flex-c gap-8 flex-wrap">
+        <span class="cat-chip on" data-cat="" onclick="renderCatalogue('')">Tous</span>
+        <span class="cat-chip" data-cat="contrat" onclick="renderCatalogue('contrat')"><i class="ti ti-writing"></i>Contrats</span>
+        <span class="cat-chip" data-cat="rapport" onclick="renderCatalogue('rapport')"><i class="ti ti-chart-line"></i>Rapports</span>
+        <span class="cat-chip" data-cat="facture" onclick="renderCatalogue('facture')"><i class="ti ti-receipt"></i>Factures</span>
+      </div>
+    </div>
+  </div>
+  <div class="section"><div id="cat-list" class="flex-col gap-10"></div></div>
+  <footer class="site-footer"><div class="footer-brand"><div class="footer-logo"><img src="assets/logo-aev.png" alt="AEV"></div><div class="footer-name">Association Espoir &amp; Vie · espoiretvie.td</div></div><div class="footer-links"><span class="footer-link" onclick="navigate('home')">Accueil</span><span class="footer-link" onclick="navigate('about')">À propos</span></div></footer>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : RECHERCHE
+════════════════════════════════════════════════════ -->
+<div id="page-search" class="page">
+  <div style="background:linear-gradient(135deg,var(--blue-deep),var(--blue-dark));padding:20px 28px">
+    <div class="breadcrumb mb-10"><i class="ti ti-home"></i><span onclick="navigate('home')">Accueil</span><i class="ti ti-chevron-right"></i><span style="color:rgba(255,255,255,.85)">Recherche avancée</span></div>
+    <div class="search-bar" style="max-width:640px;background:white;border-radius:var(--r-2xl);box-shadow:var(--shadow-xl)">
+      <div style="padding:0 16px;color:var(--gray-400);font-size:19px;display:flex;align-items:center"><i class="ti ti-search"></i></div>
+      <input type="text" id="search-q" placeholder="Rechercher par titre, type, auteur, mot-clé…" onkeyup="applySearch()" style="height:50px;flex:1;border:none;outline:none;font-size:14px;font-family:var(--font)" aria-label="Recherche">
+      <button onclick="applySearch()" style="height:50px;padding:0 28px;background:var(--red);color:white;border:none;cursor:pointer;font-family:var(--font);font-weight:700;font-size:14px;border-radius:0 var(--r-2xl) var(--r-2xl) 0"><i class="ti ti-search" style="margin-right:6px"></i>Rechercher</button>
+    </div>
+    <div class="flex-c gap-8 mt-10 flex-wrap">
+      <span style="font-size:12px;color:rgba(255,255,255,.4)">Suggestions :</span>
+      <span class="hero-chip" onclick="$('#search-q').value='Rapport';applySearch()">Rapports</span>
+      <span class="hero-chip" onclick="$('#search-q').value='2026';applySearch()">Documents 2026</span>
+      <span class="hero-chip" onclick="$('#search-q').value='Santé';applySearch()">Santé</span>
+      <span class="hero-chip" onclick="$('#search-q').value='Partenariat';applySearch()">Partenariats</span>
+    </div>
+  </div>
+  <div style="display:flex;min-height:calc(100vh - 200px)">
+    <aside class="filter-panel" aria-label="Filtres de recherche">
+      <div>
+        <div class="filter-title">Type de document</div>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Contrat" onchange="applySearch()">Contrats<span class="filter-count">423</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Rapport" onchange="applySearch()">Rapports<span class="filter-count">581</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Facture" onchange="applySearch()">Factures<span class="filter-count">280</span></label>
+      </div>
+      <div>
+        <div class="filter-title">Format</div>
+        <label class="filter-opt"><input type="checkbox" class="f-fmt" value="PDF" onchange="applySearch()">PDF<span class="filter-count">712</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-fmt" value="Word" onchange="applySearch()">Word<span class="filter-count">234</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-fmt" value="Excel" onchange="applySearch()">Excel<span class="filter-count">180</span></label>
+      </div>
+      <div>
+        <div class="filter-title">Année</div>
+        <label class="filter-opt"><input type="radio" class="f-period" name="period" value="2026" onchange="applySearch()">2026</label>
+        <label class="filter-opt"><input type="radio" class="f-period" name="period" value="2025" onchange="applySearch()">2025</label>
+        <label class="filter-opt"><input type="radio" class="f-period" name="period" value="2024" onchange="applySearch()">2024</label>
+        <label class="filter-opt"><input type="radio" class="f-period" name="period" value="" onchange="applySearch()">Toutes années</label>
+      </div>
+      <div>
+        <div class="filter-title">Accès</div>
+        <label class="filter-opt"><input type="radio" class="f-access" name="access" value="Public" onchange="applySearch()">Public uniquement</label>
+        <label class="filter-opt"><input type="radio" class="f-access" name="access" value="" onchange="applySearch()">Tous</label>
+      </div>
+      <button class="btn btn-danger btn-sm" style="width:100%" onclick="resetFilters()"><i class="ti ti-refresh"></i>Réinitialiser</button>
+    </aside>
+    <main style="flex:1;padding:20px;background:var(--gray-50)">
+      <div class="flex-b mb-16">
+        <span id="search-count" style="font-size:13px;color:var(--text-sec);font-weight:500"></span>
+        <div class="flex-c gap-6">
+          <button class="pag-btn active">Pertinence</button>
+          <button class="pag-btn" onclick="toast('Tri par date appliqué','info')">Date ↓</button>
+          <button class="pag-btn" onclick="toast('Tri A→Z appliqué','info')">A → Z</button>
+        </div>
+      </div>
+      <div id="search-results" class="flex-col gap-10"></div>
+    </main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : FICHE DOCUMENT
+════════════════════════════════════════════════════ -->
+<div id="page-doc" class="page">
+  <div id="doc-content"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : À PROPOS
+════════════════════════════════════════════════════ -->
+<div id="page-about" class="page">
+  <div id="about-content"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : CONNEXION / INSCRIPTION
+════════════════════════════════════════════════════ -->
+<div id="page-auth" class="page">
+  <div class="auth-wrap">
+    <div class="auth-left">
+      <div style="position:relative;z-index:1">
+        <div class="flex-c gap-12" style="margin-bottom:36px">
+          <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;border:2.5px solid var(--blue);background:white;flex-shrink:0"><img src="assets/logo-aev.png" alt="AEV" style="width:100%;height:100%;object-fit:cover"></div>
+          <div><div style="font-size:14px;font-weight:700;color:white">Association Espoir &amp; Vie</div><div style="font-size:11px;color:var(--blue);font-style:italic">Solidarité - Humanité - Dignité</div></div>
+        </div>
+        <h2 style="font-family:var(--font-display);font-size:26px;font-weight:700;color:white;line-height:1.35;margin-bottom:14px">Portail documentaire officiel</h2>
+        <p style="font-size:13px;color:rgba(255,255,255,.55);line-height:1.8;margin-bottom:32px">Connectez-vous pour accéder à votre espace membre, déposer et gérer vos documents.</p>
+        <div class="flex-col gap-14">
+          <div class="flex-c gap-12">
+            <div style="width:36px;height:36px;border-radius:var(--r-md);background:rgba(41,171,226,.15);border:1px solid rgba(41,171,226,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-upload" style="color:var(--blue)"></i></div>
+            <div><div style="font-size:13px;font-weight:700;color:white">Déposez vos documents</div><div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Upload, catégorisation et suivi de validation en temps réel</div></div>
+          </div>
+          <div class="flex-c gap-12">
+            <div style="width:36px;height:36px;border-radius:var(--r-md);background:rgba(41,171,226,.15);border:1px solid rgba(41,171,226,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-share" style="color:var(--blue)"></i></div>
+            <div><div style="font-size:13px;font-weight:700;color:white">Partagez facilement</div><div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Liens de partage publics ou restreints aux membres</div></div>
+          </div>
+          <div class="flex-c gap-12">
+            <div style="width:36px;height:36px;border-radius:var(--r-md);background:rgba(41,171,226,.15);border:1px solid rgba(41,171,226,.3);display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="ti ti-star" style="color:var(--blue)"></i></div>
+            <div><div style="font-size:13px;font-weight:700;color:white">Sauvegardez vos favoris</div><div style="font-size:12px;color:rgba(255,255,255,.45);margin-top:2px">Retrouvez rapidement vos documents importants</div></div>
+          </div>
+        </div>
+      </div>
+      <div style="position:relative;z-index:1;margin-top:28px;padding:16px;border:1px solid rgba(41,171,226,.25);border-radius:var(--r-xl);background:rgba(41,171,226,.08)">
+        <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px"><i class="ti ti-bolt" style="margin-right:5px"></i>Démo rapide</div>
+        <button class="btn btn-red w-full" onclick="doAdminDemo()"><i class="ti ti-shield"></i>Accès administrateur (démo)</button>
+      </div>
+      <div style="font-size:11px;color:rgba(255,255,255,.2);margin-top:16px">© 2026 Association Espoir &amp; Vie · espoiretvie.td</div>
+    </div>
+    <div class="auth-right">
+      <div class="auth-form">
+        <div style="text-align:center;margin-bottom:24px">
+          <div style="font-size:20px;font-weight:700;color:var(--text)">Bienvenue</div>
+          <div style="font-size:13px;color:var(--text-sec);margin-top:4px">Connectez-vous ou créez votre compte</div>
+        </div>
+        <div class="auth-tabs">
+          <div class="auth-tab active" data-tab="login" onclick="switchAuthTab('login')">Connexion</div>
+          <div class="auth-tab" data-tab="register" onclick="switchAuthTab('register')">Inscription</div>
+        </div>
+
+        <!-- LOGIN -->
+        <div id="auth-login" class="flex-col gap-14">
+          <div class="social-row">
+            <button class="social-btn" onclick="toast('Connexion Google…','info')"><i class="ti ti-brand-google" style="color:#DB4437"></i>Google</button>
+            <button class="social-btn" onclick="toast('Connexion Facebook…','info')"><i class="ti ti-brand-facebook" style="color:#1877F2"></i>Facebook</button>
+          </div>
+          <div class="divider">ou avec l'email</div>
+          <div class="form-group">
+            <label class="form-label">Adresse email</label>
+            <div class="input-icon"><i class="ti ti-mail"></i><input type="email" id="login-email" class="form-control" placeholder="votre@email.com" value="membre@espoiretvie.td"></div>
+          </div>
+          <div class="form-group">
+            <div class="flex-b mb-6" style="margin-bottom:6px">
+              <label class="form-label" style="margin-bottom:0">Mot de passe</label>
+              <span style="font-size:12px;color:var(--blue);cursor:pointer" onclick="toast('Email de réinitialisation envoyé','info')">Oublié ?</span>
+            </div>
+            <div class="input-icon"><i class="ti ti-lock"></i><input type="password" id="login-pass" class="form-control" placeholder="••••••••" value="password123"></div>
+          </div>
+          <label class="flex-c gap-8" style="cursor:pointer"><input type="checkbox" style="accent-color:var(--blue);width:14px;height:14px"><span style="font-size:13px;color:var(--text-sec)">Se souvenir de moi</span></label>
+          <button class="btn btn-primary btn-lg w-full" onclick="doLogin()"><i class="ti ti-login"></i>Se connecter</button>
+          <div style="text-align:center;font-size:13px;color:var(--text-sec)">Pas de compte ? <span style="color:var(--blue);cursor:pointer;font-weight:600" onclick="switchAuthTab('register')">Créer un compte gratuit</span></div>
+          <div style="background:var(--blue-light);border-radius:var(--r-xl);padding:14px 16px;display:flex;align-items:center;gap:12px">
+            <i class="ti ti-world" style="font-size:20px;color:var(--blue);flex-shrink:0"></i>
+            <div><div style="font-size:12px;font-weight:700;color:var(--blue-dark)">Accès public disponible</div><div style="font-size:11px;color:var(--text-sec)">Consultez et téléchargez sans compte</div></div>
+            <button class="btn btn-outline btn-sm" style="margin-left:auto;white-space:nowrap" onclick="navigate('home')">Continuer →</button>
+          </div>
+        </div>
+
+        <!-- REGISTER -->
+        <div id="auth-register" class="flex-col gap-14" style="display:none">
+          <div class="grid-2 gap-10">
+            <div class="form-group"><label class="form-label">Prénom <span class="req">*</span></label><input type="text" id="reg-prenom" class="form-control" placeholder="Votre prénom"></div>
+            <div class="form-group"><label class="form-label">Nom <span class="req">*</span></label><input type="text" id="reg-nom" class="form-control" placeholder="Votre nom"></div>
+          </div>
+          <div class="form-group"><label class="form-label">Adresse email <span class="req">*</span></label><div class="input-icon"><i class="ti ti-mail"></i><input type="email" id="reg-email" class="form-control" placeholder="votre@email.com"></div></div>
+          <div class="form-group"><label class="form-label">Mot de passe <span class="req">*</span></label><div class="input-icon"><i class="ti ti-lock"></i><input type="password" id="reg-pass" class="form-control" placeholder="Minimum 8 caractères"></div></div>
+          <div class="form-group"><label class="form-label">Organisation (optionnel)</label><input type="text" class="form-control" placeholder="Votre structure ou organisation"></div>
+          <label class="flex-c gap-8" style="cursor:pointer;align-items:flex-start"><input type="checkbox" style="accent-color:var(--blue);width:14px;height:14px;margin-top:2px;flex-shrink:0"><span style="font-size:12px;color:var(--text-sec)">J'accepte les conditions d'utilisation et la politique de confidentialité de l'Association Espoir & Vie</span></label>
+          <button class="btn btn-primary btn-lg w-full" onclick="doRegister()"><i class="ti ti-user-plus"></i>Créer mon compte membre</button>
+          <div style="text-align:center;font-size:13px;color:var(--text-sec)">Déjà membre ? <span style="color:var(--blue);cursor:pointer;font-weight:600" onclick="switchAuthTab('login')">Se connecter</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : ESPACE MEMBRE
+════════════════════════════════════════════════════ -->
+<div id="page-member" class="page">
+  <div class="layout-sidebar">
+    <nav class="sidebar" id="member-sidebar" aria-label="Menu membre">
+      <div class="sidebar-head">
+        <div class="sidebar-head-logo"><img src="assets/logo-aev.png" alt="AEV"></div>
+        <div><div class="sidebar-head-name">Espoir &amp; Vie</div><div class="sidebar-head-role">Espace membre</div></div>
+      </div>
+      <div class="sidebar-body">
+        <div class="sidebar-label">Mon espace</div>
+        <div class="sidebar-item active" data-sec="dashboard" onclick="renderMember('dashboard')"><i class="ti ti-layout-dashboard"></i>Tableau de bord</div>
+        <div class="sidebar-item" data-sec="docs" onclick="renderMember('docs')"><i class="ti ti-files"></i>Mes documents</div>
+        <div class="sidebar-item" data-sec="upload" onclick="renderMember('upload')"><i class="ti ti-upload"></i>Déposer un document</div>
+        <div class="sidebar-item" data-sec="favorites" onclick="renderMember('favorites')"><i class="ti ti-star"></i>Mes favoris</div>
+        <div class="sidebar-label">Navigation</div>
+        <div class="sidebar-item" onclick="navigate('home')"><i class="ti ti-world"></i>Portail public</div>
+        <div class="sidebar-item" onclick="navigate('about')"><i class="ti ti-info-circle"></i>À propos AEV</div>
+        <div class="sidebar-item" data-sec="profile" onclick="renderMember('profile')"><i class="ti ti-user-cog"></i>Mon profil</div>
+      </div>
+      <div class="sidebar-foot">
+        <div class="sidebar-user" onclick="doLogout()">
+          <div class="u-avatar">AN</div>
+          <div><div class="u-name">Aïcha Ngaradoum</div><div class="u-role">Membre actif</div></div>
+          <i class="ti ti-logout" style="font-size:15px;color:rgba(255,255,255,.3);margin-left:auto"></i>
+        </div>
+      </div>
+    </nav>
+    <main class="main-content" id="member-main" aria-label="Contenu espace membre"></main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     PAGE : ADMINISTRATION
+════════════════════════════════════════════════════ -->
+<div id="page-admin" class="page">
+  <div class="layout-sidebar">
+    <nav class="sidebar" id="admin-sidebar" aria-label="Menu administration">
+      <div class="sidebar-head">
+        <div class="sidebar-head-logo"><img src="assets/logo-aev.png" alt="AEV"></div>
+        <div><div class="sidebar-head-name">Espoir &amp; Vie</div><div class="sidebar-head-role" style="color:var(--red)">Administration</div></div>
+      </div>
+      <div class="sidebar-body">
+        <div class="sidebar-label">Gestion</div>
+        <div class="sidebar-item active" data-sec="dashboard" onclick="renderAdmin('dashboard')"><i class="ti ti-layout-dashboard"></i>Tableau de bord</div>
+        <div class="sidebar-item" data-sec="docs" id="admin-docs-nav" onclick="renderAdmin('docs')"><i class="ti ti-files"></i>Documents</div>
+        <div class="sidebar-item" data-sec="users" onclick="renderAdmin('users')"><i class="ti ti-users"></i>Membres</div>
+        <div class="sidebar-label">Analyse</div>
+        <div class="sidebar-item" data-sec="stats" onclick="renderAdmin('stats')"><i class="ti ti-chart-bar"></i>Statistiques</div>
+        <div class="sidebar-item" data-sec="settings" onclick="renderAdmin('settings')"><i class="ti ti-settings"></i>Paramètres</div>
+        <div class="sidebar-label">Navigation</div>
+        <div class="sidebar-item" onclick="navigate('home')"><i class="ti ti-world"></i>Portail public</div>
+        <div class="sidebar-item" onclick="navigate('about')"><i class="ti ti-info-circle"></i>À propos AEV</div>
+      </div>
+      <div class="sidebar-foot">
+        <div class="sidebar-user" onclick="doLogout()">
+          <div class="u-avatar" style="background:var(--red)">AA</div>
+          <div><div class="u-name">Admin AEV</div><div class="u-role">Administrateur</div></div>
+          <i class="ti ti-logout" style="font-size:15px;color:rgba(255,255,255,.3);margin-left:auto"></i>
+        </div>
+      </div>
+    </nav>
+    <main class="main-content" id="admin-main" aria-label="Contenu administration"></main>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════
+     MODAL GLOBAL
+════════════════════════════════════════════════════ -->
+<div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()" role="dialog" aria-modal="true">
+  <div class="modal-box">
+    <div class="modal-head">
+      <div class="modal-title" id="modal-title"></div>
+      <button class="modal-close" onclick="closeModal()" aria-label="Fermer"><i class="ti ti-x"></i></button>
+    </div>
+    <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
+
+<script src="js/app.js"></script>
+</body>
+</html>
