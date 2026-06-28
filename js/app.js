@@ -89,6 +89,11 @@ function closeModal() { $("#modal-overlay").classList.remove("open"); }
 
 // ─── NAVIGATION ─────────────────────────────────────────
 function navigate(page, data={}) {
+  // Guard : pages protégées inaccessibles sans connexion
+  if ((page==="member" || page==="admin") && !APP.user) {
+    page = "auth";
+    data = {};
+  }
   $$(".page").forEach(p => p.classList.remove("active"));
   const el = $(`#page-${page}`);
   if (!el) return;
@@ -233,7 +238,7 @@ function renderDoc(id) {
         <i class="ti ti-chevron-right"></i>
         <span onclick="navigate('catalogue',{cat:'${d.cat}'})">${d.type}s</span>
         <i class="ti ti-chevron-right"></i>
-        <span style="color:rgba(255,255,255,.8)">${d.title.substring(0,38)}…</span>
+        <span style="color:rgba(255,255,255,.8)">${d.title.length>38?d.title.substring(0,38)+"…":d.title}</span>
       </div>
       <div class="flex-b gap-16" style="flex-wrap:wrap">
         <div style="flex:1;min-width:0">
@@ -370,7 +375,7 @@ function renderDoc(id) {
             <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-lt);cursor:pointer" onclick="navigate('doc',{id:${r.id}})">
               ${docIconHtml(r.fmt,"30px","36px")}
               <div style="min-width:0;overflow:hidden">
-                <div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.title.substring(0,38)}…</div>
+                <div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.title.length>38?r.title.substring(0,38)+"…":r.title}</div>
                 <div style="font-size:11px;color:var(--text-sec)">${r.fmt} · ${r.size}</div>
               </div>
             </div>`).join("")}
@@ -715,7 +720,7 @@ function renderMember(sec="dashboard") {
               <div class="card card-hover" style="cursor:pointer" onclick="navigate('doc',{id:${d.id}})">
                 <div class="card-body flex-c gap-10">
                   ${docIconHtml(d.fmt,"36px","42px")}
-                  <div style="min-width:0;flex:1"><div class="doc-name" style="font-size:13px">${d.title.substring(0,35)}…</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div>
+                  <div style="min-width:0;flex:1"><div class="doc-name" style="font-size:13px">${d.title.length>35?d.title.substring(0,35)+"…":d.title}</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div>
                   <i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer;flex-shrink:0" onclick="event.stopPropagation();toggleFav(${d.id})"></i>
                 </div>
               </div>`).join("")}
@@ -758,7 +763,7 @@ function renderMember(sec="dashboard") {
           ${DB.docs.slice(0,6).map(d=>`
             <div class="card card-hover" style="cursor:pointer" onclick="navigate('doc',{id:${d.id}})">
               <div class="card-body">
-                <div class="flex-c gap-10 mb-12">${docIconHtml(d.fmt,"36px","42px")}<div><div style="font-size:13px;font-weight:700;color:var(--text)">${d.title.substring(0,35)}…</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div></div>
+                <div class="flex-c gap-10 mb-12">${docIconHtml(d.fmt,"36px","42px")}<div><div style="font-size:13px;font-weight:700;color:var(--text)">${d.title.length>35?d.title.substring(0,35)+"…":d.title}</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div></div>
                 <div class="flex-b">${tagHtml(d.type)}<i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer" onclick="event.stopPropagation();toggleFav(${d.id})"></i></div>
               </div>
             </div>`).join("")}
@@ -886,6 +891,13 @@ function renderUploadStep(c) {
 }
 
 function nextUploadStep() {
+  if (APP.uploadStep===1) {
+    const preview = $("#file-preview");
+    if (!preview || preview.style.display === "none") {
+      toast("Veuillez sélectionner un fichier avant de continuer.","err");
+      return;
+    }
+  }
   if (APP.uploadStep===2) {
     const t = $("#doc-title")?.value.trim();
     const cat = $("#doc-cat")?.value;
@@ -978,7 +990,7 @@ function renderAdmin(sec="dashboard") {
               <tbody>
                 ${pending.map(d=>`
                   <tr id="admin-row-${d.id}">
-                    <td><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${d.title.substring(0,40)}…</span></div></td>
+                    <td><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${d.title.length>40?d.title.substring(0,40)+"…":d.title}</span></div></td>
                     <td class="text-sec">${d.author}</td>
                     <td>${tagHtml(d.type)}</td>
                     <td class="text-sec">${d.dateStr}</td>
@@ -1115,10 +1127,10 @@ function renderAdmin(sec="dashboard") {
           </div>
           <div class="card card-body">
             <div class="card-title mb-16">Top documents</div>
-            ${DB.docs.sort((a,b)=>b.dl-a.dl).slice(0,5).map((d,i)=>`
+            ${[...DB.docs].sort((a,b)=>b.dl-a.dl).slice(0,5).map((d,i)=>`
               <div class="flex-c gap-10" style="padding:8px 0;border-bottom:1px solid var(--border-lt);cursor:pointer" onclick="navigate('doc',{id:${d.id}})">
                 <div style="width:22px;height:22px;border-radius:50%;background:${i===0?"var(--blue)":i===1?"var(--blue-light)":"var(--gray-100)"};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${i===0?"white":"var(--blue)"};flex-shrink:0">${i+1}</div>
-                <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.title.substring(0,40)}…</div></div>
+                <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.title.length>40?d.title.substring(0,40)+"…":d.title}</div></div>
                 <span style="font-size:12px;font-weight:700;color:var(--blue)">${d.dl}</span>
               </div>`).join("")}
           </div>
@@ -1210,8 +1222,27 @@ function dlDoc(id) {
 }
 function shareDoc(id) {
   const url = `https://espoiretvie.td/doc/${id}`;
-  navigator.clipboard?.writeText(url).catch(()=>{});
-  toast("Lien copié dans le presse-papiers !", "info");
+  if (navigator.clipboard) {
+    navigator.clipboard.writeText(url)
+      .then(()  => toast("Lien copié dans le presse-papiers !", "info"))
+      .catch(()  => _fallbackCopy(url));
+  } else {
+    _fallbackCopy(url);
+  }
+}
+function _fallbackCopy(text) {
+  const ta = document.createElement("textarea");
+  ta.value = text;
+  ta.style.cssText = "position:fixed;left:-9999px;top:-9999px;opacity:0";
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try {
+    document.execCommand("copy");
+    toast("Lien copié dans le presse-papiers !", "info");
+  } catch(e) {
+    toast("Lien : " + text, "info");
+  }
+  document.body.removeChild(ta);
 }
 function toggleFav(id) {
   const btn = $(`#fav-btn-${id}`);

@@ -540,11 +540,43 @@ select.form-control { cursor: pointer; }
 ═══════════════════════════════════════════════ */
 @media (max-width:768px) {
   .navbar { padding:0 16px; }
+  .navbar-tagline { display:none; }
   .hero { padding:40px 20px 52px; }
   .hero-title { font-size:26px; }
   .stats-grid,.cat-grid,.grid-2,.grid-3,.grid-4 { grid-template-columns:1fr; }
-  .sidebar { width:200px; }
   .stats-bar { grid-template-columns:repeat(2,1fr); }
   .auth-left { display:none; }
   .section { padding:20px; }
+
+  /* Sidebar admin/membre : repliée en haut */
+  .layout-sidebar { flex-direction:column; }
+  .sidebar {
+    width:100%;
+    min-height:auto;
+    flex-direction:row;
+    flex-wrap:wrap;
+    align-items:center;
+  }
+  .sidebar-head { border-bottom:none; border-right:1px solid rgba(255,255,255,.07); padding:10px 14px; }
+  .sidebar-body { flex-direction:row; flex-wrap:wrap; padding:6px 10px; gap:4px; overflow-x:auto; }
+  .sidebar-label { display:none; }
+  .sidebar-item { padding:7px 12px; font-size:12px; white-space:nowrap; }
+  .sidebar-foot { display:none; }
+  .topbar { top:0; position:relative; }
+  .page-inner { padding:16px; }
+
+  /* Recherche : panel filtres masqué sur mobile */
+  .filter-panel { display:none; }
+  #page-search > div { flex-direction:column; }
+
+  /* Tables scrollables horizontalement */
+  .table-wrap { overflow-x:auto; }
+
+  /* Doc detail : sidebar droite en bas */
+  #doc-content > div:last-child { flex-direction:column; }
+  #doc-content > div:last-child > div:last-child { width:100%; border-left:none; border-top:1px solid var(--border-lt); }
+
+  /* Navbar links : scroll horizontal */
+  .navbar-links { gap:0; overflow-x:auto; }
+  .nav-link { padding:7px 12px; font-size:12px; }
 }
