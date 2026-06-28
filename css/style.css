@@ -291,8 +291,7 @@ select.form-control { cursor: pointer; }
 .doc-row:hover { background: var(--blue-light); }
 .doc-name { font-size: 14px; font-weight: 600; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .doc-meta { font-size: 12px; color: var(--text-sec); margin-top: 2px; }
-.doc-actions { display: flex; gap: 6px; opacity: 0; transition: var(--t); flex-shrink: 0; }
-.doc-row:hover .doc-actions { opacity: 1; }
+.doc-actions { display: flex; gap: 6px; opacity: 1; transition: var(--t); flex-shrink: 0; }
 .result-card {
   background: var(--white); border: 1.5px solid var(--border);
   border-radius: var(--r-lg); padding: 18px; display: flex; gap: 14px;
