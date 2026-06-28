@@ -1,0 +1,199 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ─── Enums ───────────────────────────────────────────────────────────────────
+
+enum Role {
+  ADMINISTRATEUR
+  AGENT
+  SUPERVISEUR
+  CONSULTANT
+  LECTEUR
+}
+
+enum Confidentiality {
+  PUBLIC
+  INTERNE
+  CONFIDENTIEL
+}
+
+enum DocumentStatus {
+  ACTIVE
+  ARCHIVED
+  DELETED
+}
+
+enum Permission {
+  READ
+  DOWNLOAD
+  WRITE
+}
+
+enum Action {
+  LOGIN
+  LOGOUT
+  LOGIN_FAILED
+  DOCUMENT_UPLOAD
+  DOCUMENT_VIEW
+  DOCUMENT_DOWNLOAD
+  DOCUMENT_DELETE
+  DOCUMENT_UPDATE
+  DOCUMENT_RESTORE
+  USER_CREATE
+  USER_UPDATE
+  USER_DELETE
+  CATEGORY_CREATE
+  CATEGORY_UPDATE
+  CATEGORY_DELETE
+  ACCESS_GRANT
+  ACCESS_REVOKE
+}
+
+// ─── Models ──────────────────────────────────────────────────────────────────
+
+model User {
+  id                  String    @id @default(uuid())
+  email               String    @unique
+  passwordHash        String
+  fullName            String
+  role                Role      @default(LECTEUR)
+  isActive            Boolean   @default(true)
+  passwordChangedAt   DateTime?
+  lastLoginAt         DateTime?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  documents              Document[]
+  activityLogs           ActivityLog[]
+  refreshTokens          RefreshToken[]
+  documentAccessRules    DocumentAccessRule[]  @relation("UserDocumentAccess")
+  categoryAccessRules    CategoryAccessRule[]  @relation("UserCategoryAccess")
+  grantedDocumentRules   DocumentAccessRule[]  @relation("GrantedDocumentAccess")
+  grantedCategoryRules   CategoryAccessRule[]  @relation("GrantedCategoryAccess")
+
+  @@map("users")
+}
+
+model RefreshToken {
+  id          String    @id @default(uuid())
+  tokenHash   String    @unique
+  userId      String
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("refresh_tokens")
+}
+
+model DocumentCategory {
+  id                     String          @id @default(uuid())
+  name                   String
+  description            String?
+  slug                   String          @unique
+  parentId               String?
+  order                  Int             @default(0)
+  icon                   String?
+  defaultConfidentiality Confidentiality @default(INTERNE)
+  createdAt              DateTime        @default(now())
+  updatedAt              DateTime        @updatedAt
+
+  parent      DocumentCategory?  @relation("CategoryTree", fields: [parentId], references: [id])
+  children    DocumentCategory[] @relation("CategoryTree")
+  documents   Document[]
+  accessRules CategoryAccessRule[]
+
+  @@map("document_categories")
+}
+
+model CategoryAccessRule {
+  id          String    @id @default(uuid())
+  categoryId  String
+  userId      String
+  grantedById String
+  expiresAt   DateTime?
+  createdAt   DateTime  @default(now())
+
+  category    DocumentCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  user        User             @relation("UserCategoryAccess", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy   User             @relation("GrantedCategoryAccess", fields: [grantedById], references: [id])
+
+  @@unique([categoryId, userId])
+  @@map("category_access_rules")
+}
+
+model Document {
+  id              String          @id @default(uuid())
+  title           String
+  description     String?
+  fileName        String
+  fileKey         String          @unique
+  fileMimeType    String
+  fileSize        Int
+  confidentiality Confidentiality @default(INTERNE)
+  status          DocumentStatus  @default(ACTIVE)
+  categoryId      String
+  uploadedById    String
+  tags            String[]
+  deletedAt       DateTime?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  category     DocumentCategory     @relation(fields: [categoryId], references: [id])
+  uploadedBy   User                 @relation(fields: [uploadedById], references: [id])
+  accessRules  DocumentAccessRule[]
+  activityLogs ActivityLog[]
+
+  @@index([categoryId])
+  @@index([uploadedById])
+  @@index([confidentiality])
+  @@index([status])
+  @@index([createdAt])
+  @@map("documents")
+}
+
+model DocumentAccessRule {
+  id          String     @id @default(uuid())
+  documentId  String
+  userId      String
+  permission  Permission @default(READ)
+  grantedById String
+  expiresAt   DateTime?
+  createdAt   DateTime   @default(now())
+
+  document    Document   @relation(fields: [documentId], references: [id], onDelete: Cascade)
+  user        User       @relation("UserDocumentAccess", fields: [userId], references: [id], onDelete: Cascade)
+  grantedBy   User       @relation("GrantedDocumentAccess", fields: [grantedById], references: [id])
+
+  @@unique([documentId, userId])
+  @@map("document_access_rules")
+}
+
+model ActivityLog {
+  id           String   @id @default(uuid())
+  userId       String
+  action       Action
+  resourceType String   // 'document' | 'user' | 'category' | 'auth'
+  resourceId   String?  // ID de la ressource concernée (polymorphique — pas de FK Prisma)
+  metadata     Json?
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([action])
+  @@index([createdAt])
+  @@index([resourceType, resourceId])
+  @@map("activity_logs")
+}

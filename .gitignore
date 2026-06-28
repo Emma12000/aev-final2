@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+.next/
+build/
+out/
+
+# Environment variables — NEVER commit these
+.env
+.env.local
+.env.*.local
+apps/backend/.env
+apps/frontend/.env.local
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/settings.json
+
+# Turbo
+.turbo/
+
+# Prisma
+apps/backend/prisma/generated/
+
+# Test coverage
+coverage/
+playwright-report/
+test-results/
+
+# Misc
+*.tsbuildinfo
