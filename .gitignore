@@ -41,3 +41,6 @@ test-results/
 
 # Misc
 *.tsbuildinfo
+
+# Claude Code — local permissions are machine-specific
+.claude/settings.local.json

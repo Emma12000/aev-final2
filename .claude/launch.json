@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "aev-portal",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["http-server", "/Users/mac/Desktop/aev-final2", "-p", "5500", "-c-1", "--cors"],
+      "port": 5500
+    }
+  ]
+}
