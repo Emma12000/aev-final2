@@ -95,6 +95,20 @@ const DB = {
     { id:26, date:"2026-05-28T10:00", dateStr:"28 mai 2026, 10:00",  user:"Admin AEV",    role:"ADMINISTRATEUR", action:"MODIFICATION",   resource:"Paramètres plateforme",            resourceType:"système",   ip:"41.202.223.10" },
     { id:27, date:"2026-05-20T15:15", dateStr:"20 mai 2026, 15:15",  user:"S. Mahamat",   role:"AGENT",          action:"TÉLÉCHARGEMENT", resource:"Programme santé communautaire 2025-2026",resourceType:"document",ip:"41.202.220.88" },
     { id:28, date:"2026-05-10T09:30", dateStr:"10 mai 2026, 09:30",  user:"Admin AEV",    role:"ADMINISTRATEUR", action:"CRÉATION",       resource:"A. Ngaradoum (SUPERVISEUR)",       resourceType:"utilisateur",ip:"41.202.223.10" },
+  ],
+  myActivity: [
+    { id:1,  date:"2026-06-28T10:05", dateStr:"Aujourd'hui, 10:05",  action:"CONNEXION",      resource:"—",                                        resourceType:"auth",     fmt:null    },
+    { id:2,  date:"2026-06-27T16:30", dateStr:"Hier, 16:30",         action:"TÉLÉCHARGEMENT", resource:"Convention subvention PNUD 2025",            resourceType:"document", fmt:"PDF"   },
+    { id:3,  date:"2026-06-25T15:50", dateStr:"25 juin, 15:50",      action:"MODIFICATION",   resource:"Contrat partenariat Forum Santé 2026",       resourceType:"document", fmt:"Word"  },
+    { id:4,  date:"2026-06-23T11:30", dateStr:"23 juin, 11:30",      action:"ACCÈS",          resource:"Bilan financier — Exercice 2024",            resourceType:"document", fmt:"Excel" },
+    { id:5,  date:"2026-06-20T09:15", dateStr:"20 juin, 09:15",      action:"CONNEXION",      resource:"—",                                        resourceType:"auth",     fmt:null    },
+    { id:6,  date:"2026-06-19T15:20", dateStr:"19 juin, 15:20",      action:"DÉPÔT",          resource:"Courrier Ministère Santé mars 2026",         resourceType:"document", fmt:"PDF"   },
+    { id:7,  date:"2026-06-18T10:45", dateStr:"18 juin, 10:45",      action:"TÉLÉCHARGEMENT", resource:"Rapport annuel 2024",                        resourceType:"document", fmt:"PDF"   },
+    { id:8,  date:"2026-06-15T14:30", dateStr:"15 juin, 14:30",      action:"TÉLÉCHARGEMENT", resource:"Programme santé communautaire 2025-2026",    resourceType:"document", fmt:"PDF"   },
+    { id:9,  date:"2026-06-12T11:00", dateStr:"12 juin, 11:00",      action:"CONNEXION",      resource:"—",                                        resourceType:"auth",     fmt:null    },
+    { id:10, date:"2026-06-10T09:30", dateStr:"10 juin, 09:30",      action:"ACCÈS",          resource:"Statuts de l'Association Espoir & Vie 2023",resourceType:"document", fmt:"PDF"   },
+    { id:11, date:"2026-06-05T14:15", dateStr:"5 juin, 14:15",       action:"DÉPÔT",          resource:"Communiqué de presse — Forum Santé 2026",   resourceType:"document", fmt:"PDF"   },
+    { id:12, date:"2026-06-01T08:50", dateStr:"1 juin, 08:50",       action:"CONNEXION",      resource:"—",                                        resourceType:"auth",     fmt:null    },
   ]
 };
 
@@ -866,6 +880,77 @@ function renderMember(sec="dashboard") {
         </div>
       </div>`;
   }
+
+  if (sec==="activity") {
+    const actionCls = {
+      "CONNEXION":"tag-blue","DÉCONNEXION":"tag-gray","DÉPÔT":"tag-green",
+      "TÉLÉCHARGEMENT":"tag-pub","MODIFICATION":"tag-orange","ACCÈS":"tag-gray",
+    };
+    const actionIcon = {
+      "CONNEXION":"ti-login","DÉCONNEXION":"ti-logout","DÉPÔT":"ti-upload",
+      "TÉLÉCHARGEMENT":"ti-download","MODIFICATION":"ti-pencil","ACCÈS":"ti-eye",
+    };
+    const actionColor = {
+      "CONNEXION":"var(--blue)","DÉCONNEXION":"var(--gray-400)","DÉPÔT":"#16a34a",
+      "TÉLÉCHARGEMENT":"#0369a1","MODIFICATION":"#c2410c","ACCÈS":"var(--gray-400)",
+    };
+    const conn  = DB.myActivity.filter(a=>a.action==="CONNEXION").length;
+    const depot = DB.myActivity.filter(a=>a.action==="DÉPÔT").length;
+    const dl    = DB.myActivity.filter(a=>a.action==="TÉLÉCHARGEMENT").length;
+    const acces = DB.myActivity.filter(a=>a.action==="ACCÈS"||a.action==="MODIFICATION").length;
+    const actions = [...new Set(DB.myActivity.map(a=>a.action))].sort();
+    c.innerHTML = `
+      <div class="topbar">
+        <div><div class="topbar-title">Mon activité</div><div class="topbar-sub">${DB.myActivity.length} actions enregistrées</div></div>
+      </div>
+      <div class="page-inner">
+        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+          ${[
+            ["ti-login",    "si-blue", conn,  "Connexions",      "Ce mois"],
+            ["ti-upload",   "si-blue", depot, "Dépôts",          "Documents soumis"],
+            ["ti-download", "si-blue", dl,    "Téléchargements", "Fichiers obtenus"],
+            ["ti-eye",      "si-blue", acces, "Consultations",   "Accès & modifs"],
+          ].map(([ic,cls,val,lbl,trend])=>`
+            <div class="stat-card">
+              <div class="stat-icon ${cls}"><i class="ti ${ic}"></i></div>
+              <div><div class="stat-val">${val}</div><div class="stat-label">${lbl}</div><div class="stat-trend">${trend}</div></div>
+            </div>`).join("")}
+        </div>
+        <div class="flex-c gap-10 mb-14" style="flex-wrap:wrap">
+          <select id="act-action" class="form-control" style="width:200px;height:36px" onchange="myActivityFilter()">
+            <option value="">Toutes les actions</option>
+            ${actions.map(a=>`<option value="${a}">${a}</option>`).join("")}
+          </select>
+          <select id="act-period" class="form-control" style="width:160px;height:36px" onchange="myActivityFilter()">
+            <option value="all">Toute la période</option>
+            <option value="today">Aujourd'hui</option>
+            <option value="week">Cette semaine</option>
+            <option value="month">Ce mois</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('act-action').value='';document.getElementById('act-period').value='all';myActivityFilter()">
+            <i class="ti ti-x"></i>Réinitialiser
+          </button>
+          <span id="act-count" style="font-size:12px;color:var(--text-sec);margin-left:4px">${DB.myActivity.length} résultats</span>
+        </div>
+        <div class="card" style="overflow:hidden" id="act-timeline">
+          ${DB.myActivity.map(a=>`
+            <div class="act-row" data-action="${a.action}" data-date="${a.date}" style="display:flex;align-items:flex-start;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border-lt);position:relative">
+              <div style="width:3px;position:absolute;left:0;top:0;bottom:0;background:${actionColor[a.action]||"var(--border)"}"></div>
+              <div style="width:36px;height:36px;border-radius:10px;background:${actionColor[a.action]}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+                <i class="ti ${actionIcon[a.action]||"ti-activity"}" style="color:${actionColor[a.action]};font-size:17px"></i>
+              </div>
+              <div style="flex:1;min-width:0">
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
+                  <span class="tag ${actionCls[a.action]||"tag-gray"}">${a.action}</span>
+                  <span style="font-size:11px;color:var(--text-sec);white-space:nowrap">${a.dateStr}</span>
+                </div>
+                <div style="font-size:13px;font-weight:600;color:var(--text);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.resource}">${a.resource}</div>
+                ${a.fmt?`<div style="font-size:11px;color:var(--text-sec);margin-top:3px"><i class="ti ti-file" style="font-size:11px"></i> ${a.fmt} · ${a.resourceType}</div>`:""}
+              </div>
+            </div>`).join("")}
+        </div>
+      </div>`;
+  }
 }
 
 // ─── UPLOAD WIZARD ──────────────────────────────────────
@@ -1345,6 +1430,29 @@ function renderAdmin(sec="dashboard") {
         </div>
       </div>`;
   }
+}
+
+// ─── FILTRE MON ACTIVITÉ ─────────────────────────────────
+function myActivityFilter() {
+  const action = document.getElementById("act-action")?.value || "";
+  const period = document.getElementById("act-period")?.value || "all";
+  const today  = new Date(); today.setHours(0,0,0,0);
+  const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay());
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  let visible = 0;
+  document.querySelectorAll(".act-row").forEach(row => {
+    const matchAction = !action || row.dataset.action === action;
+    const rowDate = new Date(row.dataset.date); rowDate.setHours(0,0,0,0);
+    const matchPeriod = period === "all" ||
+      (period === "today" && rowDate >= today) ||
+      (period === "week"  && rowDate >= weekStart) ||
+      (period === "month" && rowDate >= monthStart);
+    const show = matchAction && matchPeriod;
+    row.style.display = show ? "" : "none";
+    if (show) visible++;
+  });
+  const cnt = document.getElementById("act-count");
+  if (cnt) cnt.textContent = `${visible} résultat${visible !== 1 ? "s" : ""}`;
 }
 
 // ─── FILTRE JOURNAUX ─────────────────────────────────────
