@@ -65,6 +65,36 @@ const DB = {
     { msg:"S. Mahamat a rejoint l'espace", time:"Hier à 16:00",  isNew:false },
     { msg:"Rapport annuel téléchargé 18×", time:"Hier",          isNew:false },
     { msg:"Nouvelle facture déposée",      time:"Avant-hier",    isNew:false },
+  ],
+  logs: [
+    { id:1,  date:"2026-06-28T14:32", dateStr:"28 juin 2026, 14:32", user:"Admin AEV",    role:"ADMINISTRATEUR", action:"APPROBATION",    resource:"Rapport annuel 2024",              resourceType:"document",  ip:"41.202.223.10" },
+    { id:2,  date:"2026-06-28T12:15", dateStr:"28 juin 2026, 12:15", user:"M. Dupont",    role:"AGENT",          action:"DÉPÔT",          resource:"Contrat prestation méd. 2026",     resourceType:"document",  ip:"41.202.221.45" },
+    { id:3,  date:"2026-06-28T10:02", dateStr:"28 juin 2026, 10:02", user:"Admin AEV",    role:"ADMINISTRATEUR", action:"CONNEXION",      resource:"—",                                resourceType:"auth",      ip:"41.202.223.10" },
+    { id:4,  date:"2026-06-27T17:45", dateStr:"27 juin 2026, 17:45", user:"S. Mahamat",   role:"AGENT",          action:"DÉPÔT",          resource:"Facture prestation #2026-091",     resourceType:"document",  ip:"41.202.220.88" },
+    { id:5,  date:"2026-06-27T16:30", dateStr:"27 juin 2026, 16:30", user:"A. Ngaradoum", role:"SUPERVISEUR",    action:"TÉLÉCHARGEMENT", resource:"Convention subvention PNUD 2025",  resourceType:"document",  ip:"41.202.218.12" },
+    { id:6,  date:"2026-06-27T14:10", dateStr:"27 juin 2026, 14:10", user:"F. Adoum",     role:"AGENT",          action:"CONNEXION",      resource:"—",                                resourceType:"auth",      ip:"41.202.217.99" },
+    { id:7,  date:"2026-06-26T11:22", dateStr:"26 juin 2026, 11:22", user:"Admin AEV",    role:"ADMINISTRATEUR", action:"CRÉATION",       resource:"M. Dupont (AGENT)",                resourceType:"utilisateur",ip:"41.202.223.10" },
+    { id:8,  date:"2026-06-25T15:50", dateStr:"25 juin 2026, 15:50", user:"A. Ngaradoum", role:"SUPERVISEUR",    action:"MODIFICATION",   resource:"Contrat partenariat Forum 2026",   resourceType:"document",  ip:"41.202.218.12" },
+    { id:9,  date:"2026-06-25T09:30", dateStr:"25 juin 2026, 09:30", user:"M. Dupont",    role:"AGENT",          action:"TÉLÉCHARGEMENT", resource:"Rapport annuel 2024",              resourceType:"document",  ip:"41.202.221.45" },
+    { id:10, date:"2026-06-24T16:00", dateStr:"24 juin 2026, 16:00", user:"Admin AEV",    role:"ADMINISTRATEUR", action:"SUPPRESSION",    resource:"Facture fournisseur #2026-088",    resourceType:"document",  ip:"41.202.223.10" },
+    { id:11, date:"2026-06-24T14:20", dateStr:"24 juin 2026, 14:20", user:"F. Adoum",     role:"AGENT",          action:"DÉPÔT",          resource:"Budget annuel prévisionnel 2026",  resourceType:"document",  ip:"41.202.217.99" },
+    { id:12, date:"2026-06-24T10:05", dateStr:"24 juin 2026, 10:05", user:"S. Mahamat",   role:"AGENT",          action:"CONNEXION",      resource:"—",                                resourceType:"auth",      ip:"41.202.220.88" },
+    { id:13, date:"2026-06-23T17:15", dateStr:"23 juin 2026, 17:15", user:"Admin AEV",    role:"ADMINISTRATEUR", action:"REJET",          resource:"Rapport de mission non conforme",  resourceType:"document",  ip:"41.202.223.10" },
+    { id:14, date:"2026-06-23T11:30", dateStr:"23 juin 2026, 11:30", user:"A. Ngaradoum", role:"SUPERVISEUR",    action:"ACCÈS",          resource:"Bilan financier 2024",             resourceType:"document",  ip:"41.202.218.12" },
+    { id:15, date:"2026-06-22T14:45", dateStr:"22 juin 2026, 14:45", user:"M. Dupont",    role:"AGENT",          action:"DÉCONNEXION",    resource:"—",                                resourceType:"auth",      ip:"41.202.221.45" },
+    { id:16, date:"2026-06-21T10:15", dateStr:"21 juin 2026, 10:15", user:"Admin AEV",    role:"ADMINISTRATEUR", action:"MODIFICATION",   resource:"Catégorie Ressources humaines",    resourceType:"catégorie", ip:"41.202.223.10" },
+    { id:17, date:"2026-06-20T16:30", dateStr:"20 juin 2026, 16:30", user:"F. Adoum",     role:"AGENT",          action:"TÉLÉCHARGEMENT", resource:"Budget annuel prévisionnel 2026",  resourceType:"document",  ip:"41.202.217.99" },
+    { id:18, date:"2026-06-19T09:00", dateStr:"19 juin 2026, 09:00", user:"Admin AEV",    role:"ADMINISTRATEUR", action:"CONNEXION",      resource:"—",                                resourceType:"auth",      ip:"41.202.223.10" },
+    { id:19, date:"2026-06-18T15:20", dateStr:"18 juin 2026, 15:20", user:"A. Ngaradoum", role:"SUPERVISEUR",    action:"DÉPÔT",          resource:"Courrier Ministère Santé mars 2026",resourceType:"document", ip:"41.202.218.12" },
+    { id:20, date:"2026-06-17T11:45", dateStr:"17 juin 2026, 11:45", user:"S. Mahamat",   role:"AGENT",          action:"APPROBATION",    resource:"Plaquette institutionnelle 2026",  resourceType:"document",  ip:"41.202.220.88" },
+    { id:21, date:"2026-06-15T14:00", dateStr:"15 juin 2026, 14:00", user:"Admin AEV",    role:"ADMINISTRATEUR", action:"CRÉATION",       resource:"Catégorie Partenariats",           resourceType:"catégorie", ip:"41.202.223.10" },
+    { id:22, date:"2026-06-12T10:30", dateStr:"12 juin 2026, 10:30", user:"M. Dupont",    role:"AGENT",          action:"DÉPÔT",          resource:"Rapport financier Q1 2026",        resourceType:"document",  ip:"41.202.221.45" },
+    { id:23, date:"2026-06-10T16:45", dateStr:"10 juin 2026, 16:45", user:"F. Adoum",     role:"AGENT",          action:"TÉLÉCHARGEMENT", resource:"Rapport annuel 2023",              resourceType:"document",  ip:"41.202.217.99" },
+    { id:24, date:"2026-06-05T09:15", dateStr:"5 juin 2026, 09:15",  user:"Admin AEV",    role:"ADMINISTRATEUR", action:"APPROBATION",    resource:"Rapport annuel 2024",              resourceType:"document",  ip:"41.202.223.10" },
+    { id:25, date:"2026-06-01T14:30", dateStr:"1 juin 2026, 14:30",  user:"A. Ngaradoum", role:"SUPERVISEUR",    action:"DÉPÔT",          resource:"Communiqué Forum Santé 2026",      resourceType:"document",  ip:"41.202.218.12" },
+    { id:26, date:"2026-05-28T10:00", dateStr:"28 mai 2026, 10:00",  user:"Admin AEV",    role:"ADMINISTRATEUR", action:"MODIFICATION",   resource:"Paramètres plateforme",            resourceType:"système",   ip:"41.202.223.10" },
+    { id:27, date:"2026-05-20T15:15", dateStr:"20 mai 2026, 15:15",  user:"S. Mahamat",   role:"AGENT",          action:"TÉLÉCHARGEMENT", resource:"Programme santé communautaire 2025-2026",resourceType:"document",ip:"41.202.220.88" },
+    { id:28, date:"2026-05-10T09:30", dateStr:"10 mai 2026, 09:30",  user:"Admin AEV",    role:"ADMINISTRATEUR", action:"CRÉATION",       resource:"A. Ngaradoum (SUPERVISEUR)",       resourceType:"utilisateur",ip:"41.202.223.10" },
   ]
 };
 
@@ -1144,6 +1174,73 @@ function renderAdmin(sec="dashboard") {
       </div>`;
   }
 
+  if (sec==="logs") {
+    const actionCls = {
+      "CONNEXION":"tag-blue","DÉCONNEXION":"tag-gray","DÉPÔT":"tag-green",
+      "TÉLÉCHARGEMENT":"tag-pub","APPROBATION":"tag-green","REJET":"tag-red",
+      "SUPPRESSION":"tag-red","MODIFICATION":"tag-orange","CRÉATION":"tag-purple","ACCÈS":"tag-gray",
+    };
+    const roleCls = {
+      "ADMINISTRATEUR":"tag-red","SUPERVISEUR":"tag-orange","AGENT":"tag-blue",
+      "CONSULTANT":"tag-cyan","LECTEUR":"tag-gray",
+    };
+    const actions = [...new Set(DB.logs.map(l=>l.action))].sort();
+    c.innerHTML = `
+      <div class="topbar">
+        <div><div class="topbar-title">Journaux d'activité</div><div class="topbar-sub">${DB.logs.length} entrées enregistrées</div></div>
+        <button class="btn btn-outline btn-sm" onclick="toast('Export CSV généré','ok')"><i class="ti ti-download"></i>Exporter CSV</button>
+      </div>
+      <div class="page-inner">
+        <div class="flex-c gap-10 mb-14" style="flex-wrap:wrap">
+          <input id="log-search" type="text" class="form-control" style="width:240px;height:36px" placeholder="Rechercher utilisateur, ressource…" oninput="logsFilter()">
+          <select id="log-action" class="form-control" style="width:180px;height:36px" onchange="logsFilter()">
+            <option value="">Toutes les actions</option>
+            ${actions.map(a=>`<option value="${a}">${a}</option>`).join("")}
+          </select>
+          <select id="log-period" class="form-control" style="width:160px;height:36px" onchange="logsFilter()">
+            <option value="all">Toute la période</option>
+            <option value="today">Aujourd'hui</option>
+            <option value="week">Cette semaine</option>
+            <option value="month">Ce mois</option>
+          </select>
+          <button class="btn btn-outline btn-sm" onclick="document.getElementById('log-search').value='';document.getElementById('log-action').value='';document.getElementById('log-period').value='all';logsFilter()">
+            <i class="ti ti-x"></i>Réinitialiser
+          </button>
+          <span id="log-count" style="font-size:12px;color:var(--text-sec);margin-left:4px">${DB.logs.length} résultats</span>
+        </div>
+        <div class="table-wrap">
+          <table class="table">
+            <thead>
+              <tr>
+                <th style="width:160px">Date / Heure</th>
+                <th>Utilisateur</th>
+                <th style="width:130px">Rôle</th>
+                <th style="width:145px">Action</th>
+                <th>Ressource</th>
+                <th style="width:130px">IP</th>
+              </tr>
+            </thead>
+            <tbody id="logs-body">
+              ${DB.logs.map(l=>`
+                <tr data-user="${l.user.toLowerCase()}" data-action="${l.action}" data-resource="${l.resource.toLowerCase()}" data-date="${l.date}">
+                  <td class="text-sec text-sm" style="white-space:nowrap;font-variant-numeric:tabular-nums">${l.dateStr}</td>
+                  <td>
+                    <div class="flex-c gap-8">
+                      <div class="u-avatar" style="width:28px;height:28px;font-size:10px;background:${l.role==="ADMINISTRATEUR"?"var(--red)":"var(--blue)"}">${l.user.split(" ").map(w=>w[0]).join("").substring(0,2).toUpperCase()}</div>
+                      <span style="font-size:13px;font-weight:600">${l.user}</span>
+                    </div>
+                  </td>
+                  <td><span class="tag ${roleCls[l.role]||"tag-gray"}" style="font-size:10px">${l.role}</span></td>
+                  <td><span class="tag ${actionCls[l.action]||"tag-gray"}">${l.action}</span></td>
+                  <td class="text-sec text-sm" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.resource}">${l.resource}</td>
+                  <td class="text-sec text-sm" style="font-family:monospace;font-size:11px">${l.ip}</td>
+                </tr>`).join("")}
+            </tbody>
+          </table>
+        </div>
+      </div>`;
+  }
+
   if (sec==="cats") {
     const confCls  = { public:"tag-green", interne:"tag-blue", confidentiel:"tag-red" };
     const confLbl  = { public:"PUBLIC",    interne:"INTERNE",  confidentiel:"CONFIDENTIEL" };
@@ -1248,6 +1345,31 @@ function renderAdmin(sec="dashboard") {
         </div>
       </div>`;
   }
+}
+
+// ─── FILTRE JOURNAUX ─────────────────────────────────────
+function logsFilter() {
+  const q      = (document.getElementById("log-search")?.value  || "").toLowerCase();
+  const action = (document.getElementById("log-action")?.value  || "");
+  const period = (document.getElementById("log-period")?.value  || "all");
+  const today  = new Date(); today.setHours(0,0,0,0);
+  const weekStart = new Date(today); weekStart.setDate(today.getDate() - today.getDay());
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+  let visible = 0;
+  document.querySelectorAll("#logs-body tr").forEach(row => {
+    const matchQ      = !q || row.dataset.user.includes(q) || row.dataset.resource.includes(q) || row.dataset.action.toLowerCase().includes(q);
+    const matchAction = !action || row.dataset.action === action;
+    const rowDate     = new Date(row.dataset.date); rowDate.setHours(0,0,0,0);
+    const matchPeriod = period === "all" ||
+      (period === "today" && rowDate >= today) ||
+      (period === "week"  && rowDate >= weekStart) ||
+      (period === "month" && rowDate >= monthStart);
+    const show = matchQ && matchAction && matchPeriod;
+    row.style.display = show ? "" : "none";
+    if (show) visible++;
+  });
+  const cnt = document.getElementById("log-count");
+  if (cnt) cnt.textContent = `${visible} résultat${visible!==1?"s":""}`;
 }
 
 // ─── CRUD CATÉGORIES ─────────────────────────────────────
