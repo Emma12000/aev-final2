@@ -68,7 +68,7 @@
   <!-- STATS BAR -->
   <div class="stats-bar" aria-label="Statistiques de la plateforme">
     <div class="stats-bar-item"><div class="stats-bar-val">1 284</div><div class="stats-bar-label">Documents archivés</div></div>
-    <div class="stats-bar-item"><div class="stats-bar-val">3</div><div class="stats-bar-label">Catégories</div></div>
+    <div class="stats-bar-item"><div class="stats-bar-val">10</div><div class="stats-bar-label">Catégories</div></div>
     <div class="stats-bar-item"><div class="stats-bar-val">47</div><div class="stats-bar-label">Ajoutés ce mois</div></div>
     <div class="stats-bar-item"><div class="stats-bar-val">12k+</div><div class="stats-bar-label">Téléchargements</div></div>
   </div>
@@ -77,23 +77,65 @@
   <section class="section">
     <h2 class="section-title">Parcourir par catégorie</h2>
     <div class="cat-grid mb-24">
+      <div class="cat-card" onclick="navigate('catalogue',{cat:'admin'})" role="button" tabindex="0">
+        <div class="cat-icon" style="background:#F3E8FF;color:#6D28D9"><i class="ti ti-building-community"></i></div>
+        <div class="cat-name">Administration</div>
+        <div class="cat-count">38 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-purple">Statuts</span><span class="tag tag-purple">PV</span></div>
+      </div>
+      <div class="cat-card" onclick="navigate('catalogue',{cat:'finance'})" role="button" tabindex="0">
+        <div class="cat-icon" style="background:#FFF7ED;color:#C2410C"><i class="ti ti-cash"></i></div>
+        <div class="cat-name">Finance</div>
+        <div class="cat-count">124 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-orange">Budget</span><span class="tag tag-orange">Bilan</span></div>
+      </div>
       <div class="cat-card" onclick="navigate('catalogue',{cat:'contrat'})" role="button" tabindex="0">
         <div class="cat-icon" style="background:var(--blue-light);color:var(--blue-dark)"><i class="ti ti-writing"></i></div>
         <div class="cat-name">Contrats</div>
-        <div class="cat-count">423 documents</div>
-        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-blue">Prestation</span><span class="tag tag-blue">Partenariat</span><span class="tag tag-blue">Don</span></div>
+        <div class="cat-count">97 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-blue">Partenariat</span><span class="tag tag-blue">Subvention</span></div>
+      </div>
+      <div class="cat-card" onclick="navigate('catalogue',{cat:'courrier'})" role="button" tabindex="0">
+        <div class="cat-icon" style="background:#ECFEFF;color:#0E7490"><i class="ti ti-mail"></i></div>
+        <div class="cat-name">Courriers</div>
+        <div class="cat-count">215 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-cyan">Officiel</span><span class="tag tag-cyan">Entrant</span></div>
       </div>
       <div class="cat-card" onclick="navigate('catalogue',{cat:'rapport'})" role="button" tabindex="0">
         <div class="cat-icon" style="background:var(--red-light);color:var(--red-dark)"><i class="ti ti-chart-line"></i></div>
         <div class="cat-name">Rapports</div>
-        <div class="cat-count">581 documents</div>
-        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-red">Annuel</span><span class="tag tag-red">Activité</span><span class="tag tag-red">Financier</span></div>
+        <div class="cat-count">312 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-red">Annuel</span><span class="tag tag-red">Activité</span></div>
       </div>
-      <div class="cat-card" onclick="navigate('catalogue',{cat:'facture'})" role="button" tabindex="0">
-        <div class="cat-icon" style="background:#DCFCE7;color:#166534"><i class="ti ti-receipt"></i></div>
-        <div class="cat-name">Factures</div>
-        <div class="cat-count">280 documents</div>
-        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-green">Fournisseurs</span><span class="tag tag-green">Prestataires</span></div>
+      <div class="cat-card" onclick="navigate('catalogue',{cat:'projet'})" role="button" tabindex="0">
+        <div class="cat-icon" style="background:#F0FDF4;color:#166534"><i class="ti ti-briefcase"></i></div>
+        <div class="cat-name">Projets</div>
+        <div class="cat-count">183 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-green">Programme</span><span class="tag tag-green">Santé</span></div>
+      </div>
+      <div class="cat-card" onclick="navigate('catalogue',{cat:'partenariat'})" role="button" tabindex="0">
+        <div class="cat-icon" style="background:#F0FDFA;color:#0F766E"><i class="ti ti-handshake"></i></div>
+        <div class="cat-name">Partenariats</div>
+        <div class="cat-count">76 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-teal">ONG</span><span class="tag tag-teal">Accord</span></div>
+      </div>
+      <div class="cat-card" onclick="navigate('catalogue',{cat:'communication'})" role="button" tabindex="0">
+        <div class="cat-icon" style="background:#FDF2F8;color:#BE185D"><i class="ti ti-megaphone"></i></div>
+        <div class="cat-name">Communication</div>
+        <div class="cat-count">64 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-pink">Plaquette</span><span class="tag tag-pink">Presse</span></div>
+      </div>
+      <div class="cat-card" onclick="navigate('catalogue',{cat:'rh'})" role="button" tabindex="0">
+        <div class="cat-icon" style="background:#FFFBEB;color:#B45309"><i class="ti ti-users"></i></div>
+        <div class="cat-name">RH</div>
+        <div class="cat-count">52 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-yellow">Personnel</span><span class="tag tag-yellow">Contrats</span></div>
+      </div>
+      <div class="cat-card" onclick="navigate('catalogue',{cat:'divers'})" role="button" tabindex="0">
+        <div class="cat-icon" style="background:var(--gray-100);color:var(--gray-600)"><i class="ti ti-folder"></i></div>
+        <div class="cat-name">Divers</div>
+        <div class="cat-count">23 documents</div>
+        <div class="flex-c gap-6 flex-wrap"><span class="tag tag-gray">Temporaire</span><span class="tag tag-gray">Divers</span></div>
       </div>
     </div>
 
@@ -153,9 +195,16 @@
       </div>
       <div class="flex-c gap-8 flex-wrap">
         <span class="cat-chip on" data-cat="" onclick="renderCatalogue('')">Tous</span>
-        <span class="cat-chip" data-cat="contrat" onclick="renderCatalogue('contrat')"><i class="ti ti-writing"></i>Contrats</span>
-        <span class="cat-chip" data-cat="rapport" onclick="renderCatalogue('rapport')"><i class="ti ti-chart-line"></i>Rapports</span>
-        <span class="cat-chip" data-cat="facture" onclick="renderCatalogue('facture')"><i class="ti ti-receipt"></i>Factures</span>
+        <span class="cat-chip" data-cat="admin"         onclick="renderCatalogue('admin')"><i class="ti ti-building-community"></i>Administration</span>
+        <span class="cat-chip" data-cat="finance"       onclick="renderCatalogue('finance')"><i class="ti ti-cash"></i>Finance</span>
+        <span class="cat-chip" data-cat="contrat"       onclick="renderCatalogue('contrat')"><i class="ti ti-writing"></i>Contrats</span>
+        <span class="cat-chip" data-cat="courrier"      onclick="renderCatalogue('courrier')"><i class="ti ti-mail"></i>Courriers</span>
+        <span class="cat-chip" data-cat="rapport"       onclick="renderCatalogue('rapport')"><i class="ti ti-chart-line"></i>Rapports</span>
+        <span class="cat-chip" data-cat="projet"        onclick="renderCatalogue('projet')"><i class="ti ti-briefcase"></i>Projets</span>
+        <span class="cat-chip" data-cat="partenariat"   onclick="renderCatalogue('partenariat')"><i class="ti ti-handshake"></i>Partenariats</span>
+        <span class="cat-chip" data-cat="communication" onclick="renderCatalogue('communication')"><i class="ti ti-megaphone"></i>Communication</span>
+        <span class="cat-chip" data-cat="rh"            onclick="renderCatalogue('rh')"><i class="ti ti-users"></i>RH</span>
+        <span class="cat-chip" data-cat="divers"        onclick="renderCatalogue('divers')"><i class="ti ti-folder"></i>Divers</span>
       </div>
     </div>
   </div>
@@ -186,9 +235,16 @@
     <aside class="filter-panel" aria-label="Filtres de recherche">
       <div>
         <div class="filter-title">Type de document</div>
-        <label class="filter-opt"><input type="checkbox" class="f-type" value="Contrat" onchange="applySearch()">Contrats<span class="filter-count">423</span></label>
-        <label class="filter-opt"><input type="checkbox" class="f-type" value="Rapport" onchange="applySearch()">Rapports<span class="filter-count">581</span></label>
-        <label class="filter-opt"><input type="checkbox" class="f-type" value="Facture" onchange="applySearch()">Factures<span class="filter-count">280</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Administration" onchange="applySearch()">Administration<span class="filter-count">38</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Finance"       onchange="applySearch()">Finance<span class="filter-count">124</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Contrat"       onchange="applySearch()">Contrats<span class="filter-count">97</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Courrier"      onchange="applySearch()">Courriers<span class="filter-count">215</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Rapport"       onchange="applySearch()">Rapports<span class="filter-count">312</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Projet"        onchange="applySearch()">Projets<span class="filter-count">183</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Partenariat"   onchange="applySearch()">Partenariats<span class="filter-count">76</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Communication" onchange="applySearch()">Communication<span class="filter-count">64</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="RH"            onchange="applySearch()">Ressources humaines<span class="filter-count">52</span></label>
+        <label class="filter-opt"><input type="checkbox" class="f-type" value="Divers"        onchange="applySearch()">Pièces diverses<span class="filter-count">23</span></label>
       </div>
       <div>
         <div class="filter-title">Format</div>
