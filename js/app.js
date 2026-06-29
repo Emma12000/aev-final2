@@ -1158,10 +1158,23 @@ async function renderAdmin(sec="dashboard") {
       API.admin.users({ limit: 20 }).catch(()=>[]),
     ]);
     const realUsers   = apiUsers.length ? apiUsers : DB.users;
-    const totalDocs   = stats?.documents?.total ?? DB.docs.filter(d=>d.status==="published").length;
-    const totalUsers  = stats?.users?.total ?? DB.users.length;
-    const recentUps   = stats?.documents?.recentUploads ?? 0;
-    const pendingDocs = stats?.documents?.byStatus?.find(s=>s.status==="PENDING")?.count ?? pending.length;
+    // Si l'API répond, utiliser ses données ; sinon seulement fallback sur mock
+    const apiOk       = stats !== null;
+    const totalDocs   = apiOk ? (stats.documents?.total ?? 0) : DB.docs.filter(d=>d.status==="published").length;
+    const totalUsers  = apiOk ? (stats.users?.total ?? 0) : DB.users.length;
+    const recentUps   = apiOk ? (stats.documents?.recentUploads ?? 0) : 0;
+    const pendingDocs = apiOk ? (stats.documents?.byStatus?.find(s=>s.status==="PENDING")?.count ?? 0) : pending.length;
+    // Mettre à jour le badge sidebar avec la vraie valeur
+    const navDocsAfter = $("#admin-docs-nav");
+    if (navDocsAfter) {
+      const oldBadge = navDocsAfter.querySelector(".s-badge");
+      if (oldBadge) oldBadge.remove();
+      if (pendingDocs > 0) {
+        const b = document.createElement("span");
+        b.className = "s-badge"; b.textContent = pendingDocs;
+        navDocsAfter.appendChild(b);
+      }
+    }
     const recentActivity = (stats?.recentActivity || []).map(a => {
       const actionMap = { LOGIN:"CONNEXION", LOGOUT:"DÉCONNEXION", LOGIN_FAILED:"ÉCHEC CONNEXION", UPLOAD:"DÉPÔT", DOWNLOAD:"TÉLÉCHARGEMENT", UPDATE:"MODIFICATION", VIEW:"ACCÈS", CREATE:"CRÉATION", USER_CREATE:"CRÉATION COMPTE", REGISTER:"INSCRIPTION", DELETE:"SUPPRESSION", USER_DELETE:"SUPPRESSION COMPTE", APPROVE:"APPROBATION", REJECT:"REJET" };
       const diff = a.createdAt ? Date.now() - new Date(a.createdAt).getTime() : Infinity;
