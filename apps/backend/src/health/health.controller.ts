@@ -1,5 +1,6 @@
 import { Controller, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation } from '@nestjs/swagger';
+import { Public } from '../auth/decorators/public.decorator';
 import {
   HealthCheck,
   HealthCheckService,
@@ -17,6 +18,7 @@ export class HealthController {
     private readonly prisma: PrismaService,
   ) {}
 
+  @Public()
   @Get()
   @HealthCheck()
   @ApiOperation({ summary: 'Vérification de l\'état de l\'API' })
