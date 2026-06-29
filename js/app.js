@@ -942,34 +942,43 @@ function renderMember(sec="dashboard") {
   }
 
   if (sec==="activity") {
+    c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+    const myLogs = await API.activity.me().catch(() => []);
+
     const actionCls = {
-      "CONNEXION":"tag-blue","DÉCONNEXION":"tag-gray","DÉPÔT":"tag-green",
+      "CONNEXION":"tag-blue","DÉCONNEXION":"tag-gray","DÉPÔT":"tag-green","DÉPÔT":"tag-green",
       "TÉLÉCHARGEMENT":"tag-pub","MODIFICATION":"tag-orange","ACCÈS":"tag-gray",
+      "CRÉATION COMPTE":"tag-purple","SUPPRESSION":"tag-red","INSCRIPTION":"tag-blue",
     };
     const actionIcon = {
       "CONNEXION":"ti-login","DÉCONNEXION":"ti-logout","DÉPÔT":"ti-upload",
       "TÉLÉCHARGEMENT":"ti-download","MODIFICATION":"ti-pencil","ACCÈS":"ti-eye",
+      "CRÉATION COMPTE":"ti-user-plus","SUPPRESSION":"ti-trash",
     };
     const actionColor = {
       "CONNEXION":"var(--blue)","DÉCONNEXION":"var(--gray-400)","DÉPÔT":"#16a34a",
       "TÉLÉCHARGEMENT":"#0369a1","MODIFICATION":"#c2410c","ACCÈS":"var(--gray-400)",
+      "CRÉATION COMPTE":"#7c3aed","SUPPRESSION":"#dc2626",
     };
-    const conn  = DB.myActivity.filter(a=>a.action==="CONNEXION").length;
-    const depot = DB.myActivity.filter(a=>a.action==="DÉPÔT").length;
-    const dl    = DB.myActivity.filter(a=>a.action==="TÉLÉCHARGEMENT").length;
-    const acces = DB.myActivity.filter(a=>a.action==="ACCÈS"||a.action==="MODIFICATION").length;
-    const actions = [...new Set(DB.myActivity.map(a=>a.action))].sort();
+
+    const cnt = (action) => myLogs.filter(a => a.action === action).length;
+    const conn  = cnt("CONNEXION");
+    const depot = cnt("DÉPÔT");
+    const dl    = cnt("TÉLÉCHARGEMENT");
+    const acces = myLogs.filter(a => a.action === "ACCÈS" || a.action === "MODIFICATION").length;
+    const actions = [...new Set(myLogs.map(a => a.action))].sort();
+
     c.innerHTML = `
       <div class="topbar">
-        <div><div class="topbar-title">Mon activité</div><div class="topbar-sub">${DB.myActivity.length} actions enregistrées</div></div>
+        <div><div class="topbar-title">Mon activité</div><div class="topbar-sub">${myLogs.length} action${myLogs.length!==1?"s":""} enregistrée${myLogs.length!==1?"s":""}</div></div>
       </div>
       <div class="page-inner">
         <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
           ${[
-            ["ti-login",    "si-blue", conn,  "Connexions",      "Ce mois"],
+            ["ti-login",    "si-blue", conn,  "Connexions",      "Sessions ouvertes"],
             ["ti-upload",   "si-blue", depot, "Dépôts",          "Documents soumis"],
             ["ti-download", "si-blue", dl,    "Téléchargements", "Fichiers obtenus"],
-            ["ti-eye",      "si-blue", acces, "Consultations",   "Accès & modifs"],
+            ["ti-eye",      "si-blue", acces, "Consultations",   "Accès & modifications"],
           ].map(([ic,cls,val,lbl,trend])=>`
             <div class="stat-card">
               <div class="stat-icon ${cls}"><i class="ti ${ic}"></i></div>
@@ -990,14 +999,14 @@ function renderMember(sec="dashboard") {
           <button class="btn btn-outline btn-sm" onclick="document.getElementById('act-action').value='';document.getElementById('act-period').value='all';myActivityFilter()">
             <i class="ti ti-x"></i>Réinitialiser
           </button>
-          <span id="act-count" style="font-size:12px;color:var(--text-sec);margin-left:4px">${DB.myActivity.length} résultats</span>
+          <span id="act-count" style="font-size:12px;color:var(--text-sec);margin-left:4px">${myLogs.length} résultat${myLogs.length!==1?"s":""}</span>
         </div>
         <div class="card" style="overflow:hidden" id="act-timeline">
-          ${DB.myActivity.map(a=>`
+          ${myLogs.length ? myLogs.map(a => `
             <div class="act-row" data-action="${a.action}" data-date="${a.date}" style="display:flex;align-items:flex-start;gap:14px;padding:14px 20px;border-bottom:1px solid var(--border-lt);position:relative">
               <div style="width:3px;position:absolute;left:0;top:0;bottom:0;background:${actionColor[a.action]||"var(--border)"}"></div>
-              <div style="width:36px;height:36px;border-radius:10px;background:${actionColor[a.action]}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
-                <i class="ti ${actionIcon[a.action]||"ti-activity"}" style="color:${actionColor[a.action]};font-size:17px"></i>
+              <div style="width:36px;height:36px;border-radius:10px;background:${(actionColor[a.action]||"var(--blue)")}18;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:2px">
+                <i class="ti ${actionIcon[a.action]||"ti-activity"}" style="color:${actionColor[a.action]||"var(--blue)"};font-size:17px"></i>
               </div>
               <div style="flex:1;min-width:0">
                 <div style="display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap">
@@ -1005,9 +1014,9 @@ function renderMember(sec="dashboard") {
                   <span style="font-size:11px;color:var(--text-sec);white-space:nowrap">${a.dateStr}</span>
                 </div>
                 <div style="font-size:13px;font-weight:600;color:var(--text);margin-top:6px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${a.resource}">${a.resource}</div>
-                ${a.fmt?`<div style="font-size:11px;color:var(--text-sec);margin-top:3px"><i class="ti ti-file" style="font-size:11px"></i> ${a.fmt} · ${a.resourceType}</div>`:""}
               </div>
-            </div>`).join("")}
+            </div>`).join("")
+          : `<div style="text-align:center;padding:40px;color:var(--text-sec)"><i class="ti ti-timeline" style="font-size:32px;display:block;margin-bottom:10px;opacity:.4"></i>Aucune activité enregistrée.</div>`}
         </div>
       </div>`;
   }
