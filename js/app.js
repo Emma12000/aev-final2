@@ -1378,20 +1378,43 @@ async function renderAdmin(sec="dashboard") {
   }
 
   if (sec==="logs") {
+    c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+    const logs = await API.activity.all({ limit: 100 }).catch(() => []);
+    APP._adminLogs = logs;
+
     const actionCls = {
-      "CONNEXION":"tag-blue","DÉCONNEXION":"tag-gray","DÉPÔT":"tag-green",
+      "CONNEXION":"tag-blue","DÉCONNEXION":"tag-gray","DÉPÔT":"tag-green","DÉPÔT":"tag-green",
       "TÉLÉCHARGEMENT":"tag-pub","APPROBATION":"tag-green","REJET":"tag-red",
-      "SUPPRESSION":"tag-red","MODIFICATION":"tag-orange","CRÉATION":"tag-purple","ACCÈS":"tag-gray",
+      "SUPPRESSION":"tag-red","MODIFICATION":"tag-orange","CRÉATION":"tag-purple",
+      "CRÉATION COMPTE":"tag-purple","SUPPRESSION COMPTE":"tag-red",
+      "ACCÈS":"tag-gray","CONNEXION ÉCHOUÉE":"tag-red","INSCRIPTION":"tag-blue",
+      "ÉCHEC CONNEXION":"tag-red",
     };
     const roleCls = {
       "ADMINISTRATEUR":"tag-red","SUPERVISEUR":"tag-orange","AGENT":"tag-blue",
       "CONSULTANT":"tag-cyan","LECTEUR":"tag-gray",
     };
-    const actions = [...new Set(DB.logs.map(l=>l.action))].sort();
+    const actions = [...new Set(logs.map(l=>l.action))].sort();
+
+    const rowHtml = (l) => `
+      <tr data-user="${l.user.toLowerCase()}" data-action="${l.action}" data-resource="${l.resource.toLowerCase()}" data-date="${l.date}">
+        <td class="text-sec text-sm" style="white-space:nowrap;font-variant-numeric:tabular-nums">${l.dateStr}</td>
+        <td>
+          <div class="flex-c gap-8">
+            <div class="u-avatar" style="width:28px;height:28px;font-size:10px;background:${l.role==="ADMINISTRATEUR"?"var(--red)":"var(--blue)"}">${l.user.split(" ").map(w=>w[0]||"").join("").substring(0,2).toUpperCase()||"?"}</div>
+            <span style="font-size:13px;font-weight:600">${l.user}</span>
+          </div>
+        </td>
+        <td><span class="tag ${roleCls[l.role]||"tag-gray"}" style="font-size:10px">${l.role}</span></td>
+        <td><span class="tag ${actionCls[l.action]||"tag-gray"}">${l.action}</span></td>
+        <td class="text-sec text-sm" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.resource}">${l.resource}</td>
+        <td class="text-sec text-sm" style="font-family:monospace;font-size:11px">${l.ip}</td>
+      </tr>`;
+
     c.innerHTML = `
       <div class="topbar">
-        <div><div class="topbar-title">Journaux d'activité</div><div class="topbar-sub">${DB.logs.length} entrées enregistrées</div></div>
-        <button class="btn btn-outline btn-sm" onclick="toast('Export CSV généré','ok')"><i class="ti ti-download"></i>Exporter CSV</button>
+        <div><div class="topbar-title">Journaux d'activité</div><div class="topbar-sub" id="logs-sub">${logs.length} entrée${logs.length!==1?"s":""} enregistrée${logs.length!==1?"s":""}</div></div>
+        <button class="btn btn-outline btn-sm" onclick="exportLogsCSV()"><i class="ti ti-download"></i>Exporter CSV</button>
       </div>
       <div class="page-inner">
         <div class="flex-c gap-10 mb-14" style="flex-wrap:wrap">
@@ -1409,7 +1432,7 @@ async function renderAdmin(sec="dashboard") {
           <button class="btn btn-outline btn-sm" onclick="document.getElementById('log-search').value='';document.getElementById('log-action').value='';document.getElementById('log-period').value='all';logsFilter()">
             <i class="ti ti-x"></i>Réinitialiser
           </button>
-          <span id="log-count" style="font-size:12px;color:var(--text-sec);margin-left:4px">${DB.logs.length} résultats</span>
+          <span id="log-count" style="font-size:12px;color:var(--text-sec);margin-left:4px">${logs.length} résultat${logs.length!==1?"s":""}</span>
         </div>
         <div class="table-wrap">
           <table class="table">
@@ -1424,20 +1447,7 @@ async function renderAdmin(sec="dashboard") {
               </tr>
             </thead>
             <tbody id="logs-body">
-              ${DB.logs.map(l=>`
-                <tr data-user="${l.user.toLowerCase()}" data-action="${l.action}" data-resource="${l.resource.toLowerCase()}" data-date="${l.date}">
-                  <td class="text-sec text-sm" style="white-space:nowrap;font-variant-numeric:tabular-nums">${l.dateStr}</td>
-                  <td>
-                    <div class="flex-c gap-8">
-                      <div class="u-avatar" style="width:28px;height:28px;font-size:10px;background:${l.role==="ADMINISTRATEUR"?"var(--red)":"var(--blue)"}">${l.user.split(" ").map(w=>w[0]).join("").substring(0,2).toUpperCase()}</div>
-                      <span style="font-size:13px;font-weight:600">${l.user}</span>
-                    </div>
-                  </td>
-                  <td><span class="tag ${roleCls[l.role]||"tag-gray"}" style="font-size:10px">${l.role}</span></td>
-                  <td><span class="tag ${actionCls[l.action]||"tag-gray"}">${l.action}</span></td>
-                  <td class="text-sec text-sm" style="max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="${l.resource}">${l.resource}</td>
-                  <td class="text-sec text-sm" style="font-family:monospace;font-size:11px">${l.ip}</td>
-                </tr>`).join("")}
+              ${logs.length ? logs.map(rowHtml).join("") : `<tr><td colspan="6" style="text-align:center;padding:32px;color:var(--text-sec)">Aucune activité enregistrée.</td></tr>`}
             </tbody>
           </table>
         </div>
@@ -1664,6 +1674,7 @@ function logsFilter() {
   const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
   let visible = 0;
   document.querySelectorAll("#logs-body tr").forEach(row => {
+    if (!row.dataset.date) { row.style.display=""; return; }
     const matchQ      = !q || row.dataset.user.includes(q) || row.dataset.resource.includes(q) || row.dataset.action.toLowerCase().includes(q);
     const matchAction = !action || row.dataset.action === action;
     const rowDate     = new Date(row.dataset.date); rowDate.setHours(0,0,0,0);
@@ -1677,6 +1688,23 @@ function logsFilter() {
   });
   const cnt = document.getElementById("log-count");
   if (cnt) cnt.textContent = `${visible} résultat${visible!==1?"s":""}`;
+}
+
+function exportLogsCSV() {
+  const logs = APP._adminLogs || [];
+  if (!logs.length) { toast("Aucune donnée à exporter.","err"); return; }
+  const header = ["Date","Utilisateur","Rôle","Action","Ressource","IP"];
+  const rows = logs.map(l => [
+    `"${l.dateStr}"`, `"${l.user}"`, `"${l.role}"`,
+    `"${l.action}"`, `"${l.resource.replace(/"/g,'""')}"`, `"${l.ip}"`
+  ].join(","));
+  const csv = [header.join(","), ...rows].join("\n");
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url; a.download = `journaux-aev-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  toast("Export CSV généré.", "ok");
 }
 
 // ─── GESTION DES ACCÈS ───────────────────────────────────

@@ -143,15 +143,21 @@ function mapActivity(a) {
     CREATE: "CRÉATION", USER_CREATE: "CRÉATION COMPTE", REGISTER: "INSCRIPTION",
     DELETE: "SUPPRESSION", USER_DELETE: "SUPPRESSION COMPTE",
     APPROVE: "APPROBATION", REJECT: "REJET",
+    DOCUMENT_UPLOAD: "DÉPÔT", DOCUMENT_DOWNLOAD: "TÉLÉCHARGEMENT",
+    DOCUMENT_VIEW: "ACCÈS", DOCUMENT_UPDATE: "MODIFICATION", DOCUMENT_DELETE: "SUPPRESSION",
+    USER_UPDATE: "MODIFICATION",
   };
+  const roleMap = { ADMINISTRATEUR: "ADMINISTRATEUR", AGENT: "AGENT", LECTEUR: "LECTEUR" };
+  const resourceLabel = a.metadata?.title || a.metadata?.documentTitle
+    || (a.resourceId && a.resourceType !== "auth" ? `${(a.resourceType||"").toLowerCase()}:${a.resourceId.slice(0,8)}` : "—");
   return {
     id:           a.id,
     date:         a.createdAt ? a.createdAt.replace("T", " ").slice(0, 16) : "",
     dateStr:      a.createdAt ? new Date(a.createdAt).toLocaleString("fr-FR", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—",
     user:         a.user?.fullName || "Inconnu",
-    role:         a.user ? ({ ADMINISTRATEUR: "ADMINISTRATEUR", AGENT: "AGENT", LECTEUR: "LECTEUR" }[a.user.role] || a.user.role) : "—",
+    role:         a.user?.role ? (roleMap[a.user.role] || a.user.role) : "—",
     action:       actionMap[a.action] || a.action,
-    resource:     a.resourceTitle || a.resourceId || "—",
+    resource:     resourceLabel,
     resourceType: a.resourceType?.toLowerCase() || "document",
     ip:           a.ipAddress || "—",
   };
