@@ -91,7 +91,7 @@ function mapDoc(d) {
     "image/png":  "PNG",
   };
   const accMap = { PUBLIC: "Public", INTERNE: "Membres", CONFIDENTIEL: "Confidentiel", RESTREINT: "Restreint" };
-  const stMap  = { PUBLISHED: "published", PENDING: "pending", DRAFT: "draft", ARCHIVED: "archived", DELETED: "deleted" };
+  const stMap  = { ACTIVE: "published", ARCHIVED: "pending", DELETED: "deleted" };
   const fmt    = fmtMap[d.fileMimeType] || "PDF";
   const size   = d.fileSize
     ? (d.fileSize > 1_048_576 ? `${(d.fileSize / 1_048_576).toFixed(1)} Mo` : `${Math.round(d.fileSize / 1024)} Ko`)
@@ -238,6 +238,51 @@ const API = {
         return res?.data ? mapDoc(res.data) : null;
       } catch (_) {
         return null;
+      }
+    },
+
+    // Upload multipart/form-data — NE PAS mettre Content-Type (le navigateur le fait)
+    async upload(formData) {
+      const tokens = TokenStore.get();
+      const headers = {};
+      if (tokens.access) headers["Authorization"] = `Bearer ${tokens.access}`;
+
+      let res = await fetch(API_BASE + "/documents/upload", {
+        method: "POST",
+        headers,
+        body: formData,
+      });
+
+      // Auto-refresh si 401
+      if (res.status === 401 && tokens.refresh) {
+        const ref = await fetch(API_BASE + "/auth/refresh", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ refreshToken: tokens.refresh }),
+        });
+        if (ref.ok) {
+          const rd = await ref.json();
+          TokenStore.set(rd.data.accessToken, rd.data.refreshToken);
+          headers["Authorization"] = `Bearer ${rd.data.accessToken}`;
+          res = await fetch(API_BASE + "/documents/upload", { method: "POST", headers, body: formData });
+        }
+      }
+
+      if (!res.ok) {
+        let msg = "Erreur lors du dépôt.";
+        try { msg = (await res.json()).message || msg; } catch (_) {}
+        throw new Error(msg);
+      }
+      const data = await res.json();
+      return data?.data ? mapDoc(data.data) : data;
+    },
+
+    async download(id) {
+      try {
+        const res = await apiFetch("/documents/" + id + "/download");
+        return res?.data || null;
+      } catch (e) {
+        throw e;
       }
     },
   },

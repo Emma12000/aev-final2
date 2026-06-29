@@ -1023,15 +1023,20 @@ function renderUploadStep(c) {
     </div>`;
   if (s===2) body=`
     <div class="flex-col gap-14">
-      <div class="form-group"><label class="form-label">Titre du document <span class="req">*</span></label><input type="text" id="doc-title" class="form-control" placeholder="Ex : Rapport d'activité 2026"></div>
+      <div class="form-group"><label class="form-label">Titre du document <span class="req">*</span></label><input type="text" id="doc-title" class="form-control" placeholder="Ex : Rapport d'activité 2026" value="${APP.uploadDraft?.title||""}"></div>
       <div class="grid-2 gap-12">
-        <div class="form-group"><label class="form-label">Catégorie <span class="req">*</span></label><select id="doc-cat" class="form-control"><option value="">Choisir…</option><option value="admin">Administration</option><option value="finance">Finance</option><option value="contrat">Contrats et conventions</option><option value="courrier">Courriers</option><option value="rapport">Rapports et comptes rendus</option><option value="projet">Projets et programmes</option><option value="partenariat">Partenariats</option><option value="communication">Communication</option><option value="rh">Ressources humaines</option><option value="divers">Pièces diverses</option></select></div>
+        <div class="form-group"><label class="form-label">Catégorie <span class="req">*</span></label>
+          <select id="doc-cat" class="form-control">
+            <option value="">Choisir…</option>
+            ${DB.cats.map(c=>`<option value="${c.apiId||c.id}" ${APP.uploadDraft?.categoryId===(c.apiId||c.id)?"selected":""}>${c.name}</option>`).join("")}
+          </select>
+        </div>
         <div class="form-group"><label class="form-label">Date du document</label><input type="date" id="doc-date" class="form-control" value="${new Date().toISOString().split("T")[0]}"></div>
       </div>
-      <div class="form-group"><label class="form-label">Description courte</label><textarea id="doc-desc" class="form-control" rows="3" placeholder="Résumé du contenu…"></textarea></div>
+      <div class="form-group"><label class="form-label">Description courte</label><textarea id="doc-desc" class="form-control" rows="3" placeholder="Résumé du contenu…">${APP.uploadDraft?.description||""}</textarea></div>
       <div class="form-group"><label class="form-label">Mots-clés</label>
         <div class="flex-c gap-8 flex-wrap" id="tags-box">
-          ${["Association","2026","Rapport","Contrat","Santé","Éducation"].map(t=>`<span class="chip" onclick="this.classList.toggle('on')">${t}</span>`).join("")}
+          ${["Association","2026","Rapport","Contrat","Santé","Éducation"].map(t=>`<span class="chip ${(APP.uploadDraft?.tags||[]).includes(t)?"on":""}" onclick="this.classList.toggle('on')">${t}</span>`).join("")}
           <span class="chip" style="border-style:dashed;color:var(--blue)" onclick="addTag()"><i class="ti ti-plus"></i>Ajouter</span>
         </div>
       </div>
@@ -1083,23 +1088,66 @@ function renderUploadStep(c) {
     </div>`;
 }
 
-function nextUploadStep() {
+async function nextUploadStep() {
+  const c = $("#member-main");
+
   if (APP.uploadStep===1) {
-    const preview = $("#file-preview");
-    if (!preview || preview.style.display === "none") {
-      toast("Veuillez sélectionner un fichier avant de continuer.","err");
-      return;
-    }
+    const fi = $("#fi");
+    if (!fi?.files[0]) { toast("Veuillez sélectionner un fichier avant de continuer.","err"); return; }
+    APP.uploadFile = fi.files[0];
   }
+
   if (APP.uploadStep===2) {
-    const t = $("#doc-title")?.value.trim();
-    const cat = $("#doc-cat")?.value;
-    if (!t||!cat) { toast("Veuillez remplir le titre et la catégorie.","err"); return; }
+    const title = $("#doc-title")?.value.trim();
+    const categoryId = $("#doc-cat")?.value;
+    const description = $("#doc-desc")?.value.trim() || "";
+    const tags = $$(".chip.on").map(el=>el.textContent.trim()).filter(t=>t && !t.includes("+"));
+    if (!title||!categoryId) { toast("Veuillez remplir le titre et la catégorie.","err"); return; }
+    // Sauvegarder le brouillon dans APP pour passage à l'étape suivante
+    APP.uploadDraft = { title, categoryId, description, tags };
   }
+
+  if (APP.uploadStep===3) {
+    // Soumettre le document à l'API
+    const confMap = { public:"PUBLIC", members:"INTERNE", private:"CONFIDENTIEL" };
+    const access = $("[name='acc']:checked")?.value || "members";
+    const { title, categoryId, description, tags } = APP.uploadDraft || {};
+
+    if (!APP.uploadFile || !title || !categoryId) {
+      toast("Informations manquantes. Recommencez depuis l'étape 1.","err"); return;
+    }
+
+    const fd = new FormData();
+    fd.append("file", APP.uploadFile);
+    fd.append("title", title);
+    fd.append("categoryId", categoryId);
+    fd.append("confidentiality", confMap[access] || "INTERNE");
+    if (description) fd.append("description", description);
+    // Envoyer les tags comme champs répétés
+    (tags || []).forEach(t => fd.append("tags", t));
+
+    // Afficher un spinner pendant l'upload
+    const footer = c.querySelector(".card-footer");
+    const btn = footer?.querySelector(".btn-primary");
+    if (btn) { btn.disabled = true; btn.innerHTML = `<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Envoi…`; }
+
+    try {
+      await API.documents.upload(fd);
+      APP.uploadStep++;
+      APP.uploadFile = null;
+      APP.uploadDraft = null;
+      renderUploadStep(c);
+      toast("Document soumis pour validation !","ok");
+    } catch(e) {
+      toast(e.message || "Erreur lors du dépôt. Vérifiez le fichier.", "err");
+      if (btn) { btn.disabled = false; btn.innerHTML = `<i class="ti ti-send"></i>Soumettre`; }
+    }
+    return;
+  }
+
   if (APP.uploadStep < 4) {
     APP.uploadStep++;
-    renderUploadStep($("#member-main"));
-    if (APP.uploadStep===4) toast("Document soumis pour validation !","ok");
+    renderUploadStep(c);
   }
 }
 
