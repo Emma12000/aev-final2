@@ -37,8 +37,15 @@ export class DocumentsService {
       ? confidentiality
       : (confidentiality ?? Confidentiality.PUBLIC);
 
+    // Admin sans filtre de statut → tout sauf DELETED ; visiteur → ACTIVE uniquement
+    const statusWhere = status
+      ? { status }
+      : isStaff
+        ? { status: { not: DocumentStatus.DELETED } }
+        : { status: DocumentStatus.ACTIVE };
+
     const where = {
-      status: status ?? DocumentStatus.ACTIVE,
+      ...statusWhere,
       ...(confFilter ? { confidentiality: confFilter } : {}),
       ...(categoryId ? { categoryId } : {}),
       ...(q

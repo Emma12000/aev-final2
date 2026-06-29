@@ -1309,36 +1309,59 @@ async function renderAdmin(sec="dashboard") {
   }
 
   if (sec==="docs") {
+    c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+    APP._docsFilter = APP._docsFilter || { status: "", q: "", page: 1 };
+    const f = APP._docsFilter;
+    const params = { limit: 50, page: f.page };
+    if (f.status) params.status = f.status;
+    if (f.q) params.q = f.q;
+    const { items: docs, total, pages } = await API.documents.adminList(params);
+
+    const renderDocsTable = (docs) => docs.map(d => `
+      <tr id="admin-row-${d.id}">
+        <td style="max-width:240px"><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:13px" title="${d.title}">${d.title}</span></div></td>
+        <td>${tagHtml(d.type)}</td>
+        <td class="text-sec text-sm">${d.fmt}</td>
+        <td class="text-sec text-sm">${d.author}</td>
+        <td><span class="tag ${d.access==="Public"?"tag-pub":"tag-gray"}">${d.access}</span></td>
+        <td class="text-sec text-sm">${d.dateStr}</td>
+        <td id="status-${d.id}">${statusHtml(d.status)}</td>
+        <td><div class="flex-c gap-6">
+          ${d.status==="pending"
+            ? `<div class="btn-icon green" onclick="approveDoc('${d.id}','${d.title.replace(/'/g,"\\'").slice(0,30)}')" title="Approuver"><i class="ti ti-check"></i></div>
+               <div class="btn-icon red"   onclick="rejectDoc('${d.id}')" title="Rejeter"><i class="ti ti-x"></i></div>`
+            : ""}
+          <div class="btn-icon" onclick="navigate('doc',{id:'${d.id}'})" title="Voir"><i class="ti ti-eye"></i></div>
+          <div class="btn-icon red" onclick="adminDelDoc('${d.id}','${d.title.replace(/'/g,"\\'").slice(0,30)}')" title="Supprimer"><i class="ti ti-trash"></i></div>
+        </div></td>
+      </tr>`).join("");
+
+    const pagBtns = pages <= 1 ? "" : Array.from({length: Math.min(pages,10)}, (_,i)=>i+1).map(n=>
+      `<div class="pag-btn ${n===f.page?"active":""}" onclick="adminDocsPage(${n})">${n}</div>`).join("");
+
     c.innerHTML = `
       <div class="topbar">
-        <div><div class="topbar-title">Tous les documents</div><div class="topbar-sub">${DB.docs.length} documents</div></div>
+        <div><div class="topbar-title">Tous les documents</div><div class="topbar-sub" id="docs-sub">${total} document${total!==1?"s":""}</div></div>
         <div class="flex-c gap-8">
-          <input type="text" class="form-control" style="width:240px;height:38px" placeholder="Filtrer…" oninput="adminFilter(this.value)">
-          <button class="btn btn-primary btn-sm" onclick="toast('Importer un document','info')"><i class="ti ti-upload"></i>Importer</button>
+          <input type="text" id="admin-doc-q" class="form-control" style="width:220px;height:38px" placeholder="Rechercher…" value="${f.q}" oninput="adminDocsSearch(this.value)">
+          <select id="admin-doc-status" class="form-control" style="width:160px;height:38px" onchange="adminDocsStatusFilter(this.value)">
+            <option value="" ${!f.status?"selected":""}>Tous les statuts</option>
+            <option value="ARCHIVED" ${f.status==="ARCHIVED"?"selected":""}>En attente</option>
+            <option value="ACTIVE"   ${f.status==="ACTIVE"  ?"selected":""}>Publiés</option>
+            <option value="DELETED"  ${f.status==="DELETED" ?"selected":""}>Supprimés</option>
+          </select>
         </div>
       </div>
       <div class="page-inner">
         <div class="table-wrap">
           <table class="table">
-            <thead><tr><th>Document</th><th>Type</th><th>Format</th><th>Auteur</th><th>Accès</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+            <thead><tr><th>Document</th><th>Catégorie</th><th>Format</th><th>Auteur</th><th>Accès</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
             <tbody id="admin-docs-body">
-              ${DB.docs.map(d=>`
-                <tr id="admin-row-${d.id}">
-                  <td style="max-width:250px"><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:13px">${d.title}</span></div></td>
-                  <td>${tagHtml(d.type)}</td><td>${d.fmt}</td><td class="text-sec">${d.author}</td>
-                  <td><span class="tag ${d.access==="Public"?"tag-pub":"tag-gray"}">${d.access}</span></td>
-                  <td class="text-sec">${d.dateStr}</td>
-                  <td id="status-${d.id}">${statusHtml(d.status)}</td>
-                  <td><div class="flex-c gap-6">
-                    ${d.status==="pending"?`<div class="btn-icon green" onclick="approveDoc(${d.id})" title="Approuver"><i class="ti ti-check"></i></div><div class="btn-icon red" onclick="rejectDoc(${d.id})" title="Rejeter"><i class="ti ti-x"></i></div>`:""}
-                    <div class="btn-icon" onclick="navigate('doc',{id:${d.id}})"><i class="ti ti-eye"></i></div>
-                    <div class="btn-icon red" onclick="adminDelDoc(${d.id})"><i class="ti ti-trash"></i></div>
-                  </div></td>
-                </tr>`).join("")}
+              ${docs.length ? renderDocsTable(docs) : `<tr><td colspan="8" style="text-align:center;padding:32px;color:var(--text-sec)">Aucun document trouvé.</td></tr>`}
             </tbody>
           </table>
         </div>
-        <div class="pagination">${[1,2,3,"…",42].map((n,i)=>`<div class="pag-btn ${i===0?"active":""}" onclick="${typeof n==="number"?`toast('Page ${n}','info')`:""}">${n}</div>`).join("")}</div>
+        ${pagBtns ? `<div class="pagination">${pagBtns}</div>` : ""}
       </div>`;
   }
 
@@ -2002,40 +2025,78 @@ async function confirmToggleUser(id, isCurrentlyActive) {
 }
 
 // ─── ACTIONS DOCS ────────────────────────────────────────
-function approveDoc(id) {
-  const d = DB.docs.find(x=>x.id===id);
-  if (!d) return;
-  d.status = "published";
-  toast(`"${d.title.substring(0,30)}…" publié avec succès !`,"ok");
+async function approveDoc(id, title) {
   const row = $(`#admin-row-${id}`);
-  if (row) row.style.opacity="0.4";
-  const st = $(`#status-${id}`);
-  if (st) st.innerHTML = statusHtml("published");
-  setTimeout(()=>renderAdmin(APP.adminSec), 1200);
+  if (row) row.style.opacity = "0.5";
+  try {
+    await API.documents.approve(id);
+    const st = $(`#status-${id}`);
+    if (st) st.innerHTML = statusHtml("published");
+    toast(`"${title}…" publié avec succès !`, "ok");
+    setTimeout(() => renderAdmin("docs"), 1000);
+  } catch(e) {
+    if (row) row.style.opacity = "1";
+    toast(e.message || "Erreur lors de l'approbation.", "err");
+  }
 }
-function rejectDoc(id) {
-  const d = DB.docs.find(x=>x.id===id);
-  if (!d) return;
-  d.status = "rejected";
-  toast("Document rejeté.","err");
-  setTimeout(()=>renderAdmin(APP.adminSec), 800);
+
+async function rejectDoc(id) {
+  try {
+    await API.documents.reject(id);
+    const st = $(`#status-${id}`);
+    if (st) st.innerHTML = statusHtml("deleted");
+    toast("Document rejeté.", "err");
+    setTimeout(() => renderAdmin("docs"), 800);
+  } catch(e) {
+    toast(e.message || "Erreur lors du rejet.", "err");
+  }
 }
-function adminDelDoc(id) {
+
+function adminDelDoc(id, title) {
   openModal(`
-    <p style="font-size:14px;color:var(--text-sec);line-height:1.7">Cette action est irréversible. Le document sera définitivement supprimé de la plateforme.</p>
+    <p style="font-size:14px;color:var(--text-sec);line-height:1.7">
+      Supprimer <strong>"${title}…"</strong> ? Cette action est irréversible.
+    </p>
     <div class="flex-c gap-10 mt-20">
-      <button class="btn btn-danger" onclick="confirmAdminDel(${id})"><i class="ti ti-trash"></i>Supprimer</button>
+      <button class="btn btn-danger" onclick="confirmAdminDel('${id}')"><i class="ti ti-trash"></i>Supprimer</button>
       <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
     </div>`, "Supprimer ce document ?");
 }
-function confirmAdminDel(id) {
-  const i = DB.docs.findIndex(x=>x.id===id);
-  if (i>-1) { DB.docs.splice(i,1); toast("Document supprimé.","err"); closeModal(); renderAdmin(APP.adminSec); }
+
+async function confirmAdminDel(id) {
+  try {
+    await API.documents.delete(id);
+    toast("Document supprimé.", "err");
+    closeModal();
+    renderAdmin("docs");
+  } catch(e) {
+    toast(e.message || "Erreur lors de la suppression.", "err");
+  }
 }
+
 function delDocMember(id) {
-  const i = DB.docs.findIndex(x=>x.id===id);
-  if (i>-1) { DB.docs.splice(i,1); toast("Document supprimé.","err"); renderMember(APP.memberSec); }
+  adminDelDoc(id, "ce document");
 }
+
+let _adminDocSearchTimer;
+function adminDocsSearch(q) {
+  clearTimeout(_adminDocSearchTimer);
+  _adminDocSearchTimer = setTimeout(() => {
+    APP._docsFilter = { ...(APP._docsFilter||{}), q, page: 1 };
+    renderAdmin("docs");
+  }, 400);
+}
+
+function adminDocsStatusFilter(status) {
+  APP._docsFilter = { ...(APP._docsFilter||{}), status, page: 1 };
+  renderAdmin("docs");
+}
+
+function adminDocsPage(page) {
+  APP._docsFilter = { ...(APP._docsFilter||{}), page };
+  renderAdmin("docs");
+}
+
 function adminFilter(q) {
   $$(`#admin-docs-body tr`).forEach(row=>{
     row.style.display = row.textContent.toLowerCase().includes(q.toLowerCase()) ? "" : "none";

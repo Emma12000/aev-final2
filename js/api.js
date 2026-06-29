@@ -291,6 +291,30 @@ const API = {
         throw e;
       }
     },
+
+    async approve(id) {
+      return apiFetch("/documents/" + id + "/approve", { method: "POST" });
+    },
+
+    async reject(id) {
+      return apiFetch("/documents/" + id + "/reject", { method: "POST" });
+    },
+
+    async delete(id) {
+      return apiFetch("/documents/" + id, { method: "DELETE" });
+    },
+
+    async adminList(params = {}) {
+      try {
+        const q   = new URLSearchParams(params).toString();
+        const res = await apiFetch("/documents" + (q ? "?" + q : ""));
+        const data = res?.data;
+        const items = data?.items || (Array.isArray(data) ? data : []);
+        return { items: items.map(mapDoc), total: data?.total || items.length, pages: data?.pages || 1 };
+      } catch (_) {
+        return { items: [], total: 0, pages: 1 };
+      }
+    },
   },
 
   admin: {
