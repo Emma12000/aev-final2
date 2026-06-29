@@ -133,6 +133,9 @@ body { font-family: var(--font); background: var(--gray-50); color: var(--text);
    TAGS & STATUS
 ═══════════════════════════════════════════════ */
 .tag { display: inline-block; font-size: 11px; padding: 3px 10px; border-radius: 20px; font-weight: 600; letter-spacing: .02em; }
+.access-tab { background:none; border:none; padding:10px 20px; font-size:13px; font-weight:600; color:var(--text-sec); cursor:pointer; border-bottom:2px solid transparent; margin-bottom:-1px; transition:var(--t); }
+.access-tab.active { color:var(--blue); border-bottom-color:var(--blue); }
+.access-tab:hover:not(.active) { color:var(--text); }
 .tag-blue   { background: var(--blue-light); color: var(--blue-dark); }
 .tag-red    { background: var(--red-light); color: var(--red-dark); }
 .tag-gray   { background: var(--gray-100); color: var(--gray-600); }

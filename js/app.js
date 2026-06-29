@@ -57,7 +57,9 @@ const DB = {
     { id:2, name:"Aïcha Ngaradoum", initials:"AN", role:"member", roleLabel:"Membre", email:"a.ngaradoum@espoiretvie.td", docs:12, status:"active", joined:"Mars 2024"  },
     { id:3, name:"Souleymane Mahamat", initials:"SM", role:"member", roleLabel:"Membre", email:"s.mahamat@espoiretvie.td", docs:4,  status:"new",    joined:"Juin 2026"  },
     { id:4, name:"Fidèle Adoum",    initials:"FA", role:"member", roleLabel:"Membre", email:"f.adoum@espoiretvie.td",    docs:7,  status:"active", joined:"Jan. 2025"  },
-    { id:5, name:"Marc Dupont",     initials:"MD", role:"member", roleLabel:"Membre", email:"m.dupont@espoiretvie.td",   docs:3,  status:"active", joined:"Avr. 2025"  },
+    { id:5, name:"Marc Dupont",      initials:"MD", role:"member",     roleLabel:"Membre",     email:"m.dupont@espoiretvie.td",    docs:3,  status:"active", joined:"Avr. 2025"  },
+    { id:6, name:"Christine Koumba", initials:"CK", role:"consultant", roleLabel:"Consultant", email:"c.koumba@partenaireoa.org",  docs:0,  status:"active", joined:"Juin 2026"  },
+    { id:7, name:"Jean Mbodj",       initials:"JM", role:"lecteur",    roleLabel:"Lecteur",    email:"j.mbodj@partenaire.td",     docs:0,  status:"active", joined:"Mai 2026"   },
   ],
   activity: [
     { msg:"M. Dupont a soumis un rapport", time:"Il y a 43 min", isNew:true  },
@@ -109,6 +111,14 @@ const DB = {
     { id:10, date:"2026-06-10T09:30", dateStr:"10 juin, 09:30",      action:"ACCÈS",          resource:"Statuts de l'Association Espoir & Vie 2023",resourceType:"document", fmt:"PDF"   },
     { id:11, date:"2026-06-05T14:15", dateStr:"5 juin, 14:15",       action:"DÉPÔT",          resource:"Communiqué de presse — Forum Santé 2026",   resourceType:"document", fmt:"PDF"   },
     { id:12, date:"2026-06-01T08:50", dateStr:"1 juin, 08:50",       action:"CONNEXION",      resource:"—",                                        resourceType:"auth",     fmt:null    },
+  ],
+  access: [
+    { id:1, userId:6, userName:"Christine Koumba", userRole:"CONSULTANT", type:"categorie", resourceId:"finance",  resourceLabel:"Finance et comptabilité",       grantedAt:"1 juin 2026",   grantedBy:"Admin AEV" },
+    { id:2, userId:6, userName:"Christine Koumba", userRole:"CONSULTANT", type:"categorie", resourceId:"contrat",  resourceLabel:"Contrats et conventions",        grantedAt:"1 juin 2026",   grantedBy:"Admin AEV" },
+    { id:3, userId:6, userName:"Christine Koumba", userRole:"CONSULTANT", type:"document",  resourceId:1,          resourceLabel:"Statuts de l'Association AEV 2023",grantedAt:"20 juin 2026", grantedBy:"Admin AEV" },
+    { id:4, userId:7, userName:"Jean Mbodj",       userRole:"LECTEUR",    type:"document",  resourceId:4,          resourceLabel:"Rapport annuel 2024",            grantedAt:"15 juin 2026",  grantedBy:"Admin AEV" },
+    { id:5, userId:7, userName:"Jean Mbodj",       userRole:"LECTEUR",    type:"document",  resourceId:9,          resourceLabel:"Programme santé communautaire 2025-2026", grantedAt:"15 juin 2026", grantedBy:"Admin AEV" },
+    { id:6, userId:7, userName:"Jean Mbodj",       userRole:"LECTEUR",    type:"document",  resourceId:18,         resourceLabel:"Plaquette institutionnelle AEV 2026", grantedAt:"20 juin 2026", grantedBy:"Admin AEV" },
   ]
 };
 
@@ -1366,6 +1376,87 @@ function renderAdmin(sec="dashboard") {
       </div>`;
   }
 
+  if (sec==="access") {
+    const restricted = DB.users.filter(u=>u.role==="consultant"||u.role==="lecteur");
+    const roleCls  = { consultant:"tag-cyan", lecteur:"tag-gray" };
+    const typeCls  = { categorie:"tag-blue",  document:"tag-green" };
+    const typeLbl  = { categorie:"Catégorie", document:"Document"  };
+    c.innerHTML = `
+      <div class="topbar">
+        <div><div class="topbar-title">Gestion des accès</div><div class="topbar-sub">${DB.access.length} règles actives · ${restricted.length} utilisateurs restreints</div></div>
+        <button class="btn btn-primary btn-sm" onclick="openAccessForm()"><i class="ti ti-key"></i>Accorder un accès</button>
+      </div>
+      <div class="page-inner">
+        <div class="flex-c gap-0 mb-16" style="border-bottom:1px solid var(--border)">
+          <button class="access-tab active" id="tab-user" onclick="accessTab('user')"><i class="ti ti-users" style="margin-right:6px;font-size:13px"></i>Par utilisateur</button>
+          <button class="access-tab" id="tab-res" onclick="accessTab('res')"><i class="ti ti-folder" style="margin-right:6px;font-size:13px"></i>Par ressource</button>
+        </div>
+
+        <div id="access-users">
+          ${restricted.map(u=>{
+            const rules = DB.access.filter(r=>r.userId===u.id);
+            return `
+            <div class="card card-body mb-14">
+              <div class="flex-b mb-14">
+                <div class="flex-c gap-12">
+                  <div class="u-avatar" style="width:40px;height:40px;font-size:14px;background:${u.role==="consultant"?"#0E7490":"var(--gray-400)"}">${u.initials}</div>
+                  <div>
+                    <div style="font-size:14px;font-weight:700;color:var(--text)">${u.name}</div>
+                    <div style="font-size:12px;color:var(--text-sec);margin-top:2px">${u.email}</div>
+                  </div>
+                  <span class="tag ${roleCls[u.role]||"tag-gray"}" style="margin-left:4px">${u.roleLabel}</span>
+                </div>
+                <button class="btn btn-outline btn-sm" onclick="openAccessForm(${u.id})"><i class="ti ti-plus"></i>Accorder un accès</button>
+              </div>
+              ${rules.length===0 ? `
+                <div style="padding:14px;text-align:center;color:var(--text-sec);font-size:13px;background:var(--gray-100);border-radius:var(--r-lg)">
+                  <i class="ti ti-lock-off" style="font-size:18px;display:block;margin-bottom:6px"></i>
+                  Aucun accès spécifique — limité aux documents publics uniquement
+                </div>` : `
+                <div class="flex-col gap-8">
+                  ${rules.map(r=>`
+                    <div class="flex-b" style="padding:10px 14px;background:var(--gray-100);border-radius:var(--r-lg);border:1px solid var(--border-lt)">
+                      <div class="flex-c gap-10">
+                        <span class="tag ${typeCls[r.type]||"tag-gray"}" style="font-size:10px">${typeLbl[r.type]||r.type}</span>
+                        <span style="font-size:13px;font-weight:600;color:var(--text)">${r.resourceLabel}</span>
+                      </div>
+                      <div class="flex-c gap-10">
+                        <span style="font-size:11px;color:var(--text-sec)">le ${r.grantedAt}</span>
+                        <div class="btn-icon red" onclick="revokeAccess(${r.id})" title="Révoquer"><i class="ti ti-x"></i></div>
+                      </div>
+                    </div>`).join("")}
+                </div>`}
+            </div>`;
+          }).join("")}
+        </div>
+
+        <div id="access-res" style="display:none">
+          <div class="table-wrap">
+            <table class="table">
+              <thead><tr><th>Type</th><th>Ressource</th><th>Utilisateur</th><th>Rôle</th><th>Accordé le</th><th>Accordé par</th><th>Action</th></tr></thead>
+              <tbody>
+                ${DB.access.map(r=>`
+                  <tr>
+                    <td><span class="tag ${typeCls[r.type]||"tag-gray"}" style="font-size:10px">${typeLbl[r.type]||r.type}</span></td>
+                    <td style="font-weight:600;font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.resourceLabel}</td>
+                    <td>
+                      <div class="flex-c gap-8">
+                        <div class="u-avatar" style="width:26px;height:26px;font-size:10px;background:${r.userRole==="CONSULTANT"?"#0E7490":"var(--gray-400)"}">${r.userName.split(" ").map(w=>w[0]).join("").substring(0,2).toUpperCase()}</div>
+                        <span style="font-size:13px;font-weight:500">${r.userName}</span>
+                      </div>
+                    </td>
+                    <td><span class="tag ${r.userRole==="CONSULTANT"?"tag-cyan":"tag-gray"}" style="font-size:10px">${r.userRole}</span></td>
+                    <td class="text-sec text-sm">${r.grantedAt}</td>
+                    <td class="text-sec text-sm">${r.grantedBy}</td>
+                    <td><div class="btn-icon red" onclick="revokeAccess(${r.id})" title="Révoquer"><i class="ti ti-x"></i></div></td>
+                  </tr>`).join("")}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+  }
+
   if (sec==="stats") {
     c.innerHTML = `
       <div class="topbar"><div><div class="topbar-title">Statistiques & Analyses</div><div class="topbar-sub">Vue d'ensemble de la plateforme</div></div><button class="btn btn-outline btn-sm" onclick="toast('Export CSV généré','ok')"><i class="ti ti-download"></i>Exporter</button></div>
@@ -1478,6 +1569,103 @@ function logsFilter() {
   });
   const cnt = document.getElementById("log-count");
   if (cnt) cnt.textContent = `${visible} résultat${visible!==1?"s":""}`;
+}
+
+// ─── GESTION DES ACCÈS ───────────────────────────────────
+function accessTab(which) {
+  document.getElementById("access-users").style.display = which==="user" ? "" : "none";
+  document.getElementById("access-res").style.display   = which==="res"  ? "" : "none";
+  document.getElementById("tab-user").classList.toggle("active", which==="user");
+  document.getElementById("tab-res").classList.toggle("active",  which==="res");
+}
+
+function openAccessForm(userId) {
+  const restricted = DB.users.filter(u=>u.role==="consultant"||u.role==="lecteur");
+  openModal(`
+    <div class="flex-col gap-12">
+      <div class="form-group">
+        <label class="form-label">Utilisateur <span class="req">*</span></label>
+        <select id="acc-user" class="form-control">
+          <option value="">Choisir un utilisateur…</option>
+          ${restricted.map(u=>`<option value="${u.id}" ${u.id===userId?"selected":""}>${u.name} — ${u.roleLabel}</option>`).join("")}
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type de ressource <span class="req">*</span></label>
+        <select id="acc-type" class="form-control" onchange="accessTypeChange()">
+          <option value="categorie">Catégorie documentaire</option>
+          <option value="document">Document spécifique</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Ressource <span class="req">*</span></label>
+        <select id="acc-resource" class="form-control">
+          ${DB.cats.map(cat=>`<option value="${cat.id}">${cat.name}</option>`).join("")}
+        </select>
+      </div>
+      <div class="flex-c gap-10 mt-8">
+        <button class="btn btn-primary" onclick="grantAccess()"><i class="ti ti-key"></i>Accorder l'accès</button>
+        <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+      </div>
+    </div>`, "Accorder un accès");
+}
+
+function accessTypeChange() {
+  const type = document.getElementById("acc-type").value;
+  const sel  = document.getElementById("acc-resource");
+  if (type==="categorie") {
+    sel.innerHTML = DB.cats.map(cat=>`<option value="${cat.id}">${cat.name}</option>`).join("");
+  } else {
+    sel.innerHTML = DB.docs.filter(d=>d.status==="published")
+      .map(d=>`<option value="${d.id}">${d.title.length>55?d.title.substring(0,55)+"…":d.title}</option>`).join("");
+  }
+}
+
+function grantAccess() {
+  const userId     = parseInt(document.getElementById("acc-user").value);
+  const type       = document.getElementById("acc-type").value;
+  const resourceId = document.getElementById("acc-resource").value;
+  if (!userId)     { toast("Sélectionnez un utilisateur.", "err"); return; }
+  if (!resourceId) { toast("Sélectionnez une ressource.",  "err"); return; }
+  const dup = DB.access.find(r=>r.userId===userId && r.type===type && String(r.resourceId)===String(resourceId));
+  if (dup) { toast("Cette règle d'accès existe déjà.", "err"); return; }
+  const user = DB.users.find(u=>u.id===userId);
+  const resourceLabel = type==="categorie"
+    ? DB.cats.find(c=>c.id===resourceId)?.name || resourceId
+    : DB.docs.find(d=>String(d.id)===String(resourceId))?.title || resourceId;
+  const today = new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
+  DB.access.push({
+    id: Math.max(...DB.access.map(r=>r.id), 0)+1,
+    userId,
+    userName: user.name,
+    userRole: user.roleLabel.toUpperCase(),
+    type,
+    resourceId: type==="document" ? parseInt(resourceId) : resourceId,
+    resourceLabel,
+    grantedAt: today,
+    grantedBy: "Admin AEV",
+  });
+  toast(`Accès accordé à ${user.name}.`, "ok");
+  closeModal();
+  renderAdmin("access");
+}
+
+function revokeAccess(id) {
+  const rule = DB.access.find(r=>r.id===id);
+  if (!rule) return;
+  openModal(`
+    <p style="font-size:14px;color:var(--text-sec);line-height:1.7">
+      Révoquer l'accès de <strong>${rule.userName}</strong> à <strong>${rule.resourceLabel}</strong> ?
+    </p>
+    <div class="flex-c gap-10 mt-20">
+      <button class="btn btn-danger" onclick="confirmRevokeAccess(${id})"><i class="ti ti-x"></i>Révoquer</button>
+      <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+    </div>`, "Révoquer cet accès ?");
+}
+
+function confirmRevokeAccess(id) {
+  const i = DB.access.findIndex(r=>r.id===id);
+  if (i>-1) { DB.access.splice(i,1); toast("Accès révoqué.","err"); closeModal(); renderAdmin("access"); }
 }
 
 // ─── CRUD CATÉGORIES ─────────────────────────────────────
