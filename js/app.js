@@ -495,7 +495,7 @@ function doLogin() {
   if (!email||!pass) { toast("Veuillez remplir tous les champs.","err"); return; }
   // Simulation : email admin → admin, sinon membre
   const isAdmin = email.includes("admin");
-  APP.user = { name: isAdmin?"Admin AEV":"Aïcha Ngaradoum", initials: isAdmin?"AA":"AN", role: isAdmin?"admin":"member" };
+  APP.user = { name: isAdmin?"Admin AEV":"Aïcha Ngaradoum", initials: isAdmin?"AA":"AN", role: isAdmin?"admin":"member", email: isAdmin?"admin@espoiretvie.td":"a.ngaradoum@espoiretvie.td" };
   updateNavbarUser();
   toast(`Bienvenue, ${APP.user.name} !`,"ok");
   navigate(isAdmin ? "admin" : "member");
@@ -511,7 +511,7 @@ function doRegister() {
   switchAuthTab("login");
 }
 function doAdminDemo() {
-  APP.user = { name:"Admin AEV", initials:"AA", role:"admin" };
+  APP.user = { name:"Admin AEV", initials:"AA", role:"admin", email:"admin@espoiretvie.td" };
   updateNavbarUser();
   toast("Accès administrateur activé.","ok");
   navigate("admin");
@@ -781,7 +781,7 @@ function renderMember(sec="dashboard") {
     const pending = myDocs.filter(d=>d.status==="pending").length;
     c.innerHTML = `
       <div class="topbar">
-        <div><div class="topbar-title">Bonjour, Aïcha 👋</div><div class="topbar-sub">Bienvenue sur votre espace personnel</div></div>
+        <div><div class="topbar-title">Bonjour, ${APP.user?.name?.split(" ")[0]||"vous"} 👋</div><div class="topbar-sub">Bienvenue sur votre espace personnel</div></div>
         <button class="btn btn-primary" onclick="renderMember('upload')"><i class="ti ti-upload"></i>Déposer un document</button>
       </div>
       <div class="page-inner">
@@ -864,19 +864,25 @@ function renderMember(sec="dashboard") {
   }
 
   if (sec==="profile") {
+    const u = APP.user || {};
+    const nameParts = (u.name||"Utilisateur").split(" ");
+    const prenom = nameParts[0] || "";
+    const nom    = nameParts.slice(1).join(" ") || "";
+    const roleLbl = u.role==="admin"?"Administrateur":u.role==="member"?"Membre":u.role==="consultant"?"Consultant":u.role==="lecteur"?"Lecteur":"Superviseur";
+    const roleCls = u.role==="admin"?"tag-red":"tag-blue";
     c.innerHTML = `
       <div class="topbar"><div class="topbar-title">Mon profil</div></div>
       <div class="page-inner" style="max-width:580px">
         <div class="card card-body mb-14">
           <div class="flex-c gap-16 mb-20">
-            <div style="width:68px;height:68px;border-radius:50%;background:var(--blue);display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:white;flex-shrink:0">AN</div>
-            <div><div style="font-size:18px;font-weight:700;color:var(--text)">Aïcha Ngaradoum</div><div class="doc-meta">Membre actif · Inscrit depuis mars 2024</div><span class="tag tag-blue mt-4" style="display:inline-block">Membre</span></div>
+            <div style="width:68px;height:68px;border-radius:50%;background:${u.role==="admin"?"var(--red)":"var(--blue)"};display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:white;flex-shrink:0">${u.initials||"?"}</div>
+            <div><div style="font-size:18px;font-weight:700;color:var(--text)">${u.name||"Utilisateur"}</div><div class="doc-meta">${roleLbl} · ${u.email||""}</div><span class="tag ${roleCls} mt-4" style="display:inline-block">${roleLbl}</span></div>
           </div>
           <div class="grid-2 gap-12">
-            <div class="form-group"><label class="form-label">Prénom</label><input class="form-control" value="Aïcha"></div>
-            <div class="form-group"><label class="form-label">Nom</label><input class="form-control" value="Ngaradoum"></div>
-            <div class="form-group"><label class="form-label">Email</label><input class="form-control" value="a.ngaradoum@espoiretvie.td"></div>
-            <div class="form-group"><label class="form-label">Organisation</label><input class="form-control" value="AEV"></div>
+            <div class="form-group"><label class="form-label">Prénom</label><input class="form-control" value="${prenom}"></div>
+            <div class="form-group"><label class="form-label">Nom</label><input class="form-control" value="${nom}"></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-control" type="email" value="${u.email||""}"></div>
+            <div class="form-group"><label class="form-label">Organisation</label><input class="form-control" value="Association Espoir & Vie"></div>
           </div>
           <button class="btn btn-primary btn-sm mt-16" onclick="toast('Profil mis à jour !','ok')"><i class="ti ti-device-floppy"></i>Enregistrer</button>
         </div>
@@ -1170,11 +1176,18 @@ function renderAdmin(sec="dashboard") {
           <div class="flex-col gap-14">
             <div class="card card-body">
               <div class="card-title mb-12">Répartition des documents</div>
-              ${[["Rapports",45,false],["Contrats",33,true],["Factures",22,false]].map(([lbl,pct,isRed])=>`
-                <div style="margin-bottom:12px">
-                  <div class="flex-b text-sm mb-4"><span style="font-weight:600">${lbl}</span><span style="color:${isRed?"var(--red)":"var(--blue)"};font-weight:700">${pct}%</span></div>
-                  <div class="progress"><div class="progress-fill ${isRed?"red":""}" style="width:${pct}%"></div></div>
-                </div>`).join("")}
+              ${(()=>{
+                const totDocs = DB.docs.length || 1;
+                return DB.cats.map((cat,i)=>{
+                  const cnt = DB.docs.filter(d=>d.cat===cat.id).length;
+                  const pct = Math.round(cnt/totDocs*100);
+                  const isRed = i===0;
+                  return `<div style="margin-bottom:10px">
+                    <div class="flex-b text-sm mb-4"><span style="font-weight:600;font-size:12px">${cat.name.length>20?cat.name.substring(0,20)+"…":cat.name}</span><span style="color:${isRed?"var(--red)":"var(--blue)"};font-weight:700;font-size:12px">${cnt} doc${cnt>1?"s":""}</span></div>
+                    <div class="progress"><div class="progress-fill ${isRed?"red":""}" style="width:${Math.max(pct,2)}%"></div></div>
+                  </div>`;
+                }).join("");
+              })()}
             </div>
             <div class="card card-body">
               <div class="card-title mb-10">Activité récente</div>
