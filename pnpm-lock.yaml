@@ -96,6 +96,9 @@ importers:
       '@types/bcrypt':
         specifier: ^5.0.2
         version: 5.0.2
+      '@types/express':
+        specifier: ^5.0.6
+        version: 5.0.6
       '@types/multer':
         specifier: ^1.4.12
         version: 1.4.13
