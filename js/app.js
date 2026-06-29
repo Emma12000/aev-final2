@@ -1343,24 +1343,32 @@ async function renderAdmin(sec="dashboard") {
   }
 
   if (sec==="users") {
+    c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+    const users = await API.admin.users({ limit: 100 }).catch(() => []);
+    const roleClsMap = { admin:"tag-red", member:"tag-blue", lecteur:"tag-gray" };
     c.innerHTML = `
-      <div class="topbar"><div><div class="topbar-title">Gestion des membres</div><div class="topbar-sub">${DB.users.length} membres inscrits</div></div><button class="btn btn-primary btn-sm" onclick="toast('Invitation envoyée !','ok')"><i class="ti ti-user-plus"></i>Inviter</button></div>
+      <div class="topbar">
+        <div><div class="topbar-title">Gestion des membres</div><div class="topbar-sub">${users.length} membre${users.length!==1?"s":""} inscrit${users.length!==1?"s":""}</div></div>
+        <button class="btn btn-primary btn-sm" onclick="openCreateUserModal()"><i class="ti ti-user-plus"></i>Créer un compte</button>
+      </div>
       <div class="page-inner">
         <div class="table-wrap">
           <table class="table">
-            <thead><tr><th>Membre</th><th>Email</th><th>Rôle</th><th>Documents</th><th>Inscrit</th><th>Statut</th><th>Actions</th></tr></thead>
-            <tbody>${DB.users.map(u=>`
-              <tr>
-                <td><div class="flex-c gap-10"><div class="u-avatar" style="background:${u.role==="admin"?"var(--red)":"var(--blue)"}">${u.initials}</div><div><div style="font-size:13px;font-weight:700">${u.name}</div></div></div></td>
+            <thead><tr><th>Membre</th><th>Email</th><th>Rôle</th><th>Inscrit</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody>
+              ${users.map(u=>`
+              <tr id="user-row-${u.id}">
+                <td><div class="flex-c gap-10">
+                  <div class="u-avatar" style="background:${u.role==="admin"?"var(--red)":"var(--blue)"}">${u.initials}</div>
+                  <div style="font-size:13px;font-weight:700">${u.name}</div>
+                </div></td>
                 <td class="text-sec text-sm">${u.email}</td>
-                <td><span class="tag ${u.role==="admin"?"tag-red":"tag-blue"}">${u.roleLabel}</span></td>
-                <td style="font-weight:700;color:var(--blue)">${u.docs}</td>
+                <td><span class="tag ${roleClsMap[u.role]||"tag-gray"}">${u.roleLabel}</span></td>
                 <td class="text-sec text-sm">${u.joined}</td>
-                <td><span class="status ${u.status==="new"?"s-pending":"s-published"}">${u.status==="new"?"Nouveau":"Actif"}</span></td>
+                <td><span class="status ${u.status==="active"?"s-published":"s-draft"}">${u.status==="active"?"Actif":"Inactif"}</span></td>
                 <td><div class="flex-c gap-6">
-                  <div class="btn-icon" onclick="toast('Profil de ${u.name}','info')"><i class="ti ti-eye"></i></div>
-                  <div class="btn-icon" onclick="toast('Rôle modifié','ok')"><i class="ti ti-pencil"></i></div>
-                  <div class="btn-icon red" onclick="toast('Membre suspendu','err')"><i class="ti ti-user-off"></i></div>
+                  <div class="btn-icon" title="Modifier" onclick="openEditUserModal('${u.id}','${u.name.replace(/'/g,"\\'")}','${u.role}','${u.status}')"><i class="ti ti-pencil"></i></div>
+                  <div class="btn-icon ${u.status==="active"?"red":""}" title="${u.status==="active"?"Désactiver":"Réactiver"}" onclick="adminToggleUser('${u.id}',${u.status==="active"})"><i class="ti ti-user-${u.status==="active"?"off":"check"}"></i></div>
                 </div></td>
               </tr>`).join("")}
             </tbody>
@@ -1847,6 +1855,122 @@ function deleteCat(id) {
 function confirmDelCat(id) {
   const i = DB.cats.findIndex(c=>c.id===id);
   if (i>-1) { DB.cats.splice(i,1); toast("Catégorie supprimée.","err"); closeModal(); renderAdmin("cats"); }
+}
+
+// ─── CRUD UTILISATEURS ───────────────────────────────────
+function openCreateUserModal() {
+  openModal(`
+    <div class="flex-col gap-14">
+      <div class="form-group">
+        <label class="form-label">Nom complet <span class="req">*</span></label>
+        <input id="cu-name" type="text" class="form-control" placeholder="Ex : Marie Dupont">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Adresse e-mail <span class="req">*</span></label>
+        <input id="cu-email" type="email" class="form-control" placeholder="marie@exemple.com">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rôle</label>
+        <select id="cu-role" class="form-control">
+          <option value="AGENT">Agent</option>
+          <option value="ADMINISTRATEUR">Administrateur</option>
+          <option value="LECTEUR">Lecteur</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Mot de passe <span class="req">*</span></label>
+        <input id="cu-pwd" type="password" class="form-control" placeholder="Min. 8 car., 1 maj., 1 chiffre">
+      </div>
+      <div class="flex-c gap-10 mt-4">
+        <button class="btn btn-primary" onclick="submitCreateUser()"><i class="ti ti-user-plus"></i>Créer le compte</button>
+        <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+      </div>
+    </div>`, "Créer un compte utilisateur");
+}
+
+async function submitCreateUser() {
+  const fullName = $("#cu-name")?.value.trim();
+  const email    = $("#cu-email")?.value.trim();
+  const role     = $("#cu-role")?.value;
+  const password = $("#cu-pwd")?.value;
+  if (!fullName || !email || !password) { toast("Remplissez tous les champs obligatoires.","err"); return; }
+  const btn = document.querySelector("#modal-root .btn-primary");
+  if (btn) { btn.disabled=true; btn.innerHTML=`<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Création…`; }
+  try {
+    await API.admin.createUser({ fullName, email, password, role });
+    closeModal();
+    toast(`Compte de ${fullName} créé avec succès.`, "ok");
+    renderAdmin("users");
+  } catch(e) {
+    toast(e.message || "Erreur lors de la création.", "err");
+    if (btn) { btn.disabled=false; btn.innerHTML=`<i class="ti ti-user-plus"></i>Créer le compte`; }
+  }
+}
+
+function openEditUserModal(id, name, role, status) {
+  const roleMap = { admin:"ADMINISTRATEUR", member:"AGENT", lecteur:"LECTEUR" };
+  const apiRole = roleMap[role] || "AGENT";
+  openModal(`
+    <div class="flex-col gap-14">
+      <div class="form-group">
+        <label class="form-label">Nom complet</label>
+        <input id="eu-name" type="text" class="form-control" value="${name}">
+      </div>
+      <div class="form-group">
+        <label class="form-label">Rôle</label>
+        <select id="eu-role" class="form-control">
+          <option value="AGENT" ${apiRole==="AGENT"?"selected":""}>Agent</option>
+          <option value="ADMINISTRATEUR" ${apiRole==="ADMINISTRATEUR"?"selected":""}>Administrateur</option>
+          <option value="LECTEUR" ${apiRole==="LECTEUR"?"selected":""}>Lecteur</option>
+        </select>
+      </div>
+      <div class="flex-c gap-10 mt-4">
+        <button class="btn btn-primary" onclick="submitEditUser('${id}')"><i class="ti ti-check"></i>Enregistrer</button>
+        <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+      </div>
+    </div>`, `Modifier — ${name}`);
+}
+
+async function submitEditUser(id) {
+  const fullName = $("#eu-name")?.value.trim();
+  const role     = $("#eu-role")?.value;
+  if (!fullName) { toast("Le nom est requis.","err"); return; }
+  const btn = document.querySelector("#modal-root .btn-primary");
+  if (btn) { btn.disabled=true; btn.innerHTML=`<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Enregistrement…`; }
+  try {
+    await API.admin.updateUser(id, { fullName, role });
+    closeModal();
+    toast("Modifications enregistrées.", "ok");
+    renderAdmin("users");
+  } catch(e) {
+    toast(e.message || "Erreur lors de la modification.", "err");
+    if (btn) { btn.disabled=false; btn.innerHTML=`<i class="ti ti-check"></i>Enregistrer`; }
+  }
+}
+
+async function adminToggleUser(id, isCurrentlyActive) {
+  const action = isCurrentlyActive ? "désactiver" : "réactiver";
+  openModal(`
+    <p style="font-size:14px;color:var(--text-sec);line-height:1.7">
+      Voulez-vous vraiment <strong>${action}</strong> ce compte utilisateur ?
+    </p>
+    <div class="flex-c gap-10 mt-20">
+      <button class="btn ${isCurrentlyActive?"btn-danger":"btn-primary"}" onclick="confirmToggleUser('${id}',${isCurrentlyActive})">
+        <i class="ti ti-user-${isCurrentlyActive?"off":"check"}"></i>${isCurrentlyActive?"Désactiver":"Réactiver"}
+      </button>
+      <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+    </div>`, isCurrentlyActive ? "Désactiver le compte" : "Réactiver le compte");
+}
+
+async function confirmToggleUser(id, isCurrentlyActive) {
+  try {
+    await API.admin.updateUser(id, { isActive: !isCurrentlyActive });
+    closeModal();
+    toast(isCurrentlyActive ? "Compte désactivé." : "Compte réactivé.", isCurrentlyActive ? "err" : "ok");
+    renderAdmin("users");
+  } catch(e) {
+    toast(e.message || "Erreur.", "err");
+  }
 }
 
 // ─── ACTIONS DOCS ────────────────────────────────────────

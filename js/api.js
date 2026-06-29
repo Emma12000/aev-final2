@@ -308,6 +308,22 @@ const API = {
       }
     },
 
+    async createUser(dto) {
+      const res = await apiFetch("/users", {
+        method: "POST",
+        body: JSON.stringify(dto),
+      });
+      return res?.data ? mapUser(res.data) : null;
+    },
+
+    async updateUser(id, dto) {
+      const res = await apiFetch("/users/" + id, {
+        method: "PATCH",
+        body: JSON.stringify(dto),
+      });
+      return res?.data ? mapUser(res.data) : null;
+    },
+
     async deleteUser(id) {
       return apiFetch("/users/" + id, { method: "DELETE" });
     },
