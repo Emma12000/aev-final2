@@ -28,7 +28,7 @@ export class DocumentsService {
   // ─── Lecture ──────────────────────────────────────────────────────────────
 
   async findAll(query: QueryDocumentsDto, actor: JwtPayload) {
-    const { q, categoryId, confidentiality, status, page = 1, limit = 20 } = query;
+    const { q, categoryId, confidentiality, status, uploadedById, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
     // Visiteurs non authentifiés : uniquement les documents publics actifs
@@ -48,6 +48,7 @@ export class DocumentsService {
       ...statusWhere,
       ...(confFilter ? { confidentiality: confFilter } : {}),
       ...(categoryId ? { categoryId } : {}),
+      ...(uploadedById ? { uploadedById } : {}),
       ...(q
         ? {
             OR: [

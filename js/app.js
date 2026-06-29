@@ -846,22 +846,42 @@ function renderMember(sec="dashboard") {
   }
 
   if (sec==="docs") {
+    c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+    const userId = APP.user?.id;
+    const { items: myDocs } = userId
+      ? await API.documents.adminList({ uploadedById: userId, limit: 50 }).catch(() => ({ items: [] }))
+      : { items: [] };
+
     c.innerHTML = `
-      <div class="topbar"><div><div class="topbar-title">Mes documents</div><div class="topbar-sub">${DB.docs.length} documents</div></div><button class="btn btn-primary" onclick="renderMember('upload')"><i class="ti ti-upload"></i>Nouveau dépôt</button></div>
+      <div class="topbar">
+        <div><div class="topbar-title">Mes documents</div><div class="topbar-sub">${myDocs.length} document${myDocs.length!==1?"s":""}</div></div>
+        <button class="btn btn-primary" onclick="renderMember('upload')"><i class="ti ti-upload"></i>Nouveau dépôt</button>
+      </div>
       <div class="page-inner">
         <div class="table-wrap">
-          <table class="table"><thead><tr><th>Document</th><th>Type</th><th>Format</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
-          <tbody>${DB.docs.map(d=>`
-            <tr>
-              <td><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="font-weight:600;max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block">${d.title}</span></div></td>
-              <td>${tagHtml(d.type)}</td><td>${d.fmt}</td><td>${d.dateStr}</td>
-              <td>${statusHtml(d.status)}</td>
-              <td><div class="flex-c gap-6">
-                <div class="btn-icon" onclick="navigate('doc',{id:${d.id}})"><i class="ti ti-eye"></i></div>
-                <div class="btn-icon" onclick="dlDoc(${d.id})"><i class="ti ti-download"></i></div>
-                <div class="btn-icon red" onclick="delDocMember(${d.id})"><i class="ti ti-trash"></i></div>
-              </div></td>
-            </tr>`).join("")}</tbody></table>
+          <table class="table">
+            <thead><tr><th>Document</th><th>Catégorie</th><th>Format</th><th>Date</th><th>Statut</th><th>Actions</th></tr></thead>
+            <tbody>
+              ${myDocs.length ? myDocs.map(d => `
+                <tr id="member-row-${d.id}">
+                  <td><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${d.title}">${d.title}</span></div></td>
+                  <td>${tagHtml(d.type)}</td>
+                  <td class="text-sec text-sm">${d.fmt}</td>
+                  <td class="text-sec text-sm">${d.dateStr}</td>
+                  <td>${statusHtml(d.status)}</td>
+                  <td><div class="flex-c gap-6">
+                    <div class="btn-icon" onclick="navigate('doc',{id:'${d.id}'})" title="Voir"><i class="ti ti-eye"></i></div>
+                    <div class="btn-icon" onclick="memberDownloadDoc('${d.id}')" title="Télécharger"><i class="ti ti-download"></i></div>
+                    <div class="btn-icon red" onclick="adminDelDoc('${d.id}','${d.title.replace(/'/g,"\\'").slice(0,30)}')" title="Supprimer"><i class="ti ti-trash"></i></div>
+                  </div></td>
+                </tr>`).join("")
+              : `<tr><td colspan="6" style="text-align:center;padding:40px;color:var(--text-sec)">
+                  <i class="ti ti-files" style="font-size:32px;display:block;margin-bottom:10px;opacity:.4"></i>
+                  Vous n'avez encore déposé aucun document.
+                  <br><button class="btn btn-primary btn-sm mt-16" onclick="renderMember('upload')"><i class="ti ti-upload"></i>Déposer mon premier document</button>
+                </td></tr>`}
+            </tbody>
+          </table>
         </div>
       </div>`;
   }
@@ -2104,11 +2124,25 @@ function adminFilter(q) {
 }
 
 // ─── ACTIONS COMMUNES ────────────────────────────────────
+async function memberDownloadDoc(id) {
+  try {
+    toast("Préparation du téléchargement…", "info");
+    const result = await API.documents.download(id);
+    if (result?.url) {
+      const a = document.createElement("a");
+      a.href = result.url;
+      a.download = result.fileName || "document";
+      a.target = "_blank";
+      a.click();
+      toast("Téléchargement lancé.", "ok");
+    }
+  } catch(e) {
+    toast(e.message || "Erreur lors du téléchargement.", "err");
+  }
+}
+
 function dlDoc(id) {
-  const d = DB.docs.find(x=>x.id===id);
-  if (!d) return;
-  d.dl++;
-  toast(`Téléchargement de "${d.title.substring(0,32)}…"`, "ok");
+  memberDownloadDoc(id);
 }
 function shareDoc(id) {
   const url = `https://espoiretvie.td/doc/${id}`;

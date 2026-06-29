@@ -38,4 +38,9 @@ export class QueryDocumentsDto {
   @Min(1)
   @Max(100)
   limit?: number = 20;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  uploadedById?: string;
 }
