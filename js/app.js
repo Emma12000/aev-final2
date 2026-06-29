@@ -795,7 +795,7 @@ function renderAbout() {
 // ══════════════════════════════════════════════════════════
 //  MEMBRE
 // ══════════════════════════════════════════════════════════
-function renderMember(sec="dashboard") {
+async function renderMember(sec="dashboard") {
   APP.memberSec = sec;
   $$("#member-sidebar .sidebar-item").forEach(el=>el.classList.toggle("active",el.dataset.sec===sec));
   const c = $("#member-main");
