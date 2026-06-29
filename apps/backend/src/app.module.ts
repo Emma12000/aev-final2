@@ -9,6 +9,9 @@ import { UsersModule } from './users/users.module';
 import { CategoriesModule } from './categories/categories.module';
 import { DocumentsModule } from './documents/documents.module';
 import { ActivityModule } from './activity/activity.module';
+import { AccessModule } from './access/access.module';
+import { FavoritesModule } from './favorites/favorites.module';
+import { AdminModule } from './admin/admin.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -22,6 +25,9 @@ import { HealthController } from './health/health.controller';
     UsersModule,
     CategoriesModule,
     DocumentsModule,
+    AccessModule,
+    FavoritesModule,
+    AdminModule,
   ],
   controllers: [HealthController],
 })

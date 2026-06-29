@@ -72,6 +72,7 @@ model User {
   documents              Document[]
   activityLogs           ActivityLog[]
   refreshTokens          RefreshToken[]
+  favorites              Favorite[]
   documentAccessRules    DocumentAccessRule[]  @relation("UserDocumentAccess")
   categoryAccessRules    CategoryAccessRule[]  @relation("UserCategoryAccess")
   grantedDocumentRules   DocumentAccessRule[]  @relation("GrantedDocumentAccess")
@@ -151,6 +152,7 @@ model Document {
   category     DocumentCategory     @relation(fields: [categoryId], references: [id])
   uploadedBy   User                 @relation(fields: [uploadedById], references: [id])
   accessRules  DocumentAccessRule[]
+  favorites    Favorite[]
 
   @@index([categoryId])
   @@index([uploadedById])
@@ -175,6 +177,20 @@ model DocumentAccessRule {
 
   @@unique([documentId, userId])
   @@map("document_access_rules")
+}
+
+model Favorite {
+  id         String   @id @default(uuid())
+  userId     String
+  documentId String
+  createdAt  DateTime @default(now())
+
+  user       User     @relation(fields: [userId],     references: [id], onDelete: Cascade)
+  document   Document @relation(fields: [documentId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, documentId])
+  @@index([userId])
+  @@map("favorites")
 }
 
 model ActivityLog {
