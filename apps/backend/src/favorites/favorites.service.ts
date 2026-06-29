@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { DocumentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -24,7 +25,9 @@ export class FavoritesService {
   }
 
   async add(userId: string, documentId: string) {
-    const doc = await this.prisma.document.findUnique({ where: { id: documentId } });
+    const doc = await this.prisma.document.findFirst({
+      where: { id: documentId, status: { not: DocumentStatus.DELETED } },
+    });
     if (!doc) throw new NotFoundException('Document introuvable.');
 
     const exists = await this.prisma.favorite.findUnique({

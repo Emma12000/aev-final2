@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import { DocumentStatus } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
@@ -20,13 +21,13 @@ export class AdminService {
       recentUploads,
       recentActivity,
     ] = await Promise.all([
-      this.prisma.document.count({ where: { status: { not: 'DELETED' } } }),
+      this.prisma.document.count({ where: { status: { not: DocumentStatus.DELETED } } }),
       this.prisma.user.count(),
       this.prisma.user.count({ where: { isActive: true } }),
       this.prisma.documentCategory.count(),
       this.prisma.document.groupBy({
         by: ['categoryId'],
-        where: { status: { not: 'DELETED' } },
+        where: { status: { not: DocumentStatus.DELETED } },
         _count: { id: true },
       }),
       this.prisma.document.groupBy({
