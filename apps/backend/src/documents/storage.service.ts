@@ -7,15 +7,24 @@ import * as path from 'path';
 @Injectable()
 export class StorageService {
   private readonly logger = new Logger(StorageService.name);
-  private readonly supabase: SupabaseClient;
+  private readonly supabase: SupabaseClient | null;
   private readonly bucket: string;
 
   constructor(private readonly config: ConfigService) {
-    this.supabase = createClient(
-      config.get<string>('supabase.url') ?? '',
-      config.get<string>('supabase.serviceKey') ?? '',
-    );
+    const url = config.get<string>('supabase.url') ?? '';
+    const key = config.get<string>('supabase.serviceKey') ?? '';
+    this.supabase = url && key ? createClient(url, key) : null;
     this.bucket = config.get<string>('supabase.bucket') ?? 'aev-documents';
+    if (!this.supabase) {
+      this.logger.warn('Supabase non configuré — upload/download désactivés.');
+    }
+  }
+
+  private get client(): SupabaseClient {
+    if (!this.supabase) {
+      throw new InternalServerErrorException('Stockage non configuré. Contactez l\'administrateur.');
+    }
+    return this.supabase;
   }
 
   async upload(
@@ -25,7 +34,7 @@ export class StorageService {
     const ext = path.extname(file.originalname).toLowerCase();
     const fileKey = `${folder}/${uuidv4()}${ext}`;
 
-    const { error } = await this.supabase.storage
+    const { error } = await this.client.storage
       .from(this.bucket)
       .upload(fileKey, file.buffer, {
         contentType: file.mimetype,
@@ -46,7 +55,7 @@ export class StorageService {
   }
 
   async getSignedUrl(fileKey: string, expiresIn = 3600): Promise<string> {
-    const { data, error } = await this.supabase.storage
+    const { data, error } = await this.client.storage
       .from(this.bucket)
       .createSignedUrl(fileKey, expiresIn);
 
@@ -57,7 +66,7 @@ export class StorageService {
   }
 
   async delete(fileKey: string): Promise<void> {
-    const { error } = await this.supabase.storage.from(this.bucket).remove([fileKey]);
+    const { error } = await this.client.storage.from(this.bucket).remove([fileKey]);
     if (error) {
       this.logger.warn(`Erreur suppression fichier ${fileKey} : ${error.message}`);
     }
