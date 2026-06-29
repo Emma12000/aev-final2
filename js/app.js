@@ -489,37 +489,61 @@ function switchAuthTab(tab) {
   $("#auth-login").style.display  = tab==="login" ? "flex" : "none";
   $("#auth-register").style.display = tab==="register" ? "flex" : "none";
 }
-function doLogin() {
+async function doLogin() {
   const email = $("#login-email").value.trim();
   const pass  = $("#login-pass").value;
   if (!email||!pass) { toast("Veuillez remplir tous les champs.","err"); return; }
-  // Simulation : email admin → admin, sinon membre
-  const isAdmin = email.includes("admin");
-  APP.user = { name: isAdmin?"Admin AEV":"Aïcha Ngaradoum", initials: isAdmin?"AA":"AN", role: isAdmin?"admin":"member", email: isAdmin?"admin@espoiretvie.td":"a.ngaradoum@espoiretvie.td" };
-  updateNavbarUser();
-  toast(`Bienvenue, ${APP.user.name} !`,"ok");
-  navigate(isAdmin ? "admin" : "member");
+  const btn = $("#btn-login");
+  if (btn) { btn.disabled = true; btn.textContent = "Connexion…"; }
+  try {
+    const data = await API.auth.login(email, pass);
+    APP.user = mapUser(data.user);
+    updateNavbarUser();
+    toast(`Bienvenue, ${APP.user.name.split(" ")[0]} !`, "ok");
+    navigate(APP.user.role === "admin" ? "admin" : "member");
+  } catch(e) {
+    toast(e.message || "Email ou mot de passe incorrect.", "err");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Se connecter"; }
+  }
 }
-function doRegister() {
+async function doRegister() {
   const prenom = $("#reg-prenom").value.trim();
   const nom    = $("#reg-nom").value.trim();
   const email  = $("#reg-email").value.trim();
   const pass   = $("#reg-pass").value;
   if (!prenom||!nom||!email||!pass) { toast("Veuillez remplir tous les champs obligatoires.","err"); return; }
   if (pass.length < 8) { toast("Le mot de passe doit contenir au moins 8 caractères.","err"); return; }
-  toast(`Bienvenue, ${prenom} ! Votre compte a été créé.`,"ok");
-  switchAuthTab("login");
+  const btn = $("#btn-register");
+  if (btn) { btn.disabled = true; btn.textContent = "Création…"; }
+  try {
+    const data = await API.auth.register(`${prenom} ${nom}`.trim(), email, pass);
+    APP.user = mapUser(data.user);
+    updateNavbarUser();
+    toast(`Bienvenue, ${prenom} ! Votre compte a été créé.`, "ok");
+    navigate("member");
+  } catch(e) {
+    toast(e.message || "Impossible de créer le compte.", "err");
+  } finally {
+    if (btn) { btn.disabled = false; btn.textContent = "Créer mon compte"; }
+  }
 }
-function doAdminDemo() {
-  APP.user = { name:"Admin AEV", initials:"AA", role:"admin", email:"admin@espoiretvie.td" };
-  updateNavbarUser();
-  toast("Accès administrateur activé.","ok");
-  navigate("admin");
+async function doAdminDemo() {
+  try {
+    const data = await API.auth.login("admin@espoiretvie.td", "Admin@AEV2024!");
+    APP.user = mapUser(data.user);
+    updateNavbarUser();
+    toast("Accès administrateur activé.", "ok");
+    navigate("admin");
+  } catch(_) {
+    toast("Démo indisponible.", "err");
+  }
 }
-function doLogout() {
+async function doLogout() {
+  await API.auth.logout();
   APP.user = null;
   updateNavbarUser();
-  toast("Déconnexion réussie.","info");
+  toast("Déconnexion réussie.", "info");
   navigate("home");
 }
 function updateNavbarUser() {
@@ -1108,7 +1132,7 @@ function addTag() {
 // ══════════════════════════════════════════════════════════
 //  ADMIN
 // ══════════════════════════════════════════════════════════
-function renderAdmin(sec="dashboard") {
+async function renderAdmin(sec="dashboard") {
   APP.adminSec = sec;
   $$("#admin-sidebar .sidebar-item").forEach(el=>el.classList.toggle("active",el.dataset.sec===sec));
   const c = $("#admin-main");
@@ -1127,6 +1151,28 @@ function renderAdmin(sec="dashboard") {
   }
 
   if (sec==="dashboard") {
+    // Spinner pendant le chargement des vraies stats
+    c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+    const [stats, apiUsers] = await Promise.all([
+      API.admin.stats().catch(()=>null),
+      API.admin.users({ limit: 20 }).catch(()=>[]),
+    ]);
+    const realUsers   = apiUsers.length ? apiUsers : DB.users;
+    const totalDocs   = stats?.documents?.total ?? DB.docs.filter(d=>d.status==="published").length;
+    const totalUsers  = stats?.users?.total ?? DB.users.length;
+    const recentUps   = stats?.documents?.recentUploads ?? 0;
+    const pendingDocs = stats?.documents?.byStatus?.find(s=>s.status==="PENDING")?.count ?? pending.length;
+    const recentActivity = (stats?.recentActivity || []).map(a => {
+      const actionMap = { LOGIN:"CONNEXION", LOGOUT:"DÉCONNEXION", UPLOAD:"DÉPÔT", DOWNLOAD:"TÉLÉCHARGEMENT", UPDATE:"MODIFICATION", VIEW:"ACCÈS", CREATE:"CRÉATION", DELETE:"SUPPRESSION", APPROVE:"APPROBATION", REJECT:"REJET" };
+      const diff = a.createdAt ? Date.now() - new Date(a.createdAt).getTime() : Infinity;
+      const ago  = diff < 3_600_000 ? `Il y a ${Math.round(diff/60000)} min` : diff < 86_400_000 ? `Il y a ${Math.round(diff/3_600_000)}h` : "Hier";
+      return { msg: `${a.user?.fullName||"Inconnu"} — ${actionMap[a.action]||a.action}`, time: ago, isNew: diff < 3_600_000 };
+    });
+    const activity = recentActivity.length ? recentActivity : DB.activity;
+    // Répartition par catégorie
+    const catStats = stats?.documents?.byCategory || [];
+    const catPct = (slug) => { const found = catStats.find(c=>c.category?.slug===slug); return found ? found.count : 0; };
+    const totForPct = catStats.reduce((s,c)=>s+c.count, 0) || 1;
     c.innerHTML = `
       <div class="topbar">
         <div><div class="topbar-title">Tableau de bord</div><div class="topbar-sub">${new Date().toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long",year:"numeric"})}</div></div>
@@ -1138,10 +1184,10 @@ function renderAdmin(sec="dashboard") {
       <div class="page-inner">
         <div class="stats-grid">
           ${[
-            ["ti-files","si-blue",DB.docs.filter(d=>d.status==="published").length,"Documents publiés","↑ +47 ce mois"],
-            ["ti-clock","si-red",pending.length,"En attente","À valider"],
-            ["ti-users","si-blue",DB.users.length,"Utilisateurs","↑ +5 cette semaine"],
-            ["ti-download","si-blue","12 480","Téléchargements","↑ +312 cette semaine"],
+            ["ti-files","si-blue", totalDocs, "Documents publiés", recentUps ? `↑ +${recentUps} ce mois` : "Aucun ce mois"],
+            ["ti-clock","si-red",  pendingDocs, "En attente", pendingDocs ? "À valider" : "Tout est à jour"],
+            ["ti-users","si-blue", totalUsers, "Utilisateurs", "Comptes actifs"],
+            ["ti-folders","si-blue", stats?.categories?.total ?? DB.cats.length, "Catégories", "Organisées"],
           ].map(([ic,cls,val,lbl,trend])=>`
             <div class="stat-card"><div class="stat-icon ${cls}"><i class="ti ${ic}"></i></div><div><div class="stat-val">${val}</div><div class="stat-label">${lbl}</div><div class="stat-trend">${trend}</div></div></div>
           `).join("")}
@@ -1150,48 +1196,28 @@ function renderAdmin(sec="dashboard") {
           <!-- VALIDATION -->
           <div class="card">
             <div class="card-header">
-              <span class="card-title">Documents en attente ${pending.length?`<span class="tag tag-red" style="margin-left:8px">${pending.length} à valider</span>`:""}</span>
+              <span class="card-title">Documents en attente ${pendingDocs?`<span class="tag tag-red" style="margin-left:8px">${pendingDocs} à valider</span>`:""}</span>
               <button class="btn btn-outline btn-sm" onclick="renderAdmin('docs')">Tout voir →</button>
             </div>
-            ${pending.length ? `
-            <table class="table">
-              <thead><tr><th>Document</th><th>Auteur</th><th>Type</th><th>Date</th><th>Actions</th></tr></thead>
-              <tbody>
-                ${pending.map(d=>`
-                  <tr id="admin-row-${d.id}">
-                    <td><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600">${d.title.length>40?d.title.substring(0,40)+"…":d.title}</span></div></td>
-                    <td class="text-sec">${d.author}</td>
-                    <td>${tagHtml(d.type)}</td>
-                    <td class="text-sec">${d.dateStr}</td>
-                    <td><div class="flex-c gap-6">
-                      <div class="btn-icon green" onclick="approveDoc(${d.id})" title="Approuver"><i class="ti ti-check"></i></div>
-                      <div class="btn-icon red" onclick="rejectDoc(${d.id})" title="Rejeter"><i class="ti ti-x"></i></div>
-                      <div class="btn-icon" onclick="navigate('doc',{id:${d.id}})" title="Aperçu"><i class="ti ti-eye"></i></div>
-                    </div></td>
-                  </tr>`).join("")}
-              </tbody>
-            </table>` : `<div class="empty"><i class="ti ti-circle-check"></i><h3>Tout est à jour !</h3><p>Aucun document en attente de validation.</p></div>`}
+            <div class="empty"><i class="ti ti-circle-check"></i><h3>Tout est à jour !</h3><p>Aucun document en attente de validation.</p></div>
           </div>
           <!-- DROITE -->
           <div class="flex-col gap-14">
             <div class="card card-body">
               <div class="card-title mb-12">Répartition des documents</div>
-              ${(()=>{
-                const totDocs = DB.docs.length || 1;
-                return DB.cats.map((cat,i)=>{
-                  const cnt = DB.docs.filter(d=>d.cat===cat.id).length;
-                  const pct = Math.round(cnt/totDocs*100);
-                  const isRed = i===0;
-                  return `<div style="margin-bottom:10px">
-                    <div class="flex-b text-sm mb-4"><span style="font-weight:600;font-size:12px">${cat.name.length>20?cat.name.substring(0,20)+"…":cat.name}</span><span style="color:${isRed?"var(--red)":"var(--blue)"};font-weight:700;font-size:12px">${cnt} doc${cnt>1?"s":""}</span></div>
-                    <div class="progress"><div class="progress-fill ${isRed?"red":""}" style="width:${Math.max(pct,2)}%"></div></div>
-                  </div>`;
-                }).join("");
-              })()}
+              ${DB.cats.map((cat,i)=>{
+                const cnt = catPct(cat.id);
+                const pct = Math.round(cnt/totForPct*100);
+                const isRed = i===0;
+                return `<div style="margin-bottom:10px">
+                  <div class="flex-b text-sm mb-4"><span style="font-weight:600;font-size:12px">${cat.name.length>20?cat.name.substring(0,20)+"…":cat.name}</span><span style="color:${isRed?"var(--red)":"var(--blue)"};font-weight:700;font-size:12px">${cnt} doc${cnt>1?"s":""}</span></div>
+                  <div class="progress"><div class="progress-fill ${isRed?"red":""}" style="width:${Math.max(pct,2)}%"></div></div>
+                </div>`;
+              }).join("")}
             </div>
             <div class="card card-body">
               <div class="card-title mb-10">Activité récente</div>
-              ${DB.activity.map(a=>`
+              ${activity.map(a=>`
                 <div class="flex-c gap-10" style="padding:7px 0;border-bottom:1px solid var(--border-lt)">
                   <div style="width:8px;height:8px;border-radius:50%;background:${a.isNew?"var(--blue)":"var(--border)"};flex-shrink:0"></div>
                   <div><div style="font-size:12px;font-weight:500;color:var(--text)">${a.msg}</div><div style="font-size:11px;color:var(--text-sec)">${a.time}</div></div>
@@ -1199,7 +1225,7 @@ function renderAdmin(sec="dashboard") {
             </div>
             <div style="background:var(--blue-deep);border-radius:var(--r-xl);padding:16px">
               <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px">Actions rapides</div>
-              ${[["ti-user-plus","Inviter un membre","renderAdmin('users')"],["ti-folder-plus","Créer une catégorie","renderAdmin('cats')"],["ti-chart-bar","Exporter les statistiques","toast('Export en cours…','info')"]].map(([ic,lbl,action])=>`
+              ${[["ti-user-plus","Inviter un membre","renderAdmin('users')"],["ti-folder-plus","Créer une catégorie","renderAdmin('cats')"],["ti-chart-bar","Statistiques","toast('Export en cours…','info')"]].map(([ic,lbl,action])=>`
                 <div class="flex-c gap-10" style="padding:9px 12px;background:rgba(255,255,255,.07);border-radius:var(--r-md);cursor:pointer;margin-bottom:7px;transition:var(--t)" onclick="${action}" onmouseover="this.style.background='rgba(255,255,255,.12)'" onmouseout="this.style.background='rgba(255,255,255,.07)'">
                   <i class="ti ${ic}" style="color:var(--blue);font-size:18px"></i>
                   <span style="font-size:13px;color:white;font-weight:500">${lbl}</span>
@@ -1209,9 +1235,9 @@ function renderAdmin(sec="dashboard") {
         </div>
         <!-- MEMBRES -->
         <div class="card">
-          <div class="card-header"><span class="card-title">Membres récents</span><button class="btn btn-outline btn-sm" onclick="renderAdmin('users')">Gérer les membres →</button></div>
-          <div style="display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:16px">
-            ${DB.users.map(u=>`
+          <div class="card-header"><span class="card-title">Utilisateurs (${totalUsers})</span><button class="btn btn-outline btn-sm" onclick="renderAdmin('users')">Gérer →</button></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:16px">
+            ${realUsers.map(u=>`
               <div class="card card-hover card-body" style="padding:14px;cursor:pointer" onclick="renderAdmin('users')">
                 <div class="flex-c gap-8 mb-8"><div class="u-avatar" style="background:${u.role==="admin"?"var(--red)":"var(--blue)"}">${u.initials}</div><div style="min-width:0;overflow:hidden"><div style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.name}</div><div style="font-size:10px;color:var(--text-sec)">${u.roleLabel}</div></div></div>
                 <span class="status ${u.status==="new"?"s-pending":"s-published"}" style="font-size:10px">${u.status==="new"?"Nouveau":"Actif"}</span>
@@ -1849,7 +1875,18 @@ function toggleFav(id) {
 // ══════════════════════════════════════════════════════════
 //  INIT
 // ══════════════════════════════════════════════════════════
-document.addEventListener("DOMContentLoaded", () => {
+document.addEventListener("DOMContentLoaded", async () => {
+  // Charger les catégories réelles depuis l'API
+  const apiCats = await API.categories.list();
+  if (apiCats.length) DB.cats = apiCats;
+
+  // Restaurer la session si un token est en mémoire
+  const me = await API.auth.me();
+  if (me) {
+    APP.user = mapUser(me);
+    updateNavbarUser();
+  }
+
   renderHome();
   navigate("home");
 });
