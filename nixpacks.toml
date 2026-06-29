@@ -1,0 +1,8 @@
+[phases.install]
+cmds = ["pnpm install --no-frozen-lockfile"]
+
+[phases.build]
+cmds = ["pnpm --filter @aev/backend run db:generate", "pnpm --filter @aev/backend build"]
+
+[start]
+cmd = "pnpm --filter @aev/backend start"
