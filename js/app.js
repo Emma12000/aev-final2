@@ -1163,7 +1163,7 @@ async function renderAdmin(sec="dashboard") {
     const recentUps   = stats?.documents?.recentUploads ?? 0;
     const pendingDocs = stats?.documents?.byStatus?.find(s=>s.status==="PENDING")?.count ?? pending.length;
     const recentActivity = (stats?.recentActivity || []).map(a => {
-      const actionMap = { LOGIN:"CONNEXION", LOGOUT:"DÉCONNEXION", UPLOAD:"DÉPÔT", DOWNLOAD:"TÉLÉCHARGEMENT", UPDATE:"MODIFICATION", VIEW:"ACCÈS", CREATE:"CRÉATION", DELETE:"SUPPRESSION", APPROVE:"APPROBATION", REJECT:"REJET" };
+      const actionMap = { LOGIN:"CONNEXION", LOGOUT:"DÉCONNEXION", LOGIN_FAILED:"ÉCHEC CONNEXION", UPLOAD:"DÉPÔT", DOWNLOAD:"TÉLÉCHARGEMENT", UPDATE:"MODIFICATION", VIEW:"ACCÈS", CREATE:"CRÉATION", USER_CREATE:"CRÉATION COMPTE", REGISTER:"INSCRIPTION", DELETE:"SUPPRESSION", USER_DELETE:"SUPPRESSION COMPTE", APPROVE:"APPROBATION", REJECT:"REJET" };
       const diff = a.createdAt ? Date.now() - new Date(a.createdAt).getTime() : Infinity;
       const ago  = diff < 3_600_000 ? `Il y a ${Math.round(diff/60000)} min` : diff < 86_400_000 ? `Il y a ${Math.round(diff/3_600_000)}h` : "Hier";
       return { msg: `${a.user?.fullName||"Inconnu"} — ${actionMap[a.action]||a.action}`, time: ago, isNew: diff < 3_600_000 };
