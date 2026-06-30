@@ -2,13 +2,14 @@
 
 const API_BASE = "https://aevbackend-production.up.railway.app/api/v1";
 
-// Stockage de l'access token — en mémoire uniquement (jamais persisté).
-// Le refresh token vit exclusivement dans un cookie httpOnly côté serveur.
+// Stockage de l'access token en sessionStorage (survit aux rechargements de page,
+// disparaît à la fermeture du navigateur). Le refresh token reste dans le cookie httpOnly.
 const TokenStore = {
-  _access: "",
-  get() { return { access: this._access }; },
-  set(access) { if (access) this._access = access; },
-  clear() { this._access = ""; },
+  _key: "aev_access",
+  get _access() { return sessionStorage.getItem(this._key) || ""; },
+  get()  { return { access: this._access }; },
+  set(access) { if (access) sessionStorage.setItem(this._key, access); },
+  clear() { sessionStorage.removeItem(this._key); },
 };
 
 // Renouvelle l'access token via le cookie httpOnly (silencieux, sans body)
@@ -282,11 +283,19 @@ const API = {
       try {
         const q    = new URLSearchParams(params).toString();
         const path = "/documents" + (q ? "?" + q : "");
-        // apiFetch envoie le token si disponible + credentials:include pour le cookie
-        const res  = await apiFetch(path);
-        const d    = res?.data;
-        const items = d?.items || (Array.isArray(d) ? d : []);
-        return items.map(mapDoc);
+        if (TokenStore._access) {
+          // Connecté : apiFetch avec token → filtre confidentialité selon rôle
+          const res = await apiFetch(path);
+          const d   = res?.data;
+          const items = d?.items || (Array.isArray(d) ? d : []);
+          return items.map(mapDoc);
+        } else {
+          // Anonyme : fetch direct → backend retourne uniquement les docs PUBLIC
+          const res  = await fetch(API_BASE + path, { credentials: "include" });
+          const data = await res.json();
+          const items = data?.data?.items || data?.data || [];
+          return items.map(mapDoc);
+        }
       } catch (_) {
         return [];
       }
