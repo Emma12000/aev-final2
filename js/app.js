@@ -705,11 +705,46 @@ async function doLogout() {
   toast("Déconnexion réussie.", "info");
   navigate("home");
 }
+// ─── Menu mobile ─────────────────────────────────────────────────────────────
+
+function toggleMobileNav() {
+  const drawer  = document.getElementById("nav-mobile-drawer");
+  const overlay = document.getElementById("nav-mobile-overlay");
+  const isOpen  = drawer.style.display === "flex";
+  drawer.style.display  = isOpen ? "none" : "flex";
+  overlay.style.display = isOpen ? "none" : "block";
+  document.body.style.overflow = isOpen ? "" : "hidden";
+}
+
+function closeMobileNav() {
+  document.getElementById("nav-mobile-drawer").style.display  = "none";
+  document.getElementById("nav-mobile-overlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+
+// ─── Sidebar mobile ───────────────────────────────────────────────────────────
+
+function toggleMobileSidebar() {
+  const sidebar = document.querySelector(".page.active .sidebar");
+  const overlay = document.getElementById("sidebar-overlay");
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.contains("open");
+  sidebar.classList.toggle("open", !isOpen);
+  overlay.style.display = isOpen ? "none" : "block";
+  document.body.style.overflow = isOpen ? "" : "hidden";
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.querySelector(".page.active .sidebar");
+  if (sidebar) sidebar.classList.remove("open");
+  document.getElementById("sidebar-overlay").style.display = "none";
+  document.body.style.overflow = "";
+}
+
 function updateNavbarUser() {
   const btnZone = $("#navbar-user-zone");
   if (APP.user) {
     const isAdmin = ["admin","superviseur"].includes(APP.user.role);
-    const roleLbl = { admin:"Administrateur", superviseur:"Superviseur", member:"Agent", consultant:"Consultant", lecteur:"Lecteur" }[APP.user.role] || "Membre";
     btnZone.innerHTML = `
       <div class="user-menu-wrap" id="user-menu-wrap">
         <div class="navbar-user" onclick="toggleUserMenu(event)">
@@ -718,8 +753,22 @@ function updateNavbarUser() {
           <i class="ti ti-chevron-down" style="font-size:12px;color:rgba(255,255,255,.5)"></i>
         </div>
       </div>`;
+    // Mettre à jour le drawer mobile aussi
+    const drawerUser = document.getElementById("nav-drawer-user");
+    if (drawerUser) {
+      const roleLbl = { admin:"Administrateur", superviseur:"Superviseur", member:"Agent", consultant:"Consultant", lecteur:"Lecteur" }[APP.user.role] || "Membre";
+      drawerUser.innerHTML = `
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+          <div class="navbar-user-avatar">${APP.user.initials}</div>
+          <div><div style="font-size:13px;font-weight:700;color:white">${APP.user.name.split(" ")[0]}</div><div style="font-size:11px;color:rgba(255,255,255,.5)">${roleLbl}</div></div>
+        </div>
+        ${isAdmin ? `<button class="nav-drawer-link" style="padding:10px 0" onclick="navigate('admin');closeMobileNav()"><i class="ti ti-settings"></i>Espace Admin</button>` : `<button class="nav-drawer-link" style="padding:10px 0" onclick="navigate('member');closeMobileNav()"><i class="ti ti-layout-dashboard"></i>Espace Membre</button>`}
+        <button class="nav-drawer-link" style="padding:10px 0;color:rgba(255,100,100,.8)" onclick="doLogout();closeMobileNav()"><i class="ti ti-logout" style="color:rgba(255,100,100,.8)"></i>Déconnexion</button>`;
+    }
   } else {
     btnZone.innerHTML = `<button class="btn-nav-login" onclick="navigate('auth')"><i class="ti ti-login" style="margin-right:6px"></i>Connexion</button>`;
+    const drawerUser = document.getElementById("nav-drawer-user");
+    if (drawerUser) drawerUser.innerHTML = `<button class="btn-nav-login w-full" onclick="navigate('auth');closeMobileNav()"><i class="ti ti-login" style="margin-right:6px"></i>Connexion</button>`;
   }
 }
 

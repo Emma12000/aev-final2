@@ -19,14 +19,14 @@
 
 <!-- NAVBAR -->
 <nav class="navbar" role="navigation" aria-label="Navigation principale">
-  <a class="navbar-brand" onclick="navigate('home')" tabindex="0" aria-label="Accueil Association Espoir et Vie">
+  <a class="navbar-brand" onclick="navigate('home');closeMobileNav()" tabindex="0" aria-label="Accueil Association Espoir et Vie">
     <div class="navbar-logo"><img src="assets/logo-aev.png" alt="Logo Association Espoir & Vie"></div>
     <div>
       <div class="navbar-name">Association Espoir &amp; Vie</div>
       <div class="navbar-tagline">Solidarité - Humanité - Dignité</div>
     </div>
   </a>
-  <div class="navbar-links">
+  <div class="navbar-links" id="navbar-links-desktop">
     <button class="nav-link" data-p="home"      onclick="navigate('home')">Accueil</button>
     <button class="nav-link" data-p="catalogue" onclick="navigate('catalogue')">Catalogue</button>
     <button class="nav-link" data-p="search"    onclick="navigate('search')">Recherche</button>
@@ -35,7 +35,32 @@
       <button class="btn-nav-login" onclick="navigate('auth')"><i class="ti ti-login" style="margin-right:5px"></i>Connexion</button>
     </div>
   </div>
+  <!-- Hamburger (mobile uniquement) -->
+  <button class="nav-burger" id="nav-burger" onclick="toggleMobileNav()" aria-label="Menu">
+    <span></span><span></span><span></span>
+  </button>
 </nav>
+
+<!-- DRAWER MOBILE -->
+<div id="nav-mobile-overlay" onclick="closeMobileNav()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1100"></div>
+<div id="nav-mobile-drawer" style="display:none;position:fixed;top:0;right:0;height:100%;width:80%;max-width:300px;background:var(--blue-deep);z-index:1101;flex-direction:column;box-shadow:-4px 0 24px rgba(0,0,0,.4)">
+  <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,.1)">
+    <div style="font-size:14px;font-weight:700;color:white">Navigation</div>
+    <button onclick="closeMobileNav()" style="background:none;border:none;color:rgba(255,255,255,.6);font-size:22px;cursor:pointer;padding:4px"><i class="ti ti-x"></i></button>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:12px 0">
+    <button class="nav-drawer-link" onclick="navigate('home');closeMobileNav()"><i class="ti ti-home"></i>Accueil</button>
+    <button class="nav-drawer-link" onclick="navigate('catalogue');closeMobileNav()"><i class="ti ti-books"></i>Catalogue</button>
+    <button class="nav-drawer-link" onclick="navigate('search');closeMobileNav()"><i class="ti ti-search"></i>Recherche</button>
+    <button class="nav-drawer-link" onclick="navigate('about');closeMobileNav()"><i class="ti ti-info-circle"></i>À propos</button>
+  </div>
+  <div id="nav-drawer-user" style="padding:16px 20px;border-top:1px solid rgba(255,255,255,.1)">
+    <button class="btn-nav-login w-full" onclick="navigate('auth');closeMobileNav()"><i class="ti ti-login" style="margin-right:6px"></i>Connexion</button>
+  </div>
+</div>
+
+<!-- OVERLAY SIDEBAR (mobile admin/membre) -->
+<div id="sidebar-overlay" onclick="closeMobileSidebar()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:900"></div>
 
 <!-- PAGE : ACCUEIL -->
 <div id="page-home" class="page">
@@ -372,6 +397,7 @@
 <!-- PAGE : ESPACE MEMBRE -->
 <div id="page-member" class="page">
   <div class="layout-sidebar">
+    <button class="sidebar-toggle-btn" onclick="toggleMobileSidebar()" style="position:fixed;bottom:20px;right:20px;z-index:800;padding:10px 16px;border-radius:50px;box-shadow:0 4px 16px rgba(0,0,0,.25)"><i class="ti ti-menu-2" style="margin-right:6px"></i>Menu</button>
     <nav class="sidebar" id="member-sidebar" aria-label="Menu membre">
       <div class="sidebar-head">
         <div class="sidebar-head-logo"><img src="assets/logo-aev.png" alt="AEV"></div>
@@ -381,13 +407,13 @@
         <div class="sidebar-label">Mon espace</div>
         <div class="sidebar-item active" data-sec="dashboard" onclick="renderMember('dashboard')"><i class="ti ti-layout-dashboard"></i>Tableau de bord</div>
         <div class="sidebar-item" data-sec="docs" onclick="renderMember('docs')"><i class="ti ti-files"></i>Mes documents</div>
-        <div class="sidebar-item" data-sec="upload" onclick="renderMember('upload')"><i class="ti ti-upload"></i>Déposer un document</div>
-        <div class="sidebar-item" data-sec="favorites" onclick="renderMember('favorites')"><i class="ti ti-star"></i>Mes favoris</div>
-        <div class="sidebar-item" data-sec="activity" onclick="renderMember('activity')"><i class="ti ti-history"></i>Mon activité</div>
+        <div class="sidebar-item" data-sec="upload" onclick="renderMember('upload');closeMobileSidebar()"><i class="ti ti-upload"></i>Déposer un document</div>
+        <div class="sidebar-item" data-sec="favorites" onclick="renderMember('favorites');closeMobileSidebar()"><i class="ti ti-star"></i>Mes favoris</div>
+        <div class="sidebar-item" data-sec="activity" onclick="renderMember('activity');closeMobileSidebar()"><i class="ti ti-history"></i>Mon activité</div>
         <div class="sidebar-label">Navigation</div>
-        <div class="sidebar-item" onclick="navigate('home')"><i class="ti ti-world"></i>Portail public</div>
-        <div class="sidebar-item" onclick="navigate('about')"><i class="ti ti-info-circle"></i>À propos AEV</div>
-        <div class="sidebar-item" data-sec="profile" onclick="renderMember('profile')"><i class="ti ti-user-cog"></i>Mon profil</div>
+        <div class="sidebar-item" onclick="navigate('home');closeMobileSidebar()"><i class="ti ti-world"></i>Portail public</div>
+        <div class="sidebar-item" onclick="navigate('about');closeMobileSidebar()"><i class="ti ti-info-circle"></i>À propos AEV</div>
+        <div class="sidebar-item" data-sec="profile" onclick="renderMember('profile');closeMobileSidebar()"><i class="ti ti-user-cog"></i>Mon profil</div>
       </div>
       <div class="sidebar-foot">
         <div class="sidebar-user" onclick="doLogout()">
@@ -404,6 +430,7 @@
 <!-- PAGE : ADMINISTRATION -->
 <div id="page-admin" class="page">
   <div class="layout-sidebar">
+    <button class="sidebar-toggle-btn" onclick="toggleMobileSidebar()" style="position:fixed;bottom:20px;right:20px;z-index:800;padding:10px 16px;border-radius:50px;box-shadow:0 4px 16px rgba(0,0,0,.25)"><i class="ti ti-menu-2" style="margin-right:6px"></i>Menu</button>
     <nav class="sidebar" id="admin-sidebar" aria-label="Menu administration">
       <div class="sidebar-head">
         <div class="sidebar-head-logo"><img src="assets/logo-aev.png" alt="AEV"></div>
@@ -411,15 +438,15 @@
       </div>
       <div class="sidebar-body">
         <div class="sidebar-label">Gestion</div>
-        <div class="sidebar-item active" data-sec="dashboard" onclick="renderAdmin('dashboard')"><i class="ti ti-layout-dashboard"></i>Tableau de bord</div>
-        <div class="sidebar-item" data-sec="docs" id="admin-docs-nav" onclick="renderAdmin('docs')"><i class="ti ti-files"></i>Documents</div>
-        <div class="sidebar-item" data-sec="users" onclick="renderAdmin('users')"><i class="ti ti-users"></i>Membres</div>
-        <div class="sidebar-item" data-sec="cats" onclick="renderAdmin('cats')"><i class="ti ti-category"></i>Catégories</div>
-        <div class="sidebar-item" data-sec="logs" onclick="renderAdmin('logs')"><i class="ti ti-list-details"></i>Journaux</div>
-        <div class="sidebar-item" data-sec="access" onclick="renderAdmin('access')"><i class="ti ti-key"></i>Accès</div>
+        <div class="sidebar-item active" data-sec="dashboard" onclick="renderAdmin('dashboard');closeMobileSidebar()"><i class="ti ti-layout-dashboard"></i>Tableau de bord</div>
+        <div class="sidebar-item" data-sec="docs" id="admin-docs-nav" onclick="renderAdmin('docs');closeMobileSidebar()"><i class="ti ti-files"></i>Documents</div>
+        <div class="sidebar-item" data-sec="users" onclick="renderAdmin('users');closeMobileSidebar()"><i class="ti ti-users"></i>Membres</div>
+        <div class="sidebar-item" data-sec="cats" onclick="renderAdmin('cats');closeMobileSidebar()"><i class="ti ti-category"></i>Catégories</div>
+        <div class="sidebar-item" data-sec="logs" onclick="renderAdmin('logs');closeMobileSidebar()"><i class="ti ti-list-details"></i>Journaux</div>
+        <div class="sidebar-item" data-sec="access" onclick="renderAdmin('access');closeMobileSidebar()"><i class="ti ti-key"></i>Accès</div>
         <div class="sidebar-label">Analyse</div>
-        <div class="sidebar-item" data-sec="stats" onclick="renderAdmin('stats')"><i class="ti ti-chart-bar"></i>Statistiques</div>
-        <div class="sidebar-item" data-sec="settings" onclick="renderAdmin('settings')"><i class="ti ti-settings"></i>Paramètres</div>
+        <div class="sidebar-item" data-sec="stats" onclick="renderAdmin('stats');closeMobileSidebar()"><i class="ti ti-chart-bar"></i>Statistiques</div>
+        <div class="sidebar-item" data-sec="settings" onclick="renderAdmin('settings');closeMobileSidebar()"><i class="ti ti-settings"></i>Paramètres</div>
         <div class="sidebar-label">Navigation</div>
         <div class="sidebar-item" onclick="navigate('home')"><i class="ti ti-world"></i>Portail public</div>
         <div class="sidebar-item" onclick="navigate('about')"><i class="ti ti-info-circle"></i>À propos AEV</div>
