@@ -657,17 +657,61 @@ function updateNavbarUser() {
   const btnZone = $("#navbar-user-zone");
   if (APP.user) {
     const isAdmin = ["admin","superviseur"].includes(APP.user.role);
+    const roleLbl = { admin:"Administrateur", superviseur:"Superviseur", member:"Agent", consultant:"Consultant", lecteur:"Lecteur" }[APP.user.role] || "Membre";
     btnZone.innerHTML = `
-      ${isAdmin ? `<button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);margin-right:6px" onclick="navigate('admin')"><i class="ti ti-settings"></i>Espace Admin</button>` : ""}
-      <div class="navbar-user" onclick="navigate(${isAdmin}?'admin':'member')">
-        <div class="navbar-user-avatar">${APP.user.initials}</div>
-        <span class="navbar-user-name">${APP.user.name.split(" ")[0]}</span>
-        <i class="ti ti-chevron-down" style="font-size:12px;color:rgba(255,255,255,.5)"></i>
-      </div>
-      <button class="btn btn-ghost btn-sm" onclick="doLogout()"><i class="ti ti-logout"></i>Sortir</button>`;
+      <div class="user-menu-wrap" id="user-menu-wrap">
+        <div class="navbar-user" onclick="toggleUserMenu(event)">
+          <div class="navbar-user-avatar">${APP.user.initials}</div>
+          <span class="navbar-user-name">${APP.user.name.split(" ")[0]}</span>
+          <i class="ti ti-chevron-down" style="font-size:12px;color:rgba(255,255,255,.5)"></i>
+        </div>
+      </div>`;
   } else {
     btnZone.innerHTML = `<button class="btn-nav-login" onclick="navigate('auth')"><i class="ti ti-login" style="margin-right:6px"></i>Connexion</button>`;
   }
+}
+
+function toggleUserMenu(e) {
+  e.stopPropagation();
+  const wrap = document.getElementById("user-menu-wrap");
+  const existing = wrap.querySelector(".user-dropdown");
+  if (existing) { existing.remove(); return; }
+
+  const isAdmin = ["admin","superviseur"].includes(APP.user.role);
+  const roleLbl = { admin:"Administrateur", superviseur:"Superviseur", member:"Agent", consultant:"Consultant", lecteur:"Lecteur" }[APP.user.role] || "Membre";
+
+  const menu = document.createElement("div");
+  menu.className = "user-dropdown";
+  menu.innerHTML = `
+    <div class="user-dropdown-header">
+      <div class="user-dropdown-name">${APP.user.name}</div>
+      <div class="user-dropdown-role">${roleLbl} · ${APP.user.email}</div>
+    </div>
+    ${isAdmin ? `
+    <div class="user-dropdown-item" onclick="closeUserMenu();navigate('admin')">
+      <i class="ti ti-layout-dashboard"></i>Espace Admin
+    </div>` : `
+    <div class="user-dropdown-item" onclick="closeUserMenu();navigate('member')">
+      <i class="ti ti-layout-dashboard"></i>Espace Membre
+    </div>`}
+    <div class="user-dropdown-item" onclick="closeUserMenu();navigate('member',{sec:'profile'})">
+      <i class="ti ti-user-circle"></i>Mon profil
+    </div>
+    <div class="user-dropdown-divider"></div>
+    <div class="user-dropdown-item danger" onclick="closeUserMenu();doLogout()">
+      <i class="ti ti-logout"></i>Déconnexion
+    </div>`;
+  wrap.appendChild(menu);
+
+  // Fermer en cliquant ailleurs
+  setTimeout(() => {
+    document.addEventListener("click", closeUserMenu, { once: true });
+  }, 10);
+}
+
+function closeUserMenu() {
+  const menu = document.querySelector(".user-dropdown");
+  if (menu) menu.remove();
 }
 
 //  PAGE : À PROPOS
