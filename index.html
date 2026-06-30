@@ -220,7 +220,7 @@
     <div class="breadcrumb mb-10"><i class="ti ti-home"></i><span onclick="navigate('home')">Accueil</span><i class="ti ti-chevron-right"></i><span style="color:rgba(255,255,255,.85)">Recherche avancée</span></div>
     <div class="search-bar" style="max-width:640px;background:white;border-radius:var(--r-2xl);box-shadow:var(--shadow-xl)">
       <div style="padding:0 16px;color:var(--gray-400);font-size:19px;display:flex;align-items:center"><i class="ti ti-search"></i></div>
-      <input type="text" id="search-q" placeholder="Rechercher par titre, type, auteur, mot-clé…" onkeyup="applySearch()" style="height:50px;flex:1;border:none;outline:none;font-size:14px;font-family:var(--font)" aria-label="Recherche">
+      <input type="text" id="search-q" placeholder="Rechercher par titre, type, auteur, mot-clé…" oninput="debouncedSearch()" style="height:50px;flex:1;border:none;outline:none;font-size:14px;font-family:var(--font)" aria-label="Recherche">
       <button onclick="applySearch()" style="height:50px;padding:0 28px;background:var(--red);color:white;border:none;cursor:pointer;font-family:var(--font);font-weight:700;font-size:14px;border-radius:0 var(--r-2xl) var(--r-2xl) 0"><i class="ti ti-search" style="margin-right:6px"></i>Rechercher</button>
     </div>
     <div class="flex-c gap-8 mt-10 flex-wrap">

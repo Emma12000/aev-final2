@@ -211,10 +211,14 @@ function navigate(page, data={}) {
 // ══════════════════════════════════════════════════════════
 //  PAGE : ACCUEIL
 // ══════════════════════════════════════════════════════════
-function renderHome() {
-  const recent = DB.docs.filter(d=>d.status==="published").slice(0,5);
-  $("#home-recent").innerHTML = recent.map(d=>`
-    <div class="doc-row" onclick="navigate('doc',{id:${d.id}})">
+async function renderHome() {
+  const container = $("#home-recent");
+  if (container) container.innerHTML = `<div style="padding:20px;text-align:center"><i class="ti ti-loader-2" style="font-size:22px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+  const recent = await API.documents.list({ status: "ACTIVE", limit: 5 }).catch(() => []);
+  if (!container) return;
+  container.innerHTML = recent.length
+    ? recent.map(d=>`
+    <div class="doc-row" onclick="navigate('doc',{id:'${d.id}'})">
       ${docIconHtml(d.fmt)}
       <div style="flex:1;min-width:0">
         <div class="doc-name">${d.title}</div>
@@ -222,10 +226,11 @@ function renderHome() {
       </div>
       ${tagHtml(d.type)}
       <div class="doc-actions gap-6">
-        <div class="btn-icon" onclick="event.stopPropagation();dlDoc(${d.id})" title="Télécharger"><i class="ti ti-download"></i></div>
-        <div class="btn-icon" onclick="event.stopPropagation();shareDoc(${d.id})" title="Partager"><i class="ti ti-share"></i></div>
+        <div class="btn-icon" onclick="event.stopPropagation();memberDownloadDoc('${d.id}')" title="Télécharger"><i class="ti ti-download"></i></div>
+        <div class="btn-icon" onclick="event.stopPropagation();shareDoc('${d.id}')" title="Partager"><i class="ti ti-share"></i></div>
       </div>
-    </div>`).join("");
+    </div>`).join("")
+    : `<div style="padding:24px;text-align:center;color:var(--text-sec)">Aucun document récent.</div>`;
 }
 
 function homeSearch() {
@@ -236,25 +241,32 @@ function homeSearch() {
 // ══════════════════════════════════════════════════════════
 //  PAGE : CATALOGUE
 // ══════════════════════════════════════════════════════════
-function renderCatalogue(cat="") {
+async function renderCatalogue(cat="") {
   APP.catFilter = cat;
-  // Update chips
   $$(".cat-chip").forEach(c => c.classList.toggle("on", c.dataset.cat === cat));
-  const docs = DB.docs.filter(d => d.status==="published" && (!cat || d.cat===cat));
-  $("#cat-count").textContent = `${docs.length} document${docs.length>1?"s":""}`;
-  $("#cat-list").innerHTML = docs.length
+  const list = $("#cat-list");
+  const cnt  = $("#cat-count");
+  if (list) list.innerHTML = `<div style="padding:32px;text-align:center"><i class="ti ti-loader-2" style="font-size:28px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+
+  const catObj = cat ? DB.cats.find(c => c.id === cat) : null;
+  const params = { status: "ACTIVE", limit: 50 };
+  if (catObj?.apiId) params.categoryId = catObj.apiId;
+  const docs = await API.documents.list(params).catch(() => []);
+
+  if (cnt) cnt.textContent = `${docs.length} document${docs.length!==1?"s":""}`;
+  if (list) list.innerHTML = docs.length
     ? docs.map(d=>`
-      <div class="result-card" onclick="navigate('doc',{id:${d.id}})">
+      <div class="result-card" onclick="navigate('doc',{id:'${d.id}'})">
         ${docIconHtml(d.fmt,"44px","52px")}
         <div style="flex:1;min-width:0">
           <div class="flex-b gap-8">
             <div class="doc-name" style="font-size:15px;font-weight:700">${d.title}</div>
             <div class="flex-c gap-6" style="flex-shrink:0">
-              <div class="btn-icon" onclick="event.stopPropagation();dlDoc(${d.id})"><i class="ti ti-download"></i></div>
-              <div class="btn-icon" onclick="event.stopPropagation();shareDoc(${d.id})"><i class="ti ti-share"></i></div>
+              <div class="btn-icon" onclick="event.stopPropagation();memberDownloadDoc('${d.id}')"><i class="ti ti-download"></i></div>
+              <div class="btn-icon" onclick="event.stopPropagation();shareDoc('${d.id}')"><i class="ti ti-share"></i></div>
             </div>
           </div>
-          <div class="doc-meta mt-4">${d.dateStr} · ${d.fmt} · ${d.size} · <i class="ti ti-download" style="font-size:11px"></i> ${d.dl} téléchargements</div>
+          <div class="doc-meta mt-4">${d.dateStr} · ${d.fmt} · ${d.size}</div>
           <div class="flex-c gap-6 mt-8 flex-wrap">${tagHtml(d.type)}${d.tags.slice(0,3).map(t=>`<span class="tag tag-gray">${t}</span>`).join("")}<span class="tag tag-pub">${d.access}</span></div>
         </div>
       </div>`).join("")
@@ -270,38 +282,49 @@ function renderSearch(q="") {
   applySearch();
 }
 
-function applySearch() {
-  const q    = $("#search-q").value.toLowerCase().trim();
-  const types  = $$(".f-type:checked").map(el=>el.value);
-  const fmts   = $$(".f-fmt:checked").map(el=>el.value);
-  const period = $(".f-period:checked")?.value || "";
+let _searchTimer;
+async function applySearch() {
+  const q      = $("#search-q")?.value.trim() || "";
+  const results = $("#search-results");
+  const countEl = $("#search-count");
+
+  if (results) results.innerHTML = `<div style="padding:32px;text-align:center"><i class="ti ti-loader-2" style="font-size:28px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+
+  const params = { status: "ACTIVE", limit: 50 };
+  if (q) params.q = q;
+
+  const docs = await API.documents.list(params).catch(() => []);
+
+  // Filtres client-side (format, accès) — pas de param backend
+  const fmts   = $$(".f-fmt:checked").map(el => el.value);
   const access = $(".f-access:checked")?.value || "";
+  let res = docs;
+  if (fmts.length)  res = res.filter(d => fmts.includes(d.fmt));
+  if (access)       res = res.filter(d => d.access === access);
 
-  let res = DB.docs.filter(d=>d.status==="published");
-  if (q)        res = res.filter(d=>d.title.toLowerCase().includes(q)||d.tags.some(t=>t.toLowerCase().includes(q))||d.type.toLowerCase().includes(q)||d.author.toLowerCase().includes(q));
-  if (types.length) res = res.filter(d=>types.includes(d.type));
-  if (fmts.length)  res = res.filter(d=>fmts.includes(d.fmt));
-  if (period)   res = res.filter(d=>d.date.startsWith(period));
-  if (access)   res = res.filter(d=>d.access===access);
-
-  $("#search-count").textContent = `${res.length} résultat${res.length>1?"s":""}`;
-  $("#search-results").innerHTML = res.length
+  if (countEl) countEl.textContent = `${res.length} résultat${res.length!==1?"s":""}`;
+  if (results) results.innerHTML = res.length
     ? res.map(d=>`
-      <div class="result-card" onclick="navigate('doc',{id:${d.id}})">
+      <div class="result-card" onclick="navigate('doc',{id:'${d.id}'})">
         ${docIconHtml(d.fmt,"44px","52px")}
         <div style="flex:1;min-width:0">
           <div class="flex-b gap-8">
             <div class="doc-name" style="font-size:14px;font-weight:700">${d.title}</div>
             <div class="flex-c gap-6" style="flex-shrink:0">
-              <div class="btn-icon" onclick="event.stopPropagation();dlDoc(${d.id})"><i class="ti ti-download"></i></div>
-              <div class="btn-icon" onclick="event.stopPropagation();shareDoc(${d.id})"><i class="ti ti-share"></i></div>
+              <div class="btn-icon" onclick="event.stopPropagation();memberDownloadDoc('${d.id}')"><i class="ti ti-download"></i></div>
+              <div class="btn-icon" onclick="event.stopPropagation();shareDoc('${d.id}')"><i class="ti ti-share"></i></div>
             </div>
           </div>
           <div class="doc-meta mt-4">${d.dateStr} · ${d.fmt} · ${d.size}</div>
-          <div class="flex-c gap-6 mt-8 flex-wrap">${tagHtml(d.type)}${d.tags.map(t=>`<span class="tag tag-gray">${t}</span>`).join("")}</div>
+          <div class="flex-c gap-6 mt-8 flex-wrap">${tagHtml(d.type)}${d.tags.slice(0,4).map(t=>`<span class="tag tag-gray">${t}</span>`).join("")}</div>
         </div>
       </div>`).join("")
     : `<div class="empty"><i class="ti ti-search"></i><h3>Aucun résultat</h3><p>Essayez avec d'autres mots-clés ou réinitialisez les filtres.</p></div>`;
+}
+
+function debouncedSearch() {
+  clearTimeout(_searchTimer);
+  _searchTimer = setTimeout(() => applySearch(), 400);
 }
 
 function resetFilters() {
@@ -312,11 +335,20 @@ function resetFilters() {
 // ══════════════════════════════════════════════════════════
 //  PAGE : FICHE DOCUMENT
 // ══════════════════════════════════════════════════════════
-function renderDoc(id) {
-  const d = DB.docs.find(x=>x.id===id);
-  if (!d) return;
+async function renderDoc(id) {
   APP.docId = id;
-  const related = DB.docs.filter(x=>x.id!==id&&x.type===d.type&&x.status==="published").slice(0,3);
+  const docContent = $("#doc-content");
+  if (docContent) docContent.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+  const d = await API.documents.get(id);
+  if (!d) {
+    if (docContent) docContent.innerHTML = `<div style="padding:60px;text-align:center;color:var(--text-sec)"><i class="ti ti-file-off" style="font-size:40px;display:block;margin-bottom:12px"></i>Document introuvable.</div>`;
+    return;
+  }
+  const catObj = d.cat ? DB.cats.find(c => c.id === d.cat) : null;
+  const relatedRaw = catObj?.apiId
+    ? await API.documents.list({ status: "ACTIVE", categoryId: catObj.apiId, limit: 4 }).catch(() => [])
+    : [];
+  const related = relatedRaw.filter(x => x.id !== id).slice(0, 3);
   const fmtIcon = { PDF:"ti-file-type-pdf", Word:"ti-file-type-doc", Excel:"ti-file-spreadsheet" }[d.fmt]||"ti-file";
 
   $("#doc-content").innerHTML = `
@@ -348,8 +380,8 @@ function renderDoc(id) {
           </div>
         </div>
         <div class="flex-c gap-8">
-          <button class="btn btn-ghost btn-sm" onclick="shareDoc(${d.id})"><i class="ti ti-share"></i>Partager</button>
-          <button class="btn btn-ghost btn-sm" id="fav-btn-${d.id}" onclick="toggleFav(${d.id})"><i class="ti ti-star"></i>Favori</button>
+          <button class="btn btn-ghost btn-sm" onclick="shareDoc('${d.id}')"><i class="ti ti-share"></i>Partager</button>
+          <button class="btn btn-ghost btn-sm" id="fav-btn-${d.id}" onclick="toggleFav('${d.id}')"><i class="ti ti-star"></i>Favori</button>
         </div>
       </div>
     </div>
@@ -415,7 +447,7 @@ function renderDoc(id) {
             <div style="font-size:14px;font-weight:700;color:white;margin-bottom:4px">Téléchargement gratuit et immédiat</div>
             <div style="font-size:12px;color:var(--blue)">Ce document est en accès libre — aucune inscription requise.</div>
           </div>
-          <button class="btn btn-red btn-lg" onclick="dlDoc(${d.id})"><i class="ti ti-download"></i>Télécharger gratuitement</button>
+          <button class="btn btn-red btn-lg" onclick="memberDownloadDoc('${d.id}')"><i class="ti ti-download"></i>Télécharger gratuitement</button>
         </div>` : ""}
       </div>
 
@@ -428,7 +460,7 @@ function renderDoc(id) {
             <i class="ti ${fmtIcon}"></i>
           </div>
           <div style="font-size:12px;color:var(--text-sec);margin-bottom:16px">${d.fmt} · ${d.size} · ${d.pages} pages</div>
-          <button class="btn btn-primary w-full mb-8" onclick="dlDoc(${d.id})"><i class="ti ti-download"></i>Télécharger</button>
+          <button class="btn btn-primary w-full mb-8" onclick="memberDownloadDoc('${d.id}')"><i class="ti ti-download"></i>Télécharger</button>
           <button class="btn btn-outline w-full" style="font-size:12px" onclick="toast('Ouverture en cours…','info')"><i class="ti ti-eye"></i>Aperçu plein écran</button>
           <div style="font-size:11px;color:var(--text-sec);margin-top:10px">${d.dl} téléchargements · Gratuit</div>
         </div>
@@ -438,7 +470,7 @@ function renderDoc(id) {
           <div class="card-title mb-10">Partager ce document</div>
           <div class="grid-4 gap-6">
             ${[["ti-brand-facebook","#1877F2"],["ti-brand-whatsapp","#25D366"],["ti-mail","var(--blue)"],["ti-link","var(--gray-600)"]].map(([ic,col])=>`
-              <div class="btn-icon w-full" style="height:36px;border-radius:var(--r-md);font-size:17px" onclick="shareDoc(${d.id})"><i class="ti ${ic}" style="color:${col}"></i></div>
+              <div class="btn-icon w-full" style="height:36px;border-radius:var(--r-md);font-size:17px" onclick="shareDoc('${d.id}')"><i class="ti ${ic}" style="color:${col}"></i></div>
             `).join("")}
           </div>
         </div>
@@ -464,7 +496,7 @@ function renderDoc(id) {
         <div class="card card-body">
           <div class="card-title mb-10">Documents similaires</div>
           ${related.map(r=>`
-            <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-lt);cursor:pointer" onclick="navigate('doc',{id:${r.id}})">
+            <div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid var(--border-lt);cursor:pointer" onclick="navigate('doc',{id:'${r.id}'})">
               ${docIconHtml(r.fmt,"30px","36px")}
               <div style="min-width:0;overflow:hidden">
                 <div style="font-size:12px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.title.length>38?r.title.substring(0,38)+"…":r.title}</div>
