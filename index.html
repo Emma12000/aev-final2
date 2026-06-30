@@ -323,6 +323,11 @@
 
         <!-- LOGIN -->
         <div id="auth-login" class="flex-col gap-14">
+          <div class="social-row">
+            <button class="social-btn" onclick="toast('Connexion Google…','info')"><i class="ti ti-brand-google" style="color:#DB4437"></i>Google</button>
+            <button class="social-btn" onclick="toast('Connexion Facebook…','info')"><i class="ti ti-brand-facebook" style="color:#1877F2"></i>Facebook</button>
+          </div>
+          <div class="divider">ou avec l'email</div>
           <div class="form-group">
             <label class="form-label">Adresse email</label>
             <div class="input-icon"><i class="ti ti-mail"></i><input type="email" id="login-email" class="form-control" placeholder="votre@email.com"></div>
