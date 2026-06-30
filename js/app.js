@@ -1,11 +1,6 @@
-/* ══════════════════════════════════════════════════════════
-   ESPOIRETVIE.TD — Application JavaScript Complète
-   Association Espoir & Vie | Solidarité - Humanité - Dignité
-   ══════════════════════════════════════════════════════════ */
-
 "use strict";
 
-// ─── BASE DE DONNÉES MOCK (remplacer par API réelle) ─────
+// BASE DE DONNÉES MOCK (remplacer par API réelle)
 const DB = {
   cats: [
     { id:"admin",         name:"Administration",            icon:"ti-building-community", color:"#6D28D9", bg:"#F3E8FF", conf:"interne",      tags:["Statuts","PV","Légal"] },
@@ -122,7 +117,7 @@ const DB = {
   ]
 };
 
-// ─── ÉTAT GLOBAL ────────────────────────────────────────
+// ÉTAT GLOBAL
 const APP = {
   page:        "home",
   user:        null,   // null = visiteur public
@@ -135,7 +130,7 @@ const APP = {
   catFilter:   "",
 };
 
-// ─── UTILITAIRES ────────────────────────────────────────
+// UTILITAIRES
 const $  = (sel, ctx=document) => ctx.querySelector(sel);
 const $$ = (sel, ctx=document) => [...ctx.querySelectorAll(sel)];
 
@@ -160,7 +155,7 @@ function statusHtml(s) {
 }
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}) : ""; }
 
-// ─── TOAST ──────────────────────────────────────────────
+// TOAST
 function toast(msg, type="ok") {
   const c = $("#toast-wrap");
   const el = document.createElement("div");
@@ -171,7 +166,7 @@ function toast(msg, type="ok") {
   setTimeout(()=>{ el.style.opacity="0"; el.style.transform="translateX(20px)"; setTimeout(()=>el.remove(),320); }, 3200);
 }
 
-// ─── MODAL ──────────────────────────────────────────────
+// MODAL
 function openModal(html, title="") {
   $("#modal-title").textContent = title;
   $("#modal-body").innerHTML = html;
@@ -179,7 +174,7 @@ function openModal(html, title="") {
 }
 function closeModal() { $("#modal-overlay").classList.remove("open"); }
 
-// ─── NAVIGATION ─────────────────────────────────────────
+// NAVIGATION
 function navigate(page, data={}) {
   // Guard : pages protégées inaccessibles sans connexion
   if ((page==="member" || page==="admin") && !APP.user) {
@@ -212,9 +207,7 @@ function navigate(page, data={}) {
   if (renders[page]) renders[page]();
 }
 
-// ══════════════════════════════════════════════════════════
 //  PAGE : ACCUEIL
-// ══════════════════════════════════════════════════════════
 async function renderHome() {
   const container = $("#home-recent");
   if (container) container.innerHTML = `<div style="padding:20px;text-align:center"><i class="ti ti-loader-2" style="font-size:22px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
@@ -242,9 +235,7 @@ function homeSearch() {
   navigate("search", { q });
 }
 
-// ══════════════════════════════════════════════════════════
 //  PAGE : CATALOGUE
-// ══════════════════════════════════════════════════════════
 async function renderCatalogue(cat="") {
   APP.catFilter = cat;
   $$(".cat-chip").forEach(c => c.classList.toggle("on", c.dataset.cat === cat));
@@ -277,9 +268,7 @@ async function renderCatalogue(cat="") {
     : `<div class="empty"><i class="ti ti-folder-open"></i><h3>Aucun document</h3><p>Aucun document dans cette catégorie pour le moment.</p></div>`;
 }
 
-// ══════════════════════════════════════════════════════════
 //  PAGE : RECHERCHE
-// ══════════════════════════════════════════════════════════
 function renderSearch(q="") {
   APP.searchQ = q;
   $("#search-q").value = q;
@@ -336,9 +325,7 @@ function resetFilters() {
   applySearch();
 }
 
-// ══════════════════════════════════════════════════════════
 //  PAGE : FICHE DOCUMENT
-// ══════════════════════════════════════════════════════════
 async function renderDoc(id) {
   APP.docId = id;
   const docContent = $("#doc-content");
@@ -513,9 +500,7 @@ async function renderDoc(id) {
   `;
 }
 
-// ══════════════════════════════════════════════════════════
 //  AUTH
-// ══════════════════════════════════════════════════════════
 function renderAuth(tab="login") {
   switchAuthTab(tab);
 }
@@ -566,11 +551,8 @@ async function doRegister() {
 }
 async function doAdminDemo() {
   try {
-    const data = await API.auth.login("admin@espoiretvie.td", "Admin@AEV2024!");
-    APP.user = mapUser(data.user);
-    updateNavbarUser();
-    toast("Accès administrateur activé.", "ok");
-    navigate("admin");
+    toast("Utilisez vos identifiants administrateur pour vous connecter.", "info");
+    navigate("auth");
   } catch(_) {
     toast("Démo indisponible.", "err");
   }
@@ -597,9 +579,7 @@ function updateNavbarUser() {
   }
 }
 
-// ══════════════════════════════════════════════════════════
 //  PAGE : À PROPOS
-// ══════════════════════════════════════════════════════════
 function renderAbout() {
   const missions = [
     ["1","ti-speakerphone","Sensibilisation","Sensibiliser les populations sur les questions de santé et de bien-être"],
@@ -828,9 +808,7 @@ function renderAbout() {
     </footer>`;
 }
 
-// ══════════════════════════════════════════════════════════
 //  MEMBRE
-// ══════════════════════════════════════════════════════════
 async function renderMember(sec="dashboard") {
   APP.memberSec = sec;
   $$("#member-sidebar .sidebar-item").forEach(el=>el.classList.toggle("active",el.dataset.sec===sec));
@@ -1058,7 +1036,7 @@ async function renderMember(sec="dashboard") {
   }
 }
 
-// ─── UPLOAD WIZARD ──────────────────────────────────────
+// UPLOAD WIZARD
 function renderUploadStep(c) {
   const s = APP.uploadStep;
   const steps = ["Fichier","Informations","Permissions","Confirmation"];
@@ -1242,9 +1220,7 @@ function addTag() {
   }
 }
 
-// ══════════════════════════════════════════════════════════
 //  ADMIN
-// ══════════════════════════════════════════════════════════
 async function renderAdmin(sec="dashboard") {
   APP.adminSec = sec;
   $$("#admin-sidebar .sidebar-item").forEach(el=>el.classList.toggle("active",el.dataset.sec===sec));
@@ -1742,7 +1718,7 @@ async function renderAdmin(sec="dashboard") {
   }
 }
 
-// ─── FILTRE MON ACTIVITÉ ─────────────────────────────────
+// FILTRE MON ACTIVITÉ
 function myActivityFilter() {
   const action = document.getElementById("act-action")?.value || "";
   const period = document.getElementById("act-period")?.value || "all";
@@ -1765,7 +1741,7 @@ function myActivityFilter() {
   if (cnt) cnt.textContent = `${visible} résultat${visible !== 1 ? "s" : ""}`;
 }
 
-// ─── FILTRE JOURNAUX ─────────────────────────────────────
+// FILTRE JOURNAUX
 function logsFilter() {
   const q      = (document.getElementById("log-search")?.value  || "").toLowerCase();
   const action = (document.getElementById("log-action")?.value  || "");
@@ -1808,7 +1784,7 @@ function exportLogsCSV() {
   toast("Export CSV généré.", "ok");
 }
 
-// ─── GESTION DES ACCÈS ───────────────────────────────────
+// GESTION DES ACCÈS
 function accessTab(which) {
   document.getElementById("access-users").style.display = which==="user" ? "" : "none";
   document.getElementById("access-res").style.display   = which==="res"  ? "" : "none";
@@ -1905,7 +1881,7 @@ function confirmRevokeAccess(id) {
   if (i>-1) { DB.access.splice(i,1); toast("Accès révoqué.","err"); closeModal(); renderAdmin("access"); }
 }
 
-// ─── CRUD CATÉGORIES ─────────────────────────────────────
+// CRUD CATÉGORIES
 function openCatForm(id) {
   const cat = id ? DB.cats.find(c=>c.id===id) : null;
   openModal(`
@@ -1986,7 +1962,7 @@ function confirmDelCat(id) {
   if (i>-1) { DB.cats.splice(i,1); toast("Catégorie supprimée.","err"); closeModal(); renderAdmin("cats"); }
 }
 
-// ─── CRUD UTILISATEURS ───────────────────────────────────
+// CRUD UTILISATEURS
 function openCreateUserModal() {
   openModal(`
     <div class="flex-col gap-14">
@@ -2025,7 +2001,7 @@ async function submitCreateUser() {
   const role     = $("#cu-role")?.value;
   const password = $("#cu-pwd")?.value;
   if (!fullName || !email || !password) { toast("Remplissez tous les champs obligatoires.","err"); return; }
-  const btn = document.querySelector("#modal-root .btn-primary");
+  const btn = document.querySelector("#modal-overlay .btn-primary");
   if (btn) { btn.disabled=true; btn.innerHTML=`<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Création…`; }
   try {
     await API.admin.createUser({ fullName, email, password, role });
@@ -2068,7 +2044,7 @@ async function submitEditUser(id) {
   const fullName = $("#eu-name")?.value.trim();
   const role     = $("#eu-role")?.value;
   if (!fullName) { toast("Le nom est requis.","err"); return; }
-  const btn = document.querySelector("#modal-root .btn-primary");
+  const btn = document.querySelector("#modal-overlay .btn-primary");
   if (btn) { btn.disabled=true; btn.innerHTML=`<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Enregistrement…`; }
   try {
     await API.admin.updateUser(id, { fullName, role });
@@ -2106,7 +2082,7 @@ async function confirmToggleUser(id, isCurrentlyActive) {
   }
 }
 
-// ─── ACTIONS DOCS ────────────────────────────────────────
+// ACTIONS DOCS
 async function approveDoc(id, title) {
   const row = $(`#admin-row-${id}`);
   if (row) row.style.opacity = "0.5";
@@ -2185,7 +2161,7 @@ function adminFilter(q) {
   });
 }
 
-// ─── ACTIONS COMMUNES ────────────────────────────────────
+// ACTIONS COMMUNES
 async function memberDownloadDoc(id) {
   try {
     toast("Préparation du téléchargement…", "info");
@@ -2242,9 +2218,7 @@ function toggleFav(id) {
   }
 }
 
-// ══════════════════════════════════════════════════════════
 //  INIT
-// ══════════════════════════════════════════════════════════
 document.addEventListener("DOMContentLoaded", async () => {
   // Charger les catégories réelles depuis l'API
   const apiCats = await API.categories.list();

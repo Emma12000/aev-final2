@@ -1,4 +1,4 @@
-import { IsOptional, IsEnum, IsString, IsInt, Min, Max } from 'class-validator';
+import { IsOptional, IsEnum, IsString, IsInt, Min, Max, IsUUID, MaxLength } from 'class-validator';
 import { Type } from 'class-transformer';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { Confidentiality, DocumentStatus } from '@prisma/client';
@@ -7,11 +7,12 @@ export class QueryDocumentsDto {
   @ApiPropertyOptional()
   @IsOptional()
   @IsString()
+  @MaxLength(200)
   q?: string;
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
+  @IsUUID()
   categoryId?: string;
 
   @ApiPropertyOptional({ enum: Confidentiality })
@@ -41,6 +42,6 @@ export class QueryDocumentsDto {
 
   @ApiPropertyOptional()
   @IsOptional()
-  @IsString()
+  @IsUUID()
   uploadedById?: string;
 }

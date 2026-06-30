@@ -1,5 +1,5 @@
 import {
-  IsString, IsOptional, IsEnum, IsArray, IsUUID, MaxLength, MinLength,
+  IsString, IsOptional, IsEnum, IsArray, IsUUID, MaxLength, MinLength, ArrayMaxSize,
 } from 'class-validator';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { Confidentiality } from '@prisma/client';
@@ -29,6 +29,8 @@ export class CreateDocumentDto {
   @ApiPropertyOptional({ type: [String] })
   @IsOptional()
   @IsArray()
+  @ArrayMaxSize(20)
   @IsString({ each: true })
+  @MaxLength(50, { each: true })
   tags?: string[];
 }

@@ -15,9 +15,7 @@
 </head>
 <body>
 
-<!-- ═══════════════════════════════════════════════════
-     NAVBAR
-════════════════════════════════════════════════════ -->
+<!-- NAVBAR -->
 <nav class="navbar" role="navigation" aria-label="Navigation principale">
   <a class="navbar-brand" onclick="navigate('home')" tabindex="0" aria-label="Accueil Association Espoir et Vie">
     <div class="navbar-logo"><img src="assets/logo-aev.png" alt="Logo Association Espoir & Vie"></div>
@@ -37,9 +35,7 @@
   </div>
 </nav>
 
-<!-- ═══════════════════════════════════════════════════
-     PAGE : ACCUEIL
-════════════════════════════════════════════════════ -->
+<!-- PAGE : ACCUEIL -->
 <div id="page-home" class="page">
 
   <!-- HERO -->
@@ -182,9 +178,7 @@
   </footer>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     PAGE : CATALOGUE
-════════════════════════════════════════════════════ -->
+<!-- PAGE : CATALOGUE -->
 <div id="page-catalogue" class="page">
   <div style="background:linear-gradient(135deg,var(--blue-deep),var(--blue-dark));padding:24px 36px">
     <div class="flex-b gap-12" style="flex-wrap:wrap">
@@ -212,9 +206,7 @@
   <footer class="site-footer"><div class="footer-brand"><div class="footer-logo"><img src="assets/logo-aev.png" alt="AEV"></div><div class="footer-name">Association Espoir &amp; Vie · espoiretvie.td</div></div><div class="footer-links"><span class="footer-link" onclick="navigate('home')">Accueil</span><span class="footer-link" onclick="navigate('about')">À propos</span></div></footer>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     PAGE : RECHERCHE
-════════════════════════════════════════════════════ -->
+<!-- PAGE : RECHERCHE -->
 <div id="page-search" class="page">
   <div style="background:linear-gradient(135deg,var(--blue-deep),var(--blue-dark));padding:20px 28px">
     <div class="breadcrumb mb-10"><i class="ti ti-home"></i><span onclick="navigate('home')">Accueil</span><i class="ti ti-chevron-right"></i><span style="color:rgba(255,255,255,.85)">Recherche avancée</span></div>
@@ -280,23 +272,17 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     PAGE : FICHE DOCUMENT
-════════════════════════════════════════════════════ -->
+<!-- PAGE : FICHE DOCUMENT -->
 <div id="page-doc" class="page">
   <div id="doc-content"></div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     PAGE : À PROPOS
-════════════════════════════════════════════════════ -->
+<!-- PAGE : À PROPOS -->
 <div id="page-about" class="page">
   <div id="about-content"></div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     PAGE : CONNEXION / INSCRIPTION
-════════════════════════════════════════════════════ -->
+<!-- PAGE : CONNEXION / INSCRIPTION -->
 <div id="page-auth" class="page">
   <div class="auth-wrap">
     <div class="auth-left">
@@ -322,10 +308,6 @@
           </div>
         </div>
       </div>
-      <div style="position:relative;z-index:1;margin-top:28px;padding:16px;border:1px solid rgba(41,171,226,.25);border-radius:var(--r-xl);background:rgba(41,171,226,.08)">
-        <div style="font-size:11px;color:var(--blue);font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px"><i class="ti ti-bolt" style="margin-right:5px"></i>Démo rapide</div>
-        <button class="btn btn-red w-full" onclick="doAdminDemo()"><i class="ti ti-shield"></i>Accès administrateur (démo)</button>
-      </div>
       <div style="font-size:11px;color:rgba(255,255,255,.2);margin-top:16px">© 2026 Association Espoir &amp; Vie · espoiretvie.td</div>
     </div>
     <div class="auth-right">
@@ -348,14 +330,14 @@
           <div class="divider">ou avec l'email</div>
           <div class="form-group">
             <label class="form-label">Adresse email</label>
-            <div class="input-icon"><i class="ti ti-mail"></i><input type="email" id="login-email" class="form-control" placeholder="votre@email.com" value="membre@espoiretvie.td"></div>
+            <div class="input-icon"><i class="ti ti-mail"></i><input type="email" id="login-email" class="form-control" placeholder="votre@email.com"></div>
           </div>
           <div class="form-group">
             <div class="flex-b mb-6" style="margin-bottom:6px">
               <label class="form-label" style="margin-bottom:0">Mot de passe</label>
               <span style="font-size:12px;color:var(--blue);cursor:pointer" onclick="toast('Email de réinitialisation envoyé','info')">Oublié ?</span>
             </div>
-            <div class="input-icon"><i class="ti ti-lock"></i><input type="password" id="login-pass" class="form-control" placeholder="••••••••" value="password123"></div>
+            <div class="input-icon"><i class="ti ti-lock"></i><input type="password" id="login-pass" class="form-control" placeholder="••••••••"></div>
           </div>
           <label class="flex-c gap-8" style="cursor:pointer"><input type="checkbox" style="accent-color:var(--blue);width:14px;height:14px"><span style="font-size:13px;color:var(--text-sec)">Se souvenir de moi</span></label>
           <button class="btn btn-primary btn-lg w-full" onclick="doLogin()"><i class="ti ti-login"></i>Se connecter</button>
@@ -385,9 +367,7 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     PAGE : ESPACE MEMBRE
-════════════════════════════════════════════════════ -->
+<!-- PAGE : ESPACE MEMBRE -->
 <div id="page-member" class="page">
   <div class="layout-sidebar">
     <nav class="sidebar" id="member-sidebar" aria-label="Menu membre">
@@ -419,9 +399,7 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     PAGE : ADMINISTRATION
-════════════════════════════════════════════════════ -->
+<!-- PAGE : ADMINISTRATION -->
 <div id="page-admin" class="page">
   <div class="layout-sidebar">
     <nav class="sidebar" id="admin-sidebar" aria-label="Menu administration">
@@ -456,9 +434,7 @@
   </div>
 </div>
 
-<!-- ═══════════════════════════════════════════════════
-     MODAL GLOBAL
-════════════════════════════════════════════════════ -->
+<!-- MODAL GLOBAL -->
 <div class="modal-overlay" id="modal-overlay" onclick="if(event.target===this)closeModal()" role="dialog" aria-modal="true">
   <div class="modal-box">
     <div class="modal-head">

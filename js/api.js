@@ -1,12 +1,8 @@
-/* ══════════════════════════════════════════════════════════
-   AEV — Couche API (backend Railway)
-   https://aevbackend-production.up.railway.app/api/v1
-   ══════════════════════════════════════════════════════════ */
 "use strict";
 
 const API_BASE = "https://aevbackend-production.up.railway.app/api/v1";
 
-// ─── Stockage des tokens JWT ──────────────────────────────
+// Stockage des tokens JWT
 const TokenStore = {
   get() {
     return {
@@ -24,7 +20,7 @@ const TokenStore = {
   },
 };
 
-// ─── Fetch authentifié avec auto-refresh ─────────────────
+// Fetch authentifié avec auto-refresh
 async function apiFetch(path, opts = {}) {
   const tokens = TokenStore.get();
   const headers = { "Content-Type": "application/json", ...(opts.headers || {}) };
@@ -57,7 +53,7 @@ async function apiFetch(path, opts = {}) {
   return res.json();
 }
 
-// ─── Mappers API → format app ────────────────────────────
+// Mappers API → format app
 function mapUser(u) {
   if (!u) return null;
   const parts    = (u.fullName || "").trim().split(/\s+/);
@@ -163,7 +159,7 @@ function mapActivity(a) {
   };
 }
 
-// ─── API publique ─────────────────────────────────────────
+// API publique
 const API = {
   auth: {
     async login(email, password) {
