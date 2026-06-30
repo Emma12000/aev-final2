@@ -2465,17 +2465,74 @@ function shareDoc(id, network, title) {
 }
 
 async function openDocFullscreen(id) {
-  toast("Préparation de l'aperçu…", "info");
+  const modal    = document.getElementById("modal-preview");
+  const iframe   = document.getElementById("preview-iframe");
+  const loading  = document.getElementById("preview-loading");
+  const noPreview= document.getElementById("preview-no-preview");
+  const titleEl  = document.getElementById("preview-title");
+  const metaEl   = document.getElementById("preview-meta");
+  const iconEl   = document.getElementById("preview-icon");
+  const dlBtn    = document.getElementById("preview-dl-btn");
+  const dlBtn2   = document.getElementById("preview-dl-btn2");
+
+  // Réinitialiser l'état
+  modal.style.display = "flex";
+  iframe.style.display = "none";
+  iframe.src = "";
+  noPreview.style.display = "none";
+  loading.style.display = "flex";
+  titleEl.textContent = "Chargement…";
+  metaEl.textContent = "";
+
+  // Fermer avec Escape
+  document.onkeydown = (e) => { if (e.key === "Escape") closeDocFullscreen(); };
+
   try {
     const result = await API.documents.download(id);
-    if (result?.url) {
-      window.open(result.url, "_blank", "noopener");
+    if (!result?.url) throw new Error("URL indisponible");
+
+    const mime = result.mimeType || "";
+    const name = result.fileName || "document";
+    const fmt  = mime.includes("pdf") ? "PDF" : mime.includes("word") ? "Word" : mime.includes("excel") || mime.includes("spreadsheet") ? "Excel" : "Fichier";
+    const fmtIcon = { PDF:"ti-file-type-pdf", Word:"ti-file-type-doc", Excel:"ti-file-spreadsheet" }[fmt] || "ti-file";
+    const fmtColor = { PDF:"#e53e3e", Word:"#2563eb", Excel:"#16a34a" }[fmt] || "#7c91f9";
+
+    titleEl.textContent = name.replace(/\.[^.]+$/, "");
+    metaEl.textContent  = `${fmt} · Aperçu en lecture seule`;
+    iconEl.innerHTML    = `<i class="ti ${fmtIcon}" style="color:${fmtColor}"></i>`;
+
+    // Action télécharger
+    const doDownload = () => {
+      const a = document.createElement("a");
+      a.href = result.url; a.download = name; a.target = "_blank"; a.click();
+    };
+    dlBtn.onclick  = doDownload;
+    if (dlBtn2) dlBtn2.onclick = doDownload;
+
+    loading.style.display = "none";
+
+    if (mime.includes("pdf")) {
+      // PDF : affiché inline dans l'iframe
+      iframe.src = result.url;
+      iframe.style.display = "block";
+      iframe.onload = () => { loading.style.display = "none"; };
+      iframe.onerror = () => { iframe.style.display = "none"; noPreview.style.display = "flex"; };
     } else {
-      toast("Aperçu indisponible pour ce document.", "err");
+      // Word, Excel, etc. : pas d'aperçu inline possible
+      noPreview.style.display = "flex";
     }
   } catch(e) {
-    toast(e.message || "Impossible d'ouvrir l'aperçu.", "err");
+    loading.style.display = "none";
+    noPreview.style.display = "flex";
   }
+}
+
+function closeDocFullscreen() {
+  const modal  = document.getElementById("modal-preview");
+  const iframe = document.getElementById("preview-iframe");
+  modal.style.display = "none";
+  iframe.src = "";
+  document.onkeydown = null;
 }
 function _fallbackCopy(text) {
   const ta = document.createElement("textarea");
