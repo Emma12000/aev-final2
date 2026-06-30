@@ -34,6 +34,13 @@ export class DocumentsController {
     return this.docs.findOne(id, actor);
   }
 
+  @Public()
+  @Get(':id/preview-url')
+  @ApiOperation({ summary: 'URL signée longue durée pour les visionneuses (1h)' })
+  previewUrl(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() actor: JwtPayload) {
+    return this.docs.getPreviewUrl(id, actor);
+  }
+
   @Get(':id/download')
   @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Obtenir un lien signé pour télécharger le fichier' })

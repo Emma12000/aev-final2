@@ -354,6 +354,19 @@ const API = {
       }
     },
 
+    async previewUrl(id) {
+      try {
+        const res = await fetch(API_BASE + "/documents/" + id + "/preview-url", {
+          credentials: "include",
+          headers: TokenStore._access ? { "Authorization": `Bearer ${TokenStore._access}` } : {},
+        });
+        const data = await res.json();
+        return res.ok ? (data?.data || null) : null;
+      } catch (_) {
+        return null;
+      }
+    },
+
     async approve(id) {
       return apiFetch("/documents/" + id + "/approve", { method: "POST" });
     },

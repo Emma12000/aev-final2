@@ -2511,14 +2511,33 @@ async function openDocFullscreen(id) {
 
     loading.style.display = "none";
 
+    const isOffice = mime.includes("word") || mime.includes("excel") || mime.includes("spreadsheet")
+      || mime.includes("powerpoint") || mime.includes("presentation")
+      || /\.(docx?|xlsx?|pptx?)$/i.test(name);
+    const isImage  = mime.startsWith("image/");
+    const isText   = mime.startsWith("text/") || mime.includes("plain");
+
     if (mime.includes("pdf")) {
-      // PDF : affiché inline dans l'iframe
+      // PDF → rendu natif dans l'iframe
       iframe.src = result.url;
       iframe.style.display = "block";
-      iframe.onload = () => { loading.style.display = "none"; };
-      iframe.onerror = () => { iframe.style.display = "none"; noPreview.style.display = "flex"; };
+    } else if (isOffice) {
+      // Word / Excel / PowerPoint → Microsoft Office Online Viewer (nécessite URL 1h)
+      const preview = await API.documents.previewUrl(id);
+      if (preview?.url) {
+        const msUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(preview.url)}`;
+        iframe.src = msUrl;
+        iframe.style.display = "block";
+      } else {
+        noPreview.style.display = "flex";
+      }
+    } else if (isImage) {
+      // Image → affichée directement
+      iframe.srcdoc = `<html><body style="margin:0;background:#111;display:flex;align-items:center;justify-content:center;height:100vh">
+        <img src="${result.url}" style="max-width:100%;max-height:100vh;object-fit:contain" alt="${name}">
+      </body></html>`;
+      iframe.style.display = "block";
     } else {
-      // Word, Excel, etc. : pas d'aperçu inline possible
       noPreview.style.display = "flex";
     }
   } catch(e) {

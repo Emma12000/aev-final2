@@ -131,6 +131,17 @@ export class DocumentsService {
     return { url, fileName: doc.fileName, mimeType: doc.fileMimeType };
   }
 
+  // URL longue durée (1h) pour les visionneuses externes (MS Office Online, Google Docs Viewer)
+  async getPreviewUrl(id: string, actor: JwtPayload) {
+    const doc = await this.prisma.document.findUnique({
+      where: { id, status: { not: DocumentStatus.DELETED } },
+    });
+    if (!doc) throw new NotFoundException('Document introuvable.');
+    await this.assertAccess(doc, actor);
+    const url = await this.storage.getSignedUrl(doc.fileKey, 3600);
+    return { url, fileName: doc.fileName, mimeType: doc.fileMimeType };
+  }
+
   // ─── Upload ───────────────────────────────────────────────────────────────
 
   async upload(file: Express.Multer.File, dto: CreateDocumentDto, actor: JwtPayload) {
