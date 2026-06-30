@@ -392,7 +392,7 @@ async function renderDoc(id) {
                 Page 1 / ${d.pages}
                 <i class="ti ti-chevron-right" style="cursor:pointer" onclick="toast('Page suivante','info')"></i>
               </div>
-              <button class="btn btn-outline btn-sm" onclick="toast('Ouverture plein écran','info')"><i class="ti ti-maximize"></i>Plein écran</button>
+              <button class="btn btn-outline btn-sm" onclick="openDocFullscreen('${d.id}')"><i class="ti ti-maximize"></i>Plein écran</button>
             </div>
           </div>
           <div class="doc-preview-wrap">
@@ -452,7 +452,7 @@ async function renderDoc(id) {
           </div>
           <div style="font-size:12px;color:var(--text-sec);margin-bottom:16px">${d.fmt} · ${d.size} · ${d.pages} pages</div>
           <button class="btn btn-primary w-full mb-8" onclick="memberDownloadDoc('${d.id}')"><i class="ti ti-download"></i>Télécharger</button>
-          <button class="btn btn-outline w-full" style="font-size:12px" onclick="toast('Ouverture en cours…','info')"><i class="ti ti-eye"></i>Aperçu plein écran</button>
+          <button class="btn btn-outline w-full" style="font-size:12px" onclick="openDocFullscreen('${d.id}')"><i class="ti ti-eye"></i>Aperçu plein écran</button>
           <div style="font-size:11px;color:var(--text-sec);margin-top:10px">${d.dl} téléchargements · Gratuit</div>
         </div>
 
@@ -460,9 +460,18 @@ async function renderDoc(id) {
         <div class="card card-body">
           <div class="card-title mb-10">Partager ce document</div>
           <div class="grid-4 gap-6">
-            ${[["ti-brand-facebook","#1877F2"],["ti-brand-whatsapp","#25D366"],["ti-mail","var(--blue)"],["ti-link","var(--gray-600)"]].map(([ic,col])=>`
-              <div class="btn-icon w-full" style="height:36px;border-radius:var(--r-md);font-size:17px" onclick="shareDoc('${d.id}')"><i class="ti ${ic}" style="color:${col}"></i></div>
-            `).join("")}
+            <div class="btn-icon w-full" style="height:36px;border-radius:var(--r-md);font-size:17px" title="Partager sur Facebook"
+              onclick="shareDoc('${d.id}','facebook','${d.title.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">
+              <i class="ti ti-brand-facebook" style="color:#1877F2"></i></div>
+            <div class="btn-icon w-full" style="height:36px;border-radius:var(--r-md);font-size:17px" title="Partager sur WhatsApp"
+              onclick="shareDoc('${d.id}','whatsapp','${d.title.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">
+              <i class="ti ti-brand-whatsapp" style="color:#25D366"></i></div>
+            <div class="btn-icon w-full" style="height:36px;border-radius:var(--r-md);font-size:17px" title="Partager par email"
+              onclick="shareDoc('${d.id}','email','${d.title.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')">
+              <i class="ti ti-mail" style="color:var(--blue)"></i></div>
+            <div class="btn-icon w-full" style="height:36px;border-radius:var(--r-md);font-size:17px" title="Copier le lien"
+              onclick="shareDoc('${d.id}','link','')">
+              <i class="ti ti-link" style="color:var(--gray-600)"></i></div>
           </div>
         </div>
 
@@ -2431,14 +2440,41 @@ async function memberDownloadDoc(id) {
 function dlDoc(id) {
   memberDownloadDoc(id);
 }
-function shareDoc(id) {
-  const url = `https://espoiretvie.td/doc/${id}`;
-  if (navigator.clipboard) {
-    navigator.clipboard.writeText(url)
-      .then(()  => toast("Lien copié dans le presse-papiers !", "info"))
-      .catch(()  => _fallbackCopy(url));
-  } else {
-    _fallbackCopy(url);
+function shareDoc(id, network, title) {
+  const docUrl = `https://archive.espoiretvie.td?doc=${id}`;
+  const msg = `Consultez ce document sur AEV Archives${title ? " : " + title : ""}\n${docUrl}`;
+  switch(network) {
+    case "facebook":
+      window.open(`https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(docUrl)}`, "_blank", "width=600,height=400,noopener");
+      break;
+    case "whatsapp":
+      window.open(`https://wa.me/?text=${encodeURIComponent(msg)}`, "_blank", "noopener");
+      break;
+    case "email":
+      window.location.href = `mailto:?subject=${encodeURIComponent("Document AEV" + (title ? " : " + title : ""))}&body=${encodeURIComponent(msg)}`;
+      break;
+    default: // "link" ou fallback
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(docUrl)
+          .then(()  => toast("Lien copié !", "ok"))
+          .catch(() => _fallbackCopy(docUrl));
+      } else {
+        _fallbackCopy(docUrl);
+      }
+  }
+}
+
+async function openDocFullscreen(id) {
+  toast("Préparation de l'aperçu…", "info");
+  try {
+    const result = await API.documents.download(id);
+    if (result?.url) {
+      window.open(result.url, "_blank", "noopener");
+    } else {
+      toast("Aperçu indisponible pour ce document.", "err");
+    }
+  } catch(e) {
+    toast(e.message || "Impossible d'ouvrir l'aperçu.", "err");
   }
 }
 function _fallbackCopy(text) {
@@ -2484,6 +2520,13 @@ document.addEventListener("DOMContentLoaded", async () => {
   // Initialiser Google Sign-In
   if (window.google) initGoogleSignIn();
   else window.addEventListener("load", initGoogleSignIn, { once: true });
+
+  // Ouvrir directement un document via ?doc=UUID (lien partagé)
+  const docParam = urlParams.get("doc");
+  if (docParam) {
+    window.history.replaceState({}, "", window.location.pathname);
+    navigate("doc", { id: docParam });
+  }
 
   // Détecter un token de vérification email (?verify=TOKEN)
   const urlParams = new URLSearchParams(window.location.search);
