@@ -1814,7 +1814,7 @@ async function renderAdmin(sec="dashboard") {
           <div class="card card-body">
             <div class="card-title mb-16">Top documents</div>
             ${[...DB.docs].sort((a,b)=>b.dl-a.dl).slice(0,5).map((d,i)=>`
-              <div class="flex-c gap-10" style="padding:8px 0;border-bottom:1px solid var(--border-lt);cursor:pointer" onclick="navigate('doc',{id:${d.id}})">
+              <div class="flex-c gap-10" style="padding:8px 0;border-bottom:1px solid var(--border-lt);cursor:pointer" onclick="navigate('doc',{id:'${d.id}'})">
                 <div style="width:22px;height:22px;border-radius:50%;background:${i===0?"var(--blue)":i===1?"var(--blue-light)":"var(--gray-100)"};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${i===0?"white":"var(--blue)"};flex-shrink:0">${i+1}</div>
                 <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.title.length>40?d.title.substring(0,40)+"…":d.title}</div></div>
                 <span style="font-size:12px;font-weight:700;color:var(--blue)">${d.dl}</span>
