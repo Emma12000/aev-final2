@@ -1261,16 +1261,31 @@ function renderUploadStep(c) {
         <div class="flex-c gap-10"><i class="ti ti-clock" style="color:var(--red);font-size:17px"></i><span style="font-size:13px;color:var(--text-sec)">Délai estimé : 24 à 48 heures ouvrables</span></div>
       </div>
     </div>`;
-  if (s===4) body=`
+  if (s===4) {
+    const isPublished = APP.uploadedDoc?.status === "published";
+    const docId = APP.uploadedDoc?.id;
+    body = `
     <div style="text-align:center;padding:36px 20px">
-      <div style="width:80px;height:80px;background:var(--blue-light);border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:36px;color:var(--blue)"><i class="ti ti-circle-check"></i></div>
-      <h2 style="font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--text);margin-bottom:10px">Document soumis avec succès !</h2>
-      <p style="font-size:14px;color:var(--text-sec);margin-bottom:28px;max-width:380px;margin-left:auto;margin-right:auto;line-height:1.7">Votre document a été envoyé pour validation. Un administrateur le traitera sous 24 à 48h. Vous serez notifié dès publication.</p>
-      <div class="flex-c gap-10" style="justify-content:center">
-        <button class="btn btn-primary" onclick="renderMember('docs')"><i class="ti ti-files"></i>Mes documents</button>
-        <button class="btn btn-outline" onclick="renderMember('upload')"><i class="ti ti-upload"></i>Nouveau dépôt</button>
+      <div style="width:80px;height:80px;background:${isPublished?"#DCFCE7":"var(--blue-light)"};border-radius:50%;display:flex;align-items:center;justify-content:center;margin:0 auto 20px;font-size:36px;color:${isPublished?"#16A34A":"var(--blue)"}">
+        <i class="ti ${isPublished?"ti-circle-check":"ti-clock"}"></i>
+      </div>
+      <h2 style="font-family:var(--font-display);font-size:24px;font-weight:700;color:var(--text);margin-bottom:10px">
+        ${isPublished ? "Document publié !" : "Document soumis avec succès !"}
+      </h2>
+      <p style="font-size:14px;color:var(--text-sec);margin-bottom:28px;max-width:400px;margin-left:auto;margin-right:auto;line-height:1.7">
+        ${isPublished
+          ? "Votre document est immédiatement visible dans le catalogue. Les membres peuvent le consulter et le télécharger."
+          : "Votre document a été envoyé pour validation. Un administrateur le traitera sous 24 à 48h. Vous serez notifié par email dès sa publication."}
+      </p>
+      <div class="flex-c gap-10" style="justify-content:center;flex-wrap:wrap">
+        ${isPublished && docId
+          ? `<button class="btn btn-primary" onclick="navigate('doc',{id:'${docId}'})"><i class="ti ti-eye"></i>Voir le document</button>
+             <button class="btn btn-outline" onclick="navigate('catalogue')"><i class="ti ti-books"></i>Voir le catalogue</button>`
+          : `<button class="btn btn-primary" onclick="renderMember('docs')"><i class="ti ti-files"></i>Mes documents</button>`}
+        <button class="btn btn-outline" onclick="APP.uploadedDoc=null;renderMember('upload')"><i class="ti ti-upload"></i>Nouveau dépôt</button>
       </div>
     </div>`;
+  }
 
   c.innerHTML = `
     <div class="topbar"><div><div class="topbar-title">Déposer un document</div><div class="topbar-sub">Étape ${Math.min(s,4)} sur 4</div></div></div>
@@ -1338,12 +1353,14 @@ async function nextUploadStep() {
     if (btn) { btn.disabled = true; btn.innerHTML = `<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Envoi…`; }
 
     try {
-      await API.documents.upload(fd);
+      const uploaded = await API.documents.upload(fd);
       APP.uploadStep++;
+      APP.uploadedDoc = uploaded; // garder pour adapter l'écran de succès
       APP.uploadFile = null;
       APP.uploadDraft = null;
       renderUploadStep(c);
-      toast("Document soumis pour validation !","ok");
+      const isPublished = uploaded?.status === "published";
+      toast(isPublished ? "Document publié dans le catalogue !" : "Document soumis — en attente de validation.", isPublished ? "ok" : "info");
     } catch(e) {
       toast(e.message || "Erreur lors du dépôt. Vérifiez le fichier.", "err");
       if (btn) { btn.disabled = false; btn.innerHTML = `<i class="ti ti-send"></i>Soumettre`; }
@@ -1401,19 +1418,19 @@ async function renderAdmin(sec="dashboard") {
     APP.adminSec = "dashboard";
     $$("#admin-sidebar .sidebar-item").forEach(el=>el.classList.toggle("active",el.dataset.sec==="dashboard"));
   }
-  const pending = DB.docs.filter(d=>d.status==="pending");
-  // Badge dynamique
-  const navDocs = $("#admin-docs-nav");
-  if (navDocs) {
+  // Badge dynamique — vrais documents en attente depuis l'API
+  API.documents.adminList({ status: "ARCHIVED", limit: 1 }).then(({ total }) => {
+    const navDocs = $("#admin-docs-nav");
+    if (!navDocs) return;
     const badge = navDocs.querySelector(".s-badge");
     if (badge) badge.remove();
-    if (pending.length) {
+    if (total > 0) {
       const b = document.createElement("span");
       b.className = "s-badge";
-      b.textContent = pending.length;
+      b.textContent = total;
       navDocs.appendChild(b);
     }
-  }
+  }).catch(() => null);
 
   if (sec==="dashboard") {
     // Spinner pendant le chargement des vraies stats
