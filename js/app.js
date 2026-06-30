@@ -656,8 +656,10 @@ async function doLogout() {
 function updateNavbarUser() {
   const btnZone = $("#navbar-user-zone");
   if (APP.user) {
+    const isAdmin = ["admin","superviseur"].includes(APP.user.role);
     btnZone.innerHTML = `
-      <div class="navbar-user" onclick="navigate(['admin','superviseur'].includes(APP.user.role)?'admin':'member')">
+      ${isAdmin ? `<button class="btn btn-sm" style="background:rgba(255,255,255,.15);color:white;border:1px solid rgba(255,255,255,.3);margin-right:6px" onclick="navigate('admin')"><i class="ti ti-settings"></i>Espace Admin</button>` : ""}
+      <div class="navbar-user" onclick="navigate(${isAdmin}?'admin':'member')">
         <div class="navbar-user-avatar">${APP.user.initials}</div>
         <span class="navbar-user-name">${APP.user.name.split(" ")[0]}</span>
         <i class="ti ti-chevron-down" style="font-size:12px;color:rgba(255,255,255,.5)"></i>
