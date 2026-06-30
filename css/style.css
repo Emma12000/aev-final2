@@ -756,3 +756,56 @@ select.form-control { cursor: pointer; }
   .btn-lg { width: 100%; text-align: center; justify-content: center; }
   .grid-4 { grid-template-columns: repeat(2, 1fr); }
 }
+
+/* ═══════════════════════════════════════════════
+   CORRECTIONS MOBILES SPÉCIFIQUES
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+
+  /* Doc-row : tag masqué, meta sur 1 ligne, actions compactes */
+  .doc-row { gap: 10px; padding: 12px 14px; align-items: flex-start; flex-wrap: nowrap; }
+  .doc-row > div:not(.doc-actions) { flex: 1; min-width: 0; }
+  .doc-row .tag { display: none; }
+  .doc-name { font-size: 13px; white-space: nowrap; }
+  .doc-meta { font-size: 11px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .doc-actions { flex-shrink: 0; align-self: center; }
+  .doc-icon { width: 34px; height: 40px; font-size: 18px; }
+
+  /* CTA home : boutons pleine largeur et empilés */
+  .flex-c.gap-12[style*="justify-content:center"] {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .flex-c.gap-12[style*="justify-content:center"] .btn-lg {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Section header flex : empiler sur mobile */
+  .flex-b { flex-wrap: wrap; gap: 8px; }
+
+  /* Catalogue chips : scroll horizontal */
+  .cat-chips { overflow-x: auto; flex-wrap: nowrap; padding-bottom: 4px; -webkit-overflow-scrolling: touch; }
+  .cat-chip { flex-shrink: 0; }
+
+  /* Footer liens */
+  .footer-links { flex-wrap: wrap; gap: 8px; justify-content: center; }
+
+  /* Boutons dans les doc-actions : taille réduite */
+  .btn-icon { width: 34px; height: 34px; font-size: 15px; }
+
+  /* Stats dans doc detail */
+  .grid-2.gap-8 { gap: 6px; }
+
+  /* Page doc : padding réduit */
+  #doc-content { padding: 12px !important; }
+
+  /* Auth : padding réduit */
+  .auth-box { padding: 20px 16px; }
+
+  /* Upload wizard */
+  .stepper { padding: 0 8px; }
+
+  /* Modal plein écran sur mobile */
+  .modal-box { width: calc(100vw - 24px); margin: 12px; max-width: none; }
+}
