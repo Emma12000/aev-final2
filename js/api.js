@@ -267,18 +267,10 @@ const API = {
       try {
         const q    = new URLSearchParams(params).toString();
         const path = "/documents" + (q ? "?" + q : "");
-        const tokens = TokenStore.get();
-        let items;
-        if (tokens.access) {
-          // Envoi du token si connecté → le backend adapte le filtre confidentialité au rôle
-          const res = await apiFetch(path);
-          const d   = res?.data;
-          items = d?.items || (Array.isArray(d) ? d : []);
-        } else {
-          const res  = await fetch(API_BASE + path);
-          const data = await res.json();
-          items = data?.data?.items || data?.data || [];
-        }
+        // apiFetch envoie le token si disponible + credentials:include pour le cookie
+        const res  = await apiFetch(path);
+        const d    = res?.data;
+        const items = d?.items || (Array.isArray(d) ? d : []);
         return items.map(mapDoc);
       } catch (_) {
         return [];
@@ -296,28 +288,27 @@ const API = {
 
     // Upload multipart/form-data — NE PAS mettre Content-Type (le navigateur le fait)
     async upload(formData) {
-      const tokens = TokenStore.get();
       const headers = {};
-      if (tokens.access) headers["Authorization"] = `Bearer ${tokens.access}`;
+      if (TokenStore._access) headers["Authorization"] = `Bearer ${TokenStore._access}`;
 
       let res = await fetch(API_BASE + "/documents/upload", {
         method: "POST",
         headers,
         body: formData,
+        credentials: "include",
       });
 
-      // Auto-refresh si 401
-      if (res.status === 401 && tokens.refresh) {
-        const ref = await fetch(API_BASE + "/auth/refresh", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ refreshToken: tokens.refresh }),
-        });
-        if (ref.ok) {
-          const rd = await ref.json();
-          TokenStore.set(rd.data.accessToken, rd.data.refreshToken);
-          headers["Authorization"] = `Bearer ${rd.data.accessToken}`;
-          res = await fetch(API_BASE + "/documents/upload", { method: "POST", headers, body: formData });
+      // Auto-refresh via cookie httpOnly si 401
+      if (res.status === 401) {
+        const refreshed = await silentRefresh();
+        if (refreshed) {
+          headers["Authorization"] = `Bearer ${TokenStore._access}`;
+          res = await fetch(API_BASE + "/documents/upload", {
+            method: "POST",
+            headers,
+            body: formData,
+            credentials: "include",
+          });
         }
       }
 
