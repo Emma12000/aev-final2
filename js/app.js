@@ -186,6 +186,10 @@ function navigate(page, data={}) {
     page = "auth";
     data = {};
   }
+  // Guard : seuls admin et superviseur peuvent accéder au panel admin
+  if (page==="admin" && APP.user && !["admin","superviseur"].includes(APP.user.role)) {
+    page = "member";
+  }
   $$(".page").forEach(p => p.classList.remove("active"));
   const el = $(`#page-${page}`);
   if (!el) return;
@@ -532,7 +536,7 @@ async function doLogin() {
     APP.user = mapUser(data.user);
     updateNavbarUser();
     toast(`Bienvenue, ${APP.user.name.split(" ")[0]} !`, "ok");
-    navigate(APP.user.role === "admin" ? "admin" : "member");
+    navigate(["admin","superviseur"].includes(APP.user.role) ? "admin" : "member");
   } catch(e) {
     toast(e.message || "Email ou mot de passe incorrect.", "err");
   } finally {
@@ -582,7 +586,7 @@ function updateNavbarUser() {
   const btnZone = $("#navbar-user-zone");
   if (APP.user) {
     btnZone.innerHTML = `
-      <div class="navbar-user" onclick="navigate(APP.user.role==='admin'?'admin':'member')">
+      <div class="navbar-user" onclick="navigate(['admin','superviseur'].includes(APP.user.role)?'admin':'member')">
         <div class="navbar-user-avatar">${APP.user.initials}</div>
         <span class="navbar-user-name">${APP.user.name.split(" ")[0]}</span>
         <i class="ti ti-chevron-down" style="font-size:12px;color:rgba(255,255,255,.5)"></i>
@@ -944,8 +948,8 @@ async function renderMember(sec="dashboard") {
     const nameParts = (u.name||"Utilisateur").split(" ");
     const prenom = nameParts[0] || "";
     const nom    = nameParts.slice(1).join(" ") || "";
-    const roleLbl = u.role==="admin"?"Administrateur":u.role==="member"?"Membre":u.role==="consultant"?"Consultant":u.role==="lecteur"?"Lecteur":"Superviseur";
-    const roleCls = u.role==="admin"?"tag-red":"tag-blue";
+    const roleLbl = { admin:"Administrateur", superviseur:"Superviseur", member:"Agent", consultant:"Consultant", lecteur:"Lecteur" }[u.role] || "Utilisateur";
+    const roleCls = { admin:"tag-red", superviseur:"tag-orange", consultant:"tag-cyan", lecteur:"tag-gray" }[u.role] || "tag-blue";
     c.innerHTML = `
       <div class="topbar"><div class="topbar-title">Mon profil</div></div>
       <div class="page-inner" style="max-width:580px">
@@ -1245,6 +1249,19 @@ async function renderAdmin(sec="dashboard") {
   APP.adminSec = sec;
   $$("#admin-sidebar .sidebar-item").forEach(el=>el.classList.toggle("active",el.dataset.sec===sec));
   const c = $("#admin-main");
+
+  // SUPERVISEUR : masquer les sections réservées à l'ADMINISTRATEUR
+  const isSuperviseur = APP.user?.role === "superviseur";
+  ["users","access","settings"].forEach(s => {
+    const el = document.querySelector(`#admin-sidebar [data-sec="${s}"]`);
+    if (el) el.style.display = isSuperviseur ? "none" : "";
+  });
+  // Rediriger si le superviseur tente d'accéder à une section interdite
+  if (isSuperviseur && ["users","access","settings"].includes(sec)) {
+    sec = "dashboard";
+    APP.adminSec = "dashboard";
+    $$("#admin-sidebar .sidebar-item").forEach(el=>el.classList.toggle("active",el.dataset.sec==="dashboard"));
+  }
   const pending = DB.docs.filter(d=>d.status==="pending");
   // Badge dynamique
   const navDocs = $("#admin-docs-nav");
@@ -1429,7 +1446,7 @@ async function renderAdmin(sec="dashboard") {
   if (sec==="users") {
     c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
     const users = await API.admin.users({ limit: 100 }).catch(() => []);
-    const roleClsMap = { admin:"tag-red", member:"tag-blue", lecteur:"tag-gray" };
+    const roleClsMap = { admin:"tag-red", superviseur:"tag-orange", member:"tag-blue", consultant:"tag-cyan", lecteur:"tag-gray" };
     c.innerHTML = `
       <div class="topbar">
         <div><div class="topbar-title">Gestion des membres</div><div class="topbar-sub">${users.length} membre${users.length!==1?"s":""} inscrit${users.length!==1?"s":""}</div></div>
@@ -1443,7 +1460,7 @@ async function renderAdmin(sec="dashboard") {
               ${users.map(u=>`
               <tr id="user-row-${u.id}">
                 <td><div class="flex-c gap-10">
-                  <div class="u-avatar" style="background:${u.role==="admin"?"var(--red)":"var(--blue)"}">${u.initials}</div>
+                  <div class="u-avatar" style="background:${u.role==="admin"?"var(--red)":u.role==="superviseur"?"#F97316":"var(--blue)"}">${u.initials}</div>
                   <div style="font-size:13px;font-weight:700">${u.name}</div>
                 </div></td>
                 <td class="text-sec text-sm">${u.email}</td>
@@ -1485,7 +1502,7 @@ async function renderAdmin(sec="dashboard") {
         <td class="text-sec text-sm" style="white-space:nowrap;font-variant-numeric:tabular-nums">${l.dateStr}</td>
         <td>
           <div class="flex-c gap-8">
-            <div class="u-avatar" style="width:28px;height:28px;font-size:10px;background:${l.role==="ADMINISTRATEUR"?"var(--red)":"var(--blue)"}">${l.user.split(" ").map(w=>w[0]||"").join("").substring(0,2).toUpperCase()||"?"}</div>
+            <div class="u-avatar" style="width:28px;height:28px;font-size:10px;background:${l.role==="ADMINISTRATEUR"?"var(--red)":l.role==="SUPERVISEUR"?"#F97316":"var(--blue)"}">${l.user.split(" ").map(w=>w[0]||"").join("").substring(0,2).toUpperCase()||"?"}</div>
             <span style="font-size:13px;font-weight:600">${l.user}</span>
           </div>
         </td>
@@ -1985,8 +2002,10 @@ function openCreateUserModal() {
         <label class="form-label">Rôle</label>
         <select id="cu-role" class="form-control">
           <option value="AGENT">Agent</option>
-          <option value="ADMINISTRATEUR">Administrateur</option>
+          <option value="SUPERVISEUR">Superviseur</option>
+          <option value="CONSULTANT">Consultant</option>
           <option value="LECTEUR">Lecteur</option>
+          <option value="ADMINISTRATEUR">Administrateur</option>
         </select>
       </div>
       <div class="form-group">
@@ -2020,7 +2039,7 @@ async function submitCreateUser() {
 }
 
 function openEditUserModal(id, name, role, status) {
-  const roleMap = { admin:"ADMINISTRATEUR", member:"AGENT", lecteur:"LECTEUR" };
+  const roleMap = { admin:"ADMINISTRATEUR", superviseur:"SUPERVISEUR", member:"AGENT", consultant:"CONSULTANT", lecteur:"LECTEUR" };
   const apiRole = roleMap[role] || "AGENT";
   openModal(`
     <div class="flex-col gap-14">
@@ -2032,8 +2051,10 @@ function openEditUserModal(id, name, role, status) {
         <label class="form-label">Rôle</label>
         <select id="eu-role" class="form-control">
           <option value="AGENT" ${apiRole==="AGENT"?"selected":""}>Agent</option>
-          <option value="ADMINISTRATEUR" ${apiRole==="ADMINISTRATEUR"?"selected":""}>Administrateur</option>
+          <option value="SUPERVISEUR" ${apiRole==="SUPERVISEUR"?"selected":""}>Superviseur</option>
+          <option value="CONSULTANT" ${apiRole==="CONSULTANT"?"selected":""}>Consultant</option>
           <option value="LECTEUR" ${apiRole==="LECTEUR"?"selected":""}>Lecteur</option>
+          <option value="ADMINISTRATEUR" ${apiRole==="ADMINISTRATEUR"?"selected":""}>Administrateur</option>
         </select>
       </div>
       <div class="flex-c gap-10 mt-4">

@@ -62,8 +62,8 @@ function mapUser(u) {
   if (!u) return null;
   const parts    = (u.fullName || "").trim().split(/\s+/);
   const initials = parts.map(p => p[0] || "").join("").toUpperCase().slice(0, 2) || "??";
-  const roleMap  = { ADMINISTRATEUR: "admin", AGENT: "member", LECTEUR: "lecteur" };
-  const roleLbl  = { ADMINISTRATEUR: "Administrateur", AGENT: "Agent", LECTEUR: "Lecteur" };
+  const roleMap  = { ADMINISTRATEUR: "admin", SUPERVISEUR: "superviseur", AGENT: "member", LECTEUR: "lecteur", CONSULTANT: "consultant" };
+  const roleLbl  = { ADMINISTRATEUR: "Administrateur", SUPERVISEUR: "Superviseur", AGENT: "Agent", LECTEUR: "Lecteur", CONSULTANT: "Consultant" };
   return {
     id:        u.id,
     name:      u.fullName,
