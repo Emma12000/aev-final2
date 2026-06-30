@@ -904,7 +904,12 @@ async function renderMember(sec="dashboard") {
   const c = $("#member-main");
 
   if (sec==="dashboard") {
-    const myDocs = DB.docs.slice(0,5);
+    // Charger données réelles depuis l'API
+    const userId = APP.user?.id;
+    const [{ items: myDocs }, myFavs] = await Promise.all([
+      userId ? API.documents.adminList({ uploadedById: userId, limit: 5 }).catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
+      userId ? API.favorites.list().catch(() => []) : Promise.resolve([]),
+    ]);
     const pending = myDocs.filter(d=>d.status==="pending").length;
     const verifyBanner = APP.user && !APP.user.emailVerified ? `
       <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px">
@@ -923,7 +928,12 @@ async function renderMember(sec="dashboard") {
       <div class="page-inner">
         ${verifyBanner}
         <div class="stats-grid">
-          ${[["ti-files","si-blue","12","Mes documents","↑ +2 ce mois"],["ti-clock","si-red",pending,"En attente","À valider"],["ti-star","si-blue","8","Favoris","Sauvegardés"],["ti-download","si-blue","143","Téléchargements","Total cumulé"]].map(([ic,cls,val,lbl,trend])=>`
+          ${[
+            ["ti-files","si-blue", myDocs.length, "Mes documents", myDocs.length ? `${pending} en attente` : "Aucun document"],
+            ["ti-clock","si-red",  pending,         "En attente",    "À valider par l'admin"],
+            ["ti-star","si-blue",  myFavs.length,   "Favoris",       "Sauvegardés"],
+            ["ti-download","si-blue","—",            "Téléchargements","Total cumulé"],
+          ].map(([ic,cls,val,lbl,trend])=>`
             <div class="stat-card">
               <div class="stat-icon ${cls}"><i class="ti ${ic}"></i></div>
               <div><div class="stat-val">${val}</div><div class="stat-label">${lbl}</div><div class="stat-trend">${trend}</div></div>
@@ -931,28 +941,30 @@ async function renderMember(sec="dashboard") {
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title"><i class="ti ti-files" style="color:var(--blue);margin-right:6px"></i>Mes derniers documents</span><button class="btn btn-outline btn-sm" onclick="renderMember('docs')">Tout voir →</button></div>
-          ${myDocs.map(d=>`
-            <div class="doc-row" onclick="navigate('doc',{id:${d.id}})">
+          ${myDocs.length ? myDocs.map(d=>`
+            <div class="doc-row" onclick="navigate('doc',{id:'${d.id}'})">
               ${docIconHtml(d.fmt)}
               <div style="flex:1;min-width:0"><div class="doc-name">${d.title}</div><div class="doc-meta">${d.dateStr} · ${d.fmt} · ${d.size}</div></div>
               ${statusHtml(d.status)}
               <div class="doc-actions gap-6">
-                <div class="btn-icon" onclick="event.stopPropagation();dlDoc(${d.id})"><i class="ti ti-download"></i></div>
-                <div class="btn-icon red" onclick="event.stopPropagation();delDocMember(${d.id})"><i class="ti ti-trash"></i></div>
+                <div class="btn-icon" onclick="event.stopPropagation();memberDownloadDoc('${d.id}')"><i class="ti ti-download"></i></div>
+                <div class="btn-icon red" onclick="event.stopPropagation();adminDelDoc('${d.id}','${d.title.replace(/'/g,"\\'").slice(0,30)}')"><i class="ti ti-trash"></i></div>
               </div>
-            </div>`).join("")}
+            </div>`).join("")
+          : `<div style="padding:20px;text-align:center;color:var(--text-sec);font-size:13px">Aucun document déposé pour l'instant.</div>`}
         </div>
         <div>
           <div class="flex-b mb-12"><div class="section-title" style="margin-bottom:0">Mes favoris</div><button class="btn btn-outline btn-sm" onclick="renderMember('favorites')">Voir tout →</button></div>
           <div class="grid-3 gap-14">
-            ${DB.docs.slice(0,3).map(d=>`
-              <div class="card card-hover" style="cursor:pointer" onclick="navigate('doc',{id:${d.id}})">
+            ${myFavs.slice(0,3).map(d=>`
+              <div class="card card-hover" style="cursor:pointer" onclick="navigate('doc',{id:'${d.id}'})">
                 <div class="card-body flex-c gap-10">
                   ${docIconHtml(d.fmt,"36px","42px")}
                   <div style="min-width:0;flex:1"><div class="doc-name" style="font-size:13px">${d.title.length>35?d.title.substring(0,35)+"…":d.title}</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div>
-                  <i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer;flex-shrink:0" onclick="event.stopPropagation();toggleFav(${d.id})"></i>
+                  <i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer;flex-shrink:0" onclick="event.stopPropagation();toggleFav('${d.id}')"></i>
                 </div>
-              </div>`).join("")}
+              </div>`).join("")
+            || `<div style="color:var(--text-sec);font-size:13px;padding:8px 0">Aucun favori pour l'instant.</div>`}
           </div>
         </div>
       </div>`;
@@ -1005,18 +1017,24 @@ async function renderMember(sec="dashboard") {
   }
 
   if (sec==="favorites") {
+    c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:200px"><i class="ti ti-loader-2" style="font-size:32px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+    const favs = await API.favorites.list().catch(() => []);
     c.innerHTML = `
-      <div class="topbar"><div class="topbar-title">Mes favoris</div></div>
+      <div class="topbar"><div><div class="topbar-title">Mes favoris</div><div class="topbar-sub">${favs.length} document${favs.length!==1?"s":""}</div></div></div>
       <div class="page-inner">
-        <div class="grid-3 gap-14">
-          ${DB.docs.slice(0,6).map(d=>`
-            <div class="card card-hover" style="cursor:pointer" onclick="navigate('doc',{id:${d.id}})">
+        ${favs.length ? `<div class="grid-3 gap-14">
+          ${favs.map(d=>`
+            <div class="card card-hover" style="cursor:pointer" onclick="navigate('doc',{id:'${d.id}'})">
               <div class="card-body">
                 <div class="flex-c gap-10 mb-12">${docIconHtml(d.fmt,"36px","42px")}<div><div style="font-size:13px;font-weight:700;color:var(--text)">${d.title.length>35?d.title.substring(0,35)+"…":d.title}</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div></div>
-                <div class="flex-b">${tagHtml(d.type)}<i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer" onclick="event.stopPropagation();toggleFav(${d.id})"></i></div>
+                <div class="flex-b">${tagHtml(d.type)}<i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer" onclick="event.stopPropagation();toggleFav('${d.id}')"></i></div>
               </div>
             </div>`).join("")}
-        </div>
+        </div>` : `<div style="text-align:center;padding:60px 20px;color:var(--text-sec)">
+          <i class="ti ti-star" style="font-size:40px;display:block;margin-bottom:12px;opacity:.3"></i>
+          <div style="font-size:14px">Aucun favori pour l'instant.</div>
+          <div style="font-size:12px;margin-top:4px">Cliquez sur l'étoile d'un document pour l'ajouter.</div>
+        </div>`}
       </div>`;
   }
 
