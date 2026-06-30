@@ -31,11 +31,7 @@ export class DocumentsService {
     const { q, categoryId, confidentiality, status, uploadedById, page = 1, limit = 20 } = query;
     const skip = (page - 1) * limit;
 
-    // Visiteurs non authentifiés : uniquement les documents publics actifs
     const isStaff = actor && ADMIN_ROLES.includes(actor.role);
-    const confFilter = isStaff
-      ? confidentiality
-      : (confidentiality ?? Confidentiality.PUBLIC);
 
     // Admin sans filtre de statut → tout sauf DELETED ; visiteur → ACTIVE uniquement
     const statusWhere = status
@@ -44,9 +40,21 @@ export class DocumentsService {
         ? { status: { not: DocumentStatus.DELETED } }
         : { status: DocumentStatus.ACTIVE };
 
+    // Filtre confidentialité selon le niveau d'accès :
+    //   admin/superviseur → aucun filtre (voit tout) ou filtre explicite
+    //   membre connecté   → PUBLIC + INTERNE (pas CONFIDENTIEL ni RESTREINT)
+    //   visiteur public   → PUBLIC uniquement
+    const confWhere = confidentiality
+      ? { confidentiality }
+      : isStaff
+        ? {}
+        : actor
+          ? { confidentiality: { in: [Confidentiality.PUBLIC, Confidentiality.INTERNE] } }
+          : { confidentiality: Confidentiality.PUBLIC };
+
     const where = {
       ...statusWhere,
-      ...(confFilter ? { confidentiality: confFilter } : {}),
+      ...confWhere,
       ...(categoryId ? { categoryId } : {}),
       ...(uploadedById ? { uploadedById } : {}),
       ...(q

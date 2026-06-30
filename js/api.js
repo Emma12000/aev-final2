@@ -228,10 +228,20 @@ const API = {
   documents: {
     async list(params = {}) {
       try {
-        const q   = new URLSearchParams(params).toString();
-        const res = await fetch(API_BASE + "/documents" + (q ? "?" + q : ""));
-        const data = await res.json();
-        const items = data?.data?.items || data?.data || [];
+        const q    = new URLSearchParams(params).toString();
+        const path = "/documents" + (q ? "?" + q : "");
+        const tokens = TokenStore.get();
+        let items;
+        if (tokens.access) {
+          // Envoi du token si connecté → le backend adapte le filtre confidentialité au rôle
+          const res = await apiFetch(path);
+          const d   = res?.data;
+          items = d?.items || (Array.isArray(d) ? d : []);
+        } else {
+          const res  = await fetch(API_BASE + path);
+          const data = await res.json();
+          items = data?.data?.items || data?.data || [];
+        }
         return items.map(mapDoc);
       } catch (_) {
         return [];
