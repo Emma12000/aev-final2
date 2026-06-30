@@ -1671,7 +1671,30 @@ async function renderAdmin(sec="dashboard") {
   }
 
   if (sec==="access") {
-    const restricted = DB.users.filter(u=>u.role==="consultant"||u.role==="lecteur");
+    c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+    const [allUsers, docRules, catRules] = await Promise.all([
+      API.admin.users({ limit: 200 }).catch(()=>[]),
+      API.access.listDocuments().catch(()=>[]),
+      API.access.listCategories().catch(()=>[]),
+    ]);
+    const restricted = allUsers.filter(u=>u.role==="consultant"||u.role==="lecteur");
+    const usersById = Object.fromEntries(allUsers.map(u=>[u.id,u]));
+
+    const rules = [
+      ...docRules.map(r => ({
+        id: r.id, type:"document", userId: r.user.id, userName: r.user.fullName,
+        userRole: usersById[r.user.id]?.role, userRoleLabel: usersById[r.user.id]?.roleLabel || "—",
+        resourceLabel: r.document.title, grantedAt: fmtDate(r.createdAt), grantedBy: r.grantedBy.fullName,
+      })),
+      ...catRules.map(r => ({
+        id: r.id, type:"categorie", userId: r.user.id, userName: r.user.fullName,
+        userRole: usersById[r.user.id]?.role, userRoleLabel: usersById[r.user.id]?.roleLabel || "—",
+        resourceLabel: r.category.name, grantedAt: fmtDate(r.createdAt), grantedBy: r.grantedBy.fullName,
+      })),
+    ];
+    DB.access = rules; // cache pour openAccessForm / revokeAccess
+    DB._restrictedUsers = restricted;
+
     const roleCls  = { consultant:"tag-cyan", lecteur:"tag-gray" };
     const typeCls  = { categorie:"tag-blue",  document:"tag-green" };
     const typeLbl  = { categorie:"Catégorie", document:"Document"  };
@@ -1700,7 +1723,7 @@ async function renderAdmin(sec="dashboard") {
                   </div>
                   <span class="tag ${roleCls[u.role]||"tag-gray"}" style="margin-left:4px">${u.roleLabel}</span>
                 </div>
-                <button class="btn btn-outline btn-sm" onclick="openAccessForm(${u.id})"><i class="ti ti-plus"></i>Accorder un accès</button>
+                <button class="btn btn-outline btn-sm" onclick="openAccessForm('${u.id}')"><i class="ti ti-plus"></i>Accorder un accès</button>
               </div>
               ${rules.length===0 ? `
                 <div style="padding:14px;text-align:center;color:var(--text-sec);font-size:13px;background:var(--gray-100);border-radius:var(--r-lg)">
@@ -1716,7 +1739,7 @@ async function renderAdmin(sec="dashboard") {
                       </div>
                       <div class="flex-c gap-10">
                         <span style="font-size:11px;color:var(--text-sec)">le ${r.grantedAt}</span>
-                        <div class="btn-icon red" onclick="revokeAccess(${r.id})" title="Révoquer"><i class="ti ti-x"></i></div>
+                        <div class="btn-icon red" onclick="revokeAccess('${r.id}','${r.type}')" title="Révoquer"><i class="ti ti-x"></i></div>
                       </div>
                     </div>`).join("")}
                 </div>`}
@@ -1735,14 +1758,14 @@ async function renderAdmin(sec="dashboard") {
                     <td style="font-weight:600;font-size:13px;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${r.resourceLabel}</td>
                     <td>
                       <div class="flex-c gap-8">
-                        <div class="u-avatar" style="width:26px;height:26px;font-size:10px;background:${r.userRole==="CONSULTANT"?"#0E7490":"var(--gray-400)"}">${r.userName.split(" ").map(w=>w[0]).join("").substring(0,2).toUpperCase()}</div>
+                        <div class="u-avatar" style="width:26px;height:26px;font-size:10px;background:${r.userRole==="consultant"?"#0E7490":"var(--gray-400)"}">${r.userName.split(" ").map(w=>w[0]).join("").substring(0,2).toUpperCase()}</div>
                         <span style="font-size:13px;font-weight:500">${r.userName}</span>
                       </div>
                     </td>
-                    <td><span class="tag ${r.userRole==="CONSULTANT"?"tag-cyan":"tag-gray"}" style="font-size:10px">${r.userRole}</span></td>
+                    <td><span class="tag ${r.userRole==="consultant"?"tag-cyan":"tag-gray"}" style="font-size:10px">${r.userRoleLabel}</span></td>
                     <td class="text-sec text-sm">${r.grantedAt}</td>
                     <td class="text-sec text-sm">${r.grantedBy}</td>
-                    <td><div class="btn-icon red" onclick="revokeAccess(${r.id})" title="Révoquer"><i class="ti ti-x"></i></div></td>
+                    <td><div class="btn-icon red" onclick="revokeAccess('${r.id}','${r.type}')" title="Révoquer"><i class="ti ti-x"></i></div></td>
                   </tr>`).join("")}
               </tbody>
             </table>
@@ -1892,7 +1915,7 @@ function accessTab(which) {
 }
 
 function openAccessForm(userId) {
-  const restricted = DB.users.filter(u=>u.role==="consultant"||u.role==="lecteur");
+  const restricted = DB._restrictedUsers || [];
   openModal(`
     <div class="flex-col gap-12">
       <div class="form-group">
@@ -1912,7 +1935,7 @@ function openAccessForm(userId) {
       <div class="form-group">
         <label class="form-label">Ressource <span class="req">*</span></label>
         <select id="acc-resource" class="form-control">
-          ${DB.cats.map(cat=>`<option value="${cat.id}">${cat.name}</option>`).join("")}
+          ${DB.cats.map(cat=>`<option value="${cat.apiId}">${cat.name}</option>`).join("")}
         </select>
       </div>
       <div class="flex-c gap-10 mt-8">
@@ -1922,62 +1945,64 @@ function openAccessForm(userId) {
     </div>`, "Accorder un accès");
 }
 
-function accessTypeChange() {
+async function accessTypeChange() {
   const type = document.getElementById("acc-type").value;
   const sel  = document.getElementById("acc-resource");
   if (type==="categorie") {
-    sel.innerHTML = DB.cats.map(cat=>`<option value="${cat.id}">${cat.name}</option>`).join("");
-  } else {
-    sel.innerHTML = DB.docs.filter(d=>d.status==="published")
-      .map(d=>`<option value="${d.id}">${d.title.length>55?d.title.substring(0,55)+"…":d.title}</option>`).join("");
+    sel.innerHTML = DB.cats.map(cat=>`<option value="${cat.apiId}">${cat.name}</option>`).join("");
+    return;
   }
+  sel.innerHTML = `<option>Chargement…</option>`;
+  if (!DB._accessDocsCache) {
+    DB._accessDocsCache = await API.documents.list({ status:"ACTIVE", limit:200 }).catch(()=>[]);
+  }
+  sel.innerHTML = DB._accessDocsCache
+    .map(d=>`<option value="${d.id}">${d.title.length>55?d.title.substring(0,55)+"…":d.title}</option>`).join("");
 }
 
-function grantAccess() {
-  const userId     = parseInt(document.getElementById("acc-user").value);
+async function grantAccess() {
+  const userId     = document.getElementById("acc-user").value;
   const type       = document.getElementById("acc-type").value;
   const resourceId = document.getElementById("acc-resource").value;
   if (!userId)     { toast("Sélectionnez un utilisateur.", "err"); return; }
   if (!resourceId) { toast("Sélectionnez une ressource.",  "err"); return; }
-  const dup = DB.access.find(r=>r.userId===userId && r.type===type && String(r.resourceId)===String(resourceId));
-  if (dup) { toast("Cette règle d'accès existe déjà.", "err"); return; }
-  const user = DB.users.find(u=>u.id===userId);
-  const resourceLabel = type==="categorie"
-    ? DB.cats.find(c=>c.id===resourceId)?.name || resourceId
-    : DB.docs.find(d=>String(d.id)===String(resourceId))?.title || resourceId;
-  const today = new Date().toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"});
-  DB.access.push({
-    id: Math.max(...DB.access.map(r=>r.id), 0)+1,
-    userId,
-    userName: user.name,
-    userRole: user.roleLabel.toUpperCase(),
-    type,
-    resourceId: type==="document" ? parseInt(resourceId) : resourceId,
-    resourceLabel,
-    grantedAt: today,
-    grantedBy: "Admin AEV",
-  });
-  toast(`Accès accordé à ${user.name}.`, "ok");
-  closeModal();
-  renderAdmin("access");
+  const btn = document.querySelector("#modal-body .btn-primary");
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader"></i>Envoi…'; }
+  try {
+    if (type==="categorie") await API.access.grantCategory(resourceId, userId);
+    else                    await API.access.grantDocument(resourceId, userId);
+    toast("Accès accordé.", "ok");
+    closeModal();
+    renderAdmin("access");
+  } catch(e) {
+    toast(e.message || "Impossible d'accorder cet accès.", "err");
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-key"></i>Accorder l\'accès'; }
+  }
 }
 
-function revokeAccess(id) {
-  const rule = DB.access.find(r=>r.id===id);
+function revokeAccess(id, type) {
+  const rule = (DB.access||[]).find(r=>r.id===id);
   if (!rule) return;
   openModal(`
     <p style="font-size:14px;color:var(--text-sec);line-height:1.7">
       Révoquer l'accès de <strong>${rule.userName}</strong> à <strong>${rule.resourceLabel}</strong> ?
     </p>
     <div class="flex-c gap-10 mt-20">
-      <button class="btn btn-danger" onclick="confirmRevokeAccess(${id})"><i class="ti ti-x"></i>Révoquer</button>
+      <button class="btn btn-danger" onclick="confirmRevokeAccess('${id}','${type}')"><i class="ti ti-x"></i>Révoquer</button>
       <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
     </div>`, "Révoquer cet accès ?");
 }
 
-function confirmRevokeAccess(id) {
-  const i = DB.access.findIndex(r=>r.id===id);
-  if (i>-1) { DB.access.splice(i,1); toast("Accès révoqué.","err"); closeModal(); renderAdmin("access"); }
+async function confirmRevokeAccess(id, type) {
+  try {
+    if (type==="categorie") await API.access.revokeCategory(id);
+    else                    await API.access.revokeDocument(id);
+    toast("Accès révoqué.", "err");
+    closeModal();
+    renderAdmin("access");
+  } catch(e) {
+    toast(e.message || "Impossible de révoquer cet accès.", "err");
+  }
 }
 
 // CRUD CATÉGORIES

@@ -412,6 +412,35 @@ const API = {
     },
   },
 
+  access: {
+    async listDocuments() {
+      try { const res = await apiFetch("/access/documents"); return res?.data || []; }
+      catch (_) { return []; }
+    },
+    async grantDocument(documentId, userId, expiresAt) {
+      return apiFetch("/access/documents", {
+        method: "POST",
+        body: JSON.stringify({ documentId, userId, ...(expiresAt ? { expiresAt } : {}) }),
+      });
+    },
+    async revokeDocument(id) {
+      return apiFetch("/access/documents/" + id, { method: "DELETE" });
+    },
+    async listCategories() {
+      try { const res = await apiFetch("/access/categories"); return res?.data || []; }
+      catch (_) { return []; }
+    },
+    async grantCategory(categoryId, userId, expiresAt) {
+      return apiFetch("/access/categories", {
+        method: "POST",
+        body: JSON.stringify({ categoryId, userId, ...(expiresAt ? { expiresAt } : {}) }),
+      });
+    },
+    async revokeCategory(id) {
+      return apiFetch("/access/categories/" + id, { method: "DELETE" });
+    },
+  },
+
   activity: {
     async me() {
       try {

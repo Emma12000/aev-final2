@@ -54,7 +54,8 @@ export class StorageService {
     };
   }
 
-  async getSignedUrl(fileKey: string, expiresIn = 3600): Promise<string> {
+  // CDC : URL signée valable 60s (généré à la demande, au clic de téléchargement)
+  async getSignedUrl(fileKey: string, expiresIn = 60): Promise<string> {
     const { data, error } = await this.client.storage
       .from(this.bucket)
       .createSignedUrl(fileKey, expiresIn);

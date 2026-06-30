@@ -12,6 +12,8 @@ import { QueryDocumentsDto } from './dto/query-documents.dto';
 import { JwtPayload } from '../auth/decorators/current-user.decorator';
 
 const ADMIN_ROLES: Role[] = [Role.ADMINISTRATEUR, Role.SUPERVISEUR];
+// CDC §5.4-5.5 : CONSULTANT et LECTEUR ne voient que PUBLIC + ce qui leur est explicitement accordé
+const RESTRICTED_ROLES: Role[] = [Role.CONSULTANT, Role.LECTEUR];
 
 @Injectable()
 export class DocumentsService {
@@ -34,6 +36,7 @@ export class DocumentsService {
     const skip = (page - 1) * limit;
 
     const isStaff = actor && ADMIN_ROLES.includes(actor.role);
+    const isRestricted = actor && RESTRICTED_ROLES.includes(actor.role);
 
     // Admin sans filtre de statut → tout sauf DELETED ; visiteur → ACTIVE uniquement
     const statusWhere = status
@@ -43,31 +46,46 @@ export class DocumentsService {
         : { status: DocumentStatus.ACTIVE };
 
     // Filtre confidentialité selon le niveau d'accès :
-    //   admin/superviseur → aucun filtre (voit tout) ou filtre explicite
-    //   membre connecté   → PUBLIC + INTERNE (pas CONFIDENTIEL ni RESTREINT)
-    //   visiteur public   → PUBLIC uniquement
-    const confWhere = confidentiality
-      ? { confidentiality }
-      : isStaff
-        ? {}
-        : actor
-          ? { confidentiality: { in: [Confidentiality.PUBLIC, Confidentiality.INTERNE] } }
-          : { confidentiality: Confidentiality.PUBLIC };
+    //   admin/superviseur     → aucun filtre (voit tout) ou filtre explicite
+    //   consultant/lecteur    → PUBLIC + accès explicitement accordés (CDC §5.4-5.5), filtre client ignoré
+    //   autre membre connecté → PUBLIC + INTERNE
+    //   visiteur public       → PUBLIC uniquement
+    let confWhere: Record<string, unknown>;
+    if (isStaff) {
+      confWhere = confidentiality ? { confidentiality } : {};
+    } else if (isRestricted) {
+      const { documentIds, categoryIds } = await this.getGrantedIds(actor.sub);
+      confWhere = {
+        OR: [
+          { confidentiality: Confidentiality.PUBLIC },
+          ...(documentIds.length ? [{ id: { in: documentIds } }] : []),
+          ...(categoryIds.length ? [{ categoryId: { in: categoryIds } }] : []),
+        ],
+      };
+    } else if (actor) {
+      confWhere = confidentiality
+        ? { confidentiality }
+        : { confidentiality: { in: [Confidentiality.PUBLIC, Confidentiality.INTERNE] } };
+    } else {
+      confWhere = { confidentiality: Confidentiality.PUBLIC };
+    }
 
     const where = {
       ...statusWhere,
-      ...confWhere,
       ...(categoryId ? { categoryId } : {}),
       ...(uploadedById ? { uploadedById } : {}),
-      ...(q
-        ? {
-            OR: [
-              { title: { contains: q, mode: 'insensitive' as const } },
-              { description: { contains: q, mode: 'insensitive' as const } },
-              { tags: { has: q } },
-            ],
-          }
-        : {}),
+      AND: [
+        confWhere,
+        ...(q
+          ? [{
+              OR: [
+                { title: { contains: q, mode: 'insensitive' as const } },
+                { description: { contains: q, mode: 'insensitive' as const } },
+                { tags: { has: q } },
+              ],
+            }]
+          : []),
+      ],
     };
 
     const [items, total] = await Promise.all([
@@ -96,7 +114,7 @@ export class DocumentsService {
       },
     });
     if (!doc) throw new NotFoundException('Document introuvable.');
-    this.assertAccess(doc.confidentiality, actor);
+    await this.assertAccess(doc, actor);
 
     if (actor) {
       await this.activity.log({ userId: actor.sub, action: 'DOCUMENT_VIEW', resourceType: 'document', resourceId: id });
@@ -233,10 +251,40 @@ export class DocumentsService {
 
   // ─── Privé ────────────────────────────────────────────────────────────────
 
-  private assertAccess(confidentiality: Confidentiality, actor: JwtPayload | null) {
-    if (confidentiality === Confidentiality.PUBLIC) return;
+  // Règles actives (non expirées) accordées à un utilisateur CONSULTANT/LECTEUR
+  private async getGrantedIds(userId: string): Promise<{ documentIds: string[]; categoryIds: string[] }> {
+    const now = new Date();
+    const notExpired = { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] };
+    const [docRules, catRules] = await Promise.all([
+      this.prisma.documentAccessRule.findMany({ where: { userId, ...notExpired }, select: { documentId: true } }),
+      this.prisma.categoryAccessRule.findMany({ where: { userId, ...notExpired }, select: { categoryId: true } }),
+    ]);
+    return {
+      documentIds: docRules.map((r) => r.documentId),
+      categoryIds: catRules.map((r) => r.categoryId),
+    };
+  }
+
+  private async assertAccess(
+    doc: { id: string; categoryId: string; confidentiality: Confidentiality },
+    actor: JwtPayload | null,
+  ) {
+    if (doc.confidentiality === Confidentiality.PUBLIC) return;
     if (!actor) throw new ForbiddenException('Connexion requise pour accéder à ce document.');
-    if (confidentiality === Confidentiality.CONFIDENTIEL && !ADMIN_ROLES.includes(actor.role)) {
+    if (ADMIN_ROLES.includes(actor.role)) return;
+
+    if (RESTRICTED_ROLES.includes(actor.role)) {
+      const now = new Date();
+      const notExpired = { OR: [{ expiresAt: null }, { expiresAt: { gt: now } }] };
+      const [docRule, catRule] = await Promise.all([
+        this.prisma.documentAccessRule.findFirst({ where: { documentId: doc.id, userId: actor.sub, ...notExpired } }),
+        this.prisma.categoryAccessRule.findFirst({ where: { categoryId: doc.categoryId, userId: actor.sub, ...notExpired } }),
+      ]);
+      if (!docRule && !catRule) throw new ForbiddenException('Accès non autorisé à ce document.');
+      return;
+    }
+
+    if (doc.confidentiality === Confidentiality.CONFIDENTIEL) {
       throw new ForbiddenException('Accès réservé aux administrateurs.');
     }
   }
