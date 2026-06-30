@@ -2578,13 +2578,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (window.google) initGoogleSignIn();
   else window.addEventListener("load", initGoogleSignIn, { once: true });
 
-  // Ouvrir directement un document via ?doc=UUID (lien partagé)
-  const docParam = urlParams.get("doc");
-  if (docParam) {
-    window.history.replaceState({}, "", window.location.pathname);
-    navigate("doc", { id: docParam });
-  }
-
   // Détecter un token de vérification email (?verify=TOKEN)
   const urlParams = new URLSearchParams(window.location.search);
   const verifyToken = urlParams.get("verify");
@@ -2597,6 +2590,13 @@ document.addEventListener("DOMContentLoaded", async () => {
     } catch(e) {
       toast(e.message || "Lien de vérification invalide ou expiré.", "err");
     }
+  }
+
+  // Ouvrir directement un document via ?doc=UUID (lien partagé)
+  const docParam = urlParams.get("doc");
+  if (docParam) {
+    window.history.replaceState({}, "", window.location.pathname);
+    navigate("doc", { id: docParam });
   }
 
   // Détecter un token de réinitialisation dans l'URL (?reset=TOKEN)
