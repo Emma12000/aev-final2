@@ -178,6 +178,51 @@ export class AuthService {
     return user;
   }
 
+  // ─── Mot de passe oublié ──────────────────────────────────────────────────
+
+  async forgotPassword(email: string) {
+    const user = await this.prisma.user.findUnique({ where: { email: email.toLowerCase() } });
+    if (!user || !user.isActive) return; // Ne pas révéler si l'email existe
+
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = this.hashToken(rawToken);
+    const expires = new Date(Date.now() + 60 * 60 * 1000); // 1h
+
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { resetPasswordToken: tokenHash, resetPasswordExpires: expires },
+    });
+
+    const appUrl = this.config.get<string>('app.url') ?? 'https://aev-final2.vercel.app';
+    const resetUrl = `${appUrl}?reset=${rawToken}`;
+
+    this.mail.sendPasswordResetEmail({ to: user.email, name: user.fullName, resetUrl }).catch(() => null);
+  }
+
+  async resetPassword(token: string, newPassword: string) {
+    if (newPassword.length < 8) throw new BadRequestException('Le mot de passe doit contenir au moins 8 caractères.');
+
+    const tokenHash = this.hashToken(token);
+    const user = await this.prisma.user.findFirst({
+      where: { resetPasswordToken: tokenHash, resetPasswordExpires: { gt: new Date() } },
+    });
+
+    if (!user) throw new BadRequestException('Lien de réinitialisation invalide ou expiré.');
+
+    const passwordHash = await bcrypt.hash(newPassword, BCRYPT_ROUNDS);
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { passwordHash, passwordChangedAt: new Date(), resetPasswordToken: null, resetPasswordExpires: null },
+    });
+
+    await this.prisma.refreshToken.updateMany({
+      where: { userId: user.id, revokedAt: null },
+      data: { revokedAt: new Date() },
+    });
+  }
+
+  // ─── Changement de mot de passe ──────────────────────────────────────────
+
   async changePassword(userId: string, oldPassword: string, newPassword: string) {
     if (newPassword.length < 8) throw new BadRequestException('Nouveau mot de passe trop court.');
     const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });

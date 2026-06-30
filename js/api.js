@@ -207,6 +207,28 @@ const API = {
         return null;
       }
     },
+
+    async forgotPassword(email) {
+      const res = await fetch(API_BASE + "/auth/forgot-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Erreur.");
+      return data;
+    },
+
+    async resetPassword(token, newPassword) {
+      const res = await fetch(API_BASE + "/auth/reset-password", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token, newPassword }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Erreur.");
+      return data;
+    },
   },
 
   categories: {

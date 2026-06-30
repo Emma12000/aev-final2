@@ -335,7 +335,7 @@
           <div class="form-group">
             <div class="flex-b mb-6" style="margin-bottom:6px">
               <label class="form-label" style="margin-bottom:0">Mot de passe</label>
-              <span style="font-size:12px;color:var(--blue);cursor:pointer" onclick="toast('Email de réinitialisation envoyé','info')">Oublié ?</span>
+              <span style="font-size:12px;color:var(--blue);cursor:pointer" onclick="openForgotPassword()">Oublié ?</span>
             </div>
             <div class="input-icon"><i class="ti ti-lock"></i><input type="password" id="login-pass" class="form-control" placeholder="••••••••"></div>
           </div>
@@ -442,6 +442,42 @@
       <button class="modal-close" onclick="closeModal()" aria-label="Fermer"><i class="ti ti-x"></i></button>
     </div>
     <div id="modal-body"></div>
+  </div>
+</div>
+
+<!-- MODAL : MOT DE PASSE OUBLIÉ -->
+<div id="modal-forgot-password" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center" onclick="if(event.target===this)closeForgotPassword()">
+  <div style="background:white;border-radius:12px;padding:32px;width:100%;max-width:420px;margin:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="margin:0;font-size:17px;color:var(--text)">Mot de passe oublié</h3>
+      <button onclick="closeForgotPassword()" style="background:none;border:none;cursor:pointer;font-size:18px;color:var(--text-sec)"><i class="ti ti-x"></i></button>
+    </div>
+    <p style="font-size:13px;color:var(--text-sec);margin-bottom:20px;line-height:1.5">Entrez votre adresse email. Vous recevrez un lien pour réinitialiser votre mot de passe.</p>
+    <div class="form-group">
+      <label class="form-label">Adresse email</label>
+      <div class="input-icon"><i class="ti ti-mail"></i><input type="email" id="forgot-email" class="form-control" placeholder="votre@email.com"></div>
+    </div>
+    <button class="btn btn-primary btn-lg w-full" style="margin-top:16px" onclick="doForgotPassword()"><i class="ti ti-send"></i>Envoyer le lien</button>
+  </div>
+</div>
+
+<!-- MODAL : NOUVEAU MOT DE PASSE -->
+<div id="modal-reset-password" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:1000;align-items:center;justify-content:center">
+  <div style="background:white;border-radius:12px;padding:32px;width:100%;max-width:420px;margin:16px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px">
+      <h3 style="margin:0;font-size:17px;color:var(--text)">Nouveau mot de passe</h3>
+    </div>
+    <p style="font-size:13px;color:var(--text-sec);margin-bottom:20px;line-height:1.5">Choisissez un nouveau mot de passe sécurisé (minimum 8 caractères).</p>
+    <input type="hidden" id="reset-token">
+    <div class="form-group">
+      <label class="form-label">Nouveau mot de passe</label>
+      <div class="input-icon"><i class="ti ti-lock"></i><input type="password" id="reset-pass" class="form-control" placeholder="Minimum 8 caractères"></div>
+    </div>
+    <div class="form-group" style="margin-top:12px">
+      <label class="form-label">Confirmer le mot de passe</label>
+      <div class="input-icon"><i class="ti ti-lock-check"></i><input type="password" id="reset-pass2" class="form-control" placeholder="Répétez le mot de passe"></div>
+    </div>
+    <button class="btn btn-primary btn-lg w-full" style="margin-top:16px" onclick="doResetPassword()"><i class="ti ti-check"></i>Confirmer le nouveau mot de passe</button>
   </div>
 </div>
 

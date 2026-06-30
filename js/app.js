@@ -549,6 +549,49 @@ async function doRegister() {
     if (btn) { btn.disabled = false; btn.textContent = "Créer mon compte"; }
   }
 }
+function openForgotPassword() {
+  const el = document.getElementById("modal-forgot-password");
+  document.getElementById("forgot-email").value = "";
+  el.style.display = "flex";
+  setTimeout(() => document.getElementById("forgot-email").focus(), 50);
+}
+function closeForgotPassword() {
+  document.getElementById("modal-forgot-password").style.display = "none";
+}
+async function doForgotPassword() {
+  const email = document.getElementById("forgot-email").value.trim();
+  if (!email) { toast("Entrez votre adresse email.", "err"); return; }
+  const btn = document.querySelector("#modal-forgot-password .btn-primary");
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader"></i>Envoi…'; }
+  try {
+    await API.auth.forgotPassword(email);
+    closeForgotPassword();
+    toast("Si cet email est enregistré, vous recevrez un lien de réinitialisation.", "ok");
+  } catch(e) {
+    toast(e.message || "Erreur lors de l'envoi.", "err");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-send"></i>Envoyer le lien'; }
+  }
+}
+async function doResetPassword() {
+  const token = document.getElementById("reset-token").value;
+  const pass  = document.getElementById("reset-pass").value;
+  const pass2 = document.getElementById("reset-pass2").value;
+  if (!pass || pass.length < 8) { toast("Minimum 8 caractères requis.", "err"); return; }
+  if (pass !== pass2) { toast("Les mots de passe ne correspondent pas.", "err"); return; }
+  const btn = document.querySelector("#modal-reset-password .btn-primary");
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader"></i>Enregistrement…'; }
+  try {
+    await API.auth.resetPassword(token, pass);
+    document.getElementById("modal-reset-password").style.display = "none";
+    toast("Mot de passe réinitialisé ! Vous pouvez maintenant vous connecter.", "ok");
+    navigate("auth");
+  } catch(e) {
+    toast(e.message || "Lien invalide ou expiré.", "err");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-check"></i>Confirmer le nouveau mot de passe'; }
+  }
+}
 async function doAdminDemo() {
   try {
     toast("Utilisez vos identifiants administrateur pour vous connecter.", "info");
@@ -2229,6 +2272,15 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (me) {
     APP.user = mapUser(me);
     updateNavbarUser();
+  }
+
+  // Détecter un token de réinitialisation dans l'URL (?reset=TOKEN)
+  const urlParams = new URLSearchParams(window.location.search);
+  const resetToken = urlParams.get("reset");
+  if (resetToken) {
+    document.getElementById("reset-token").value = resetToken;
+    document.getElementById("modal-reset-password").style.display = "flex";
+    window.history.replaceState({}, "", window.location.pathname);
   }
 
   renderHome();

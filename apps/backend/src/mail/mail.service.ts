@@ -135,6 +135,41 @@ export class MailService {
     });
   }
 
+  // ─── Réinitialisation mot de passe → membre ───────────────
+  async sendPasswordResetEmail(opts: {
+    to: string;
+    name: string;
+    resetUrl: string;
+  }) {
+    await this.send({
+      to: opts.to,
+      subject: `🔐 Réinitialisation de votre mot de passe — Espoir & Vie`,
+      html: `
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+          <div style="background:#1E3A5F;padding:24px 32px;border-radius:8px 8px 0 0">
+            <h2 style="color:white;margin:0;font-size:18px">Association Espoir &amp; Vie</h2>
+            <p style="color:rgba(255,255,255,.7);margin:4px 0 0;font-size:13px">Plateforme d'archives numériques</p>
+          </div>
+          <div style="background:#f9fafb;padding:32px;border-radius:0 0 8px 8px;border:1px solid #e5e7eb">
+            <h3 style="margin:0 0 12px;color:#111827">Bonjour ${opts.name},</h3>
+            <p style="color:#374151;font-size:14px;line-height:1.6">
+              Vous avez demandé la réinitialisation de votre mot de passe. Cliquez sur le bouton ci-dessous pour en choisir un nouveau.
+            </p>
+            <p style="color:#6b7280;font-size:13px;line-height:1.5">
+              Ce lien est valable pendant <strong>1 heure</strong>. Si vous n'avez pas fait cette demande, ignorez cet email.
+            </p>
+            <a href="${opts.resetUrl}" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#1E3A5F;color:white;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600">
+              Réinitialiser mon mot de passe →
+            </a>
+            <p style="margin-top:24px;font-size:12px;color:#9ca3af;word-break:break-all">
+              Lien : ${opts.resetUrl}
+            </p>
+          </div>
+          <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:16px">Association Espoir &amp; Vie · N'Djaména, Tchad</p>
+        </div>`,
+    });
+  }
+
   // ─── Envoi générique (non bloquant) ───────────────────────
   private async send(opts: { to: string; subject: string; html: string }) {
     if (!this.resend) {

@@ -64,10 +64,12 @@ model User {
   fullName            String
   role                Role      @default(LECTEUR)
   isActive            Boolean   @default(true)
-  passwordChangedAt   DateTime?
-  lastLoginAt         DateTime?
-  createdAt           DateTime  @default(now())
-  updatedAt           DateTime  @updatedAt
+  passwordChangedAt    DateTime?
+  lastLoginAt          DateTime?
+  resetPasswordToken   String?
+  resetPasswordExpires DateTime?
+  createdAt            DateTime  @default(now())
+  updatedAt            DateTime  @updatedAt
 
   documents              Document[]
   activityLogs           ActivityLog[]
