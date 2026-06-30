@@ -12,6 +12,8 @@
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="assets/tabler-icons.min.css">
 <link rel="icon" href="assets/logo-aev.png" type="image/png">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+<script>window.GOOGLE_CLIENT_ID = "856323389750-1slokrvln95l1j4srg1v06grf0l0nkol.apps.googleusercontent.com";</script>
 </head>
 <body>
 
@@ -324,7 +326,7 @@
         <!-- LOGIN -->
         <div id="auth-login" class="flex-col gap-14">
           <div class="social-row">
-            <button class="social-btn" onclick="toast('Connexion Google…','info')"><i class="ti ti-brand-google" style="color:#DB4437"></i>Google</button>
+            <button class="social-btn" onclick="doGoogleLogin()"><i class="ti ti-brand-google" style="color:#DB4437"></i>Google</button>
             <button class="social-btn" onclick="toast('Connexion Facebook…','info')"><i class="ti ti-brand-facebook" style="color:#1877F2"></i>Facebook</button>
           </div>
           <div class="divider">ou avec l'email</div>

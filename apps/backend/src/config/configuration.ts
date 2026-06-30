@@ -24,6 +24,10 @@ export default () => ({
     url: process.env.APP_URL ?? 'https://aev-final2.vercel.app',
   },
 
+  google: {
+    clientId: process.env.GOOGLE_CLIENT_ID ?? '',
+  },
+
   email: {
     resendApiKey: process.env.RESEND_API_KEY ?? '',
     from: process.env.EMAIL_FROM ?? 'no-reply@espoiretvie.td',

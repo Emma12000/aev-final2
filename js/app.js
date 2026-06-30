@@ -549,6 +549,43 @@ async function doRegister() {
     if (btn) { btn.disabled = false; btn.textContent = "Créer mon compte"; }
   }
 }
+function initGoogleSignIn() {
+  if (!window.google || !window.GOOGLE_CLIENT_ID) return;
+  google.accounts.id.initialize({
+    client_id: window.GOOGLE_CLIENT_ID,
+    callback: handleGoogleCredential,
+    auto_select: false,
+    cancel_on_tap_outside: true,
+  });
+}
+
+async function handleGoogleCredential(response) {
+  try {
+    const data = await API.auth.googleLogin(response.credential);
+    APP.user = mapUser(data.user);
+    updateNavbarUser();
+    toast(`Bienvenue, ${APP.user.name.split(" ")[0]} !`, "ok");
+    navigate(["admin","superviseur"].includes(APP.user.role) ? "admin" : "member");
+  } catch(e) {
+    toast(e.message || "Connexion Google impossible.", "err");
+  }
+}
+
+function doGoogleLogin() {
+  if (!window.google) { toast("Chargement de Google en cours…", "info"); return; }
+  if (!window.GOOGLE_CLIENT_ID) { toast("Google OAuth non configuré.", "err"); return; }
+  initGoogleSignIn();
+  google.accounts.id.prompt((notification) => {
+    if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+      google.accounts.id.renderButton(
+        document.createElement("div"),
+        { theme: "outline", size: "large" }
+      );
+      google.accounts.id.prompt();
+    }
+  });
+}
+
 async function doResendVerification() {
   try {
     await API.auth.resendVerification();
@@ -2292,6 +2329,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     APP.user = mapUser(me);
     updateNavbarUser();
   }
+
+  // Initialiser Google Sign-In
+  if (window.google) initGoogleSignIn();
+  else window.addEventListener("load", initGoogleSignIn, { once: true });
 
   // Détecter un token de vérification email (?verify=TOKEN)
   const urlParams = new URLSearchParams(window.location.search);

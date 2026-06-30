@@ -209,6 +209,18 @@ const API = {
       }
     },
 
+    async googleLogin(idToken) {
+      const res = await fetch(API_BASE + "/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ idToken }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Erreur Google.");
+      TokenStore.set(data.data.accessToken, data.data.refreshToken);
+      return data.data;
+    },
+
     async verifyEmail(token) {
       const res = await fetch(API_BASE + "/auth/verify-email?token=" + encodeURIComponent(token));
       const data = await res.json();

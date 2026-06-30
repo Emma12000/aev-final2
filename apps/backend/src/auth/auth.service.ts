@@ -9,6 +9,7 @@ import { ConfigService } from '@nestjs/config';
 import { Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 import { MailService } from '../mail/mail.service';
@@ -191,6 +192,54 @@ export class AuthService {
       select: { id: true, email: true, fullName: true, role: true, createdAt: true, lastLoginAt: true, emailVerified: true },
     });
     return user;
+  }
+
+  // ─── Google OAuth ─────────────────────────────────────────────────────────
+
+  async googleAuth(idToken: string) {
+    const clientId = this.config.get<string>('google.clientId');
+    if (!clientId) throw new BadRequestException('Google OAuth non configuré.');
+
+    const client = new OAuth2Client(clientId);
+    let payload: any;
+    try {
+      const ticket = await client.verifyIdToken({ idToken, audience: clientId });
+      payload = ticket.getPayload();
+    } catch {
+      throw new UnauthorizedException('Token Google invalide.');
+    }
+
+    if (!payload?.email_verified) throw new UnauthorizedException('Email Google non vérifié.');
+
+    const email = payload.email.toLowerCase();
+    let user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          fullName: payload.name || email,
+          passwordHash: '',
+          role: Role.LECTEUR,
+          emailVerified: true,
+        },
+      });
+      this.mail.notifyAdminNewMember({ memberName: user.fullName, memberEmail: user.email, role: user.role }).catch(() => null);
+      await this.activity.log({ userId: user.id, action: 'USER_CREATE', resourceType: 'user', resourceId: user.id });
+    }
+
+    if (!user.isActive) throw new UnauthorizedException('Compte désactivé.');
+
+    await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+
+    const tokens = await this.generateTokens(user.id, user.role);
+    await this.storeRefreshToken(user.id, tokens.refreshToken);
+    await this.activity.log({ userId: user.id, action: 'LOGIN', resourceType: 'auth' });
+
+    return {
+      ...tokens,
+      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, emailVerified: true },
+    };
   }
 
   // ─── Vérification email ───────────────────────────────────────────────────

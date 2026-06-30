@@ -10,6 +10,7 @@ import { RegisterDto } from './dto/register.dto';
 import { RefreshDto } from './dto/refresh.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { GoogleAuthDto } from './dto/google-auth.dto';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator';
 
@@ -43,6 +44,15 @@ export class AuthController {
   @ApiOperation({ summary: 'Renouveler les tokens via refresh token' })
   refresh(@Body() dto: RefreshDto) {
     return this.auth.refresh(dto.refreshToken);
+  }
+
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Connexion / inscription via Google OAuth' })
+  googleAuth(@Body() dto: GoogleAuthDto) {
+    return this.auth.googleAuth(dto.idToken);
   }
 
   @Public()
