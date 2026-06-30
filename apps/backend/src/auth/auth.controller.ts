@@ -1,31 +1,51 @@
 import {
-  Controller, Post, Get, Body, Req, Query, HttpCode, HttpStatus, UseGuards, BadRequestException,
+  Controller, Post, Get, Body, Req, Res, Query, HttpCode, HttpStatus, UseGuards,
+  BadRequestException, UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
-import { Request } from 'express';
+import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
-import { RefreshDto } from './dto/refresh.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator';
 
+const REFRESH_COOKIE = 'refresh_token';
+const REFRESH_COOKIE_PATH = '/api/v1/auth';
+
 @ApiTags('Auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly auth: AuthService) {}
 
+  // Refresh token : httpOnly, jamais lisible/volable par du JS (cf. CDC sécurité)
+  private setRefreshCookie(res: Response, token: string) {
+    res.cookie(REFRESH_COOKIE, token, {
+      httpOnly: true,
+      secure: true,
+      sameSite: 'none',
+      path: REFRESH_COOKIE_PATH,
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    });
+  }
+
+  private clearRefreshCookie(res: Response) {
+    res.clearCookie(REFRESH_COOKIE, { path: REFRESH_COOKIE_PATH });
+  }
+
   @Public()
   @UseGuards(ThrottlerGuard)
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Connexion — retourne access + refresh tokens' })
-  login(@Body() dto: LoginDto, @Req() req: Request) {
-    return this.auth.login(dto, req.ip, req.headers['user-agent']);
+  @ApiOperation({ summary: 'Connexion — access token en réponse, refresh token en cookie httpOnly' })
+  async login(@Body() dto: LoginDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const { refreshToken, ...rest } = await this.auth.login(dto, req.ip, req.headers['user-agent']);
+    this.setRefreshCookie(res, refreshToken);
+    return rest;
   }
 
   @Public()
@@ -33,17 +53,23 @@ export class AuthController {
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Inscription (compte LECTEUR par défaut)' })
-  register(@Body() dto: RegisterDto, @Req() req: Request) {
-    return this.auth.register(dto, req.ip, req.headers['user-agent']);
+  async register(@Body() dto: RegisterDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const { refreshToken, ...rest } = await this.auth.register(dto, req.ip, req.headers['user-agent']);
+    this.setRefreshCookie(res, refreshToken);
+    return rest;
   }
 
   @Public()
   @UseGuards(ThrottlerGuard)
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Renouveler les tokens via refresh token' })
-  refresh(@Body() dto: RefreshDto) {
-    return this.auth.refresh(dto.refreshToken);
+  @ApiOperation({ summary: 'Renouveler l\'access token via le refresh token (cookie httpOnly)' })
+  async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
+    const rawToken = req.cookies?.[REFRESH_COOKIE];
+    if (!rawToken) throw new UnauthorizedException('Refresh token manquant.');
+    const { refreshToken, ...rest } = await this.auth.refresh(rawToken);
+    this.setRefreshCookie(res, refreshToken);
+    return rest;
   }
 
   @Public()
@@ -51,8 +77,10 @@ export class AuthController {
   @Post('google')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Connexion / inscription via Google OAuth' })
-  googleAuth(@Body() dto: GoogleAuthDto) {
-    return this.auth.googleAuth(dto.idToken);
+  async googleAuth(@Body() dto: GoogleAuthDto, @Res({ passthrough: true }) res: Response) {
+    const { refreshToken, ...rest } = await this.auth.googleAuth(dto.idToken);
+    this.setRefreshCookie(res, refreshToken);
+    return rest;
   }
 
   @Public()
@@ -78,9 +106,17 @@ export class AuthController {
   @Post('logout')
   @HttpCode(HttpStatus.NO_CONTENT)
   @ApiBearerAuth('access-token')
-  @ApiOperation({ summary: 'Déconnexion — révoque le refresh token' })
-  logout(@CurrentUser() user: JwtPayload, @Body() dto: RefreshDto, @Req() req: Request) {
-    return this.auth.logout(user.sub, dto.refreshToken, req.ip, req.headers['user-agent']);
+  @ApiOperation({ summary: 'Déconnexion — révoque le refresh token et efface le cookie' })
+  async logout(
+    @CurrentUser() user: JwtPayload,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const rawToken = req.cookies?.[REFRESH_COOKIE];
+    if (rawToken) {
+      await this.auth.logout(user.sub, rawToken, req.ip, req.headers['user-agent']);
+    }
+    this.clearRefreshCookie(res);
   }
 
   @Public()

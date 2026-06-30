@@ -2,43 +2,40 @@
 
 const API_BASE = "https://aevbackend-production.up.railway.app/api/v1";
 
-// Stockage des tokens JWT
+// Stockage de l'access token — en mémoire uniquement (jamais persisté).
+// Le refresh token vit exclusivement dans un cookie httpOnly côté serveur.
 const TokenStore = {
-  get() {
-    return {
-      access:  localStorage.getItem("aev_access")  || "",
-      refresh: localStorage.getItem("aev_refresh") || "",
-    };
-  },
-  set(access, refresh) {
-    if (access)  localStorage.setItem("aev_access",  access);
-    if (refresh) localStorage.setItem("aev_refresh", refresh);
-  },
-  clear() {
-    localStorage.removeItem("aev_access");
-    localStorage.removeItem("aev_refresh");
-  },
+  _access: "",
+  get() { return { access: this._access }; },
+  set(access) { if (access) this._access = access; },
+  clear() { this._access = ""; },
 };
+
+// Renouvelle l'access token via le cookie httpOnly (silencieux, sans body)
+async function silentRefresh() {
+  try {
+    const res = await fetch(API_BASE + "/auth/refresh", { method: "POST", credentials: "include" });
+    if (!res.ok) return false;
+    const data = await res.json();
+    TokenStore.set(data.data.accessToken);
+    return true;
+  } catch (_) {
+    return false;
+  }
+}
 
 // Fetch authentifié avec auto-refresh
 async function apiFetch(path, opts = {}) {
-  const tokens = TokenStore.get();
   const headers = { "Content-Type": "application/json", ...(opts.headers || {}) };
-  if (tokens.access) headers["Authorization"] = `Bearer ${tokens.access}`;
+  if (TokenStore._access) headers["Authorization"] = `Bearer ${TokenStore._access}`;
 
-  let res = await fetch(API_BASE + path, { ...opts, headers });
+  let res = await fetch(API_BASE + path, { ...opts, headers, credentials: "include" });
 
-  if (res.status === 401 && tokens.refresh) {
-    const ref = await fetch(API_BASE + "/auth/refresh", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ refreshToken: tokens.refresh }),
-    });
-    if (ref.ok) {
-      const rd = await ref.json();
-      TokenStore.set(rd.data.accessToken, rd.data.refreshToken);
-      headers["Authorization"] = `Bearer ${rd.data.accessToken}`;
-      res = await fetch(API_BASE + path, { ...opts, headers });
+  if (res.status === 401) {
+    const refreshed = await silentRefresh();
+    if (refreshed) {
+      headers["Authorization"] = `Bearer ${TokenStore._access}`;
+      res = await fetch(API_BASE + path, { ...opts, headers, credentials: "include" });
     } else {
       TokenStore.clear();
       return null;
@@ -168,10 +165,11 @@ const API = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
+        credentials: "include",
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Identifiants incorrects.");
-      TokenStore.set(data.data.accessToken, data.data.refreshToken);
+      TokenStore.set(data.data.accessToken);
       return data.data;
     },
 
@@ -180,23 +178,18 @@ const API = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ fullName, email, password }),
+        credentials: "include",
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Erreur lors de la création du compte.");
-      TokenStore.set(data.data.accessToken, data.data.refreshToken);
+      TokenStore.set(data.data.accessToken);
       return data.data;
     },
 
     async logout() {
-      const tokens = TokenStore.get();
-      if (tokens.refresh) {
-        try {
-          await apiFetch("/auth/logout", {
-            method: "POST",
-            body: JSON.stringify({ refreshToken: tokens.refresh }),
-          });
-        } catch (_) {}
-      }
+      try {
+        await apiFetch("/auth/logout", { method: "POST" });
+      } catch (_) {}
       TokenStore.clear();
     },
 
@@ -214,10 +207,11 @@ const API = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ idToken }),
+        credentials: "include",
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Erreur Google.");
-      TokenStore.set(data.data.accessToken, data.data.refreshToken);
+      TokenStore.set(data.data.accessToken);
       return data.data;
     },
 

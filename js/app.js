@@ -2348,7 +2348,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   const apiCats = await API.categories.list();
   if (apiCats.length) DB.cats = apiCats;
 
-  // Restaurer la session si un token est en mémoire
+  // Restaurer la session via le cookie httpOnly (refresh silencieux au démarrage)
+  await silentRefresh();
   const me = await API.auth.me();
   if (me) {
     APP.user = mapUser(me);
