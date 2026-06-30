@@ -79,6 +79,21 @@ export class AuthService {
     await this.storeRefreshToken(user.id, tokens.refreshToken);
     await this.activity.log({ userId: user.id, action: 'USER_CREATE', resourceType: 'user', resourceId: user.id, ipAddress: ip, userAgent: ua });
 
+    // Envoyer email de vérification
+    const rawVerifyToken = crypto.randomBytes(32).toString('hex');
+    const verifyHash = this.hashToken(rawVerifyToken);
+    const verifyExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerifyToken: verifyHash, emailVerifyExpires: verifyExpires },
+    });
+    const appUrl = this.config.get<string>('app.url') ?? 'https://aev-final2.vercel.app';
+    this.mail.sendEmailVerification({
+      to: user.email,
+      name: user.fullName,
+      verifyUrl: `${appUrl}?verify=${rawVerifyToken}`,
+    }).catch(() => null);
+
     // Notifier l'admin de la nouvelle inscription
     this.mail.notifyAdminNewMember({
       memberName:  user.fullName,
@@ -88,7 +103,7 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role },
+      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, emailVerified: false },
     };
   }
 
@@ -173,9 +188,40 @@ export class AuthService {
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
-      select: { id: true, email: true, fullName: true, role: true, createdAt: true, lastLoginAt: true },
+      select: { id: true, email: true, fullName: true, role: true, createdAt: true, lastLoginAt: true, emailVerified: true },
     });
     return user;
+  }
+
+  // ─── Vérification email ───────────────────────────────────────────────────
+
+  async verifyEmail(token: string) {
+    const tokenHash = this.hashToken(token);
+    const user = await this.prisma.user.findFirst({
+      where: { emailVerifyToken: tokenHash, emailVerifyExpires: { gt: new Date() } },
+    });
+    if (!user) throw new BadRequestException('Lien de vérification invalide ou expiré.');
+    await this.prisma.user.update({
+      where: { id: user.id },
+      data: { emailVerified: true, emailVerifyToken: null, emailVerifyExpires: null },
+    });
+  }
+
+  async resendVerification(userId: string) {
+    const user = await this.prisma.user.findUniqueOrThrow({ where: { id: userId } });
+    if (user.emailVerified) throw new BadRequestException('Email déjà vérifié.');
+    const rawToken = crypto.randomBytes(32).toString('hex');
+    const tokenHash = this.hashToken(rawToken);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { emailVerifyToken: tokenHash, emailVerifyExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) },
+    });
+    const appUrl = this.config.get<string>('app.url') ?? 'https://aev-final2.vercel.app';
+    this.mail.sendEmailVerification({
+      to: user.email,
+      name: user.fullName,
+      verifyUrl: `${appUrl}?verify=${rawToken}`,
+    }).catch(() => null);
   }
 
   // ─── Mot de passe oublié ──────────────────────────────────────────────────

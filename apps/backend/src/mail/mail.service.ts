@@ -135,6 +135,39 @@ export class MailService {
     });
   }
 
+  // ─── Vérification email → nouveau membre ──────────────────
+  async sendEmailVerification(opts: {
+    to: string;
+    name: string;
+    verifyUrl: string;
+  }) {
+    await this.send({
+      to: opts.to,
+      subject: `✅ Vérifiez votre adresse email — Espoir & Vie`,
+      html: `
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+          <div style="background:#1E3A5F;padding:24px 32px;border-radius:8px 8px 0 0">
+            <h2 style="color:white;margin:0;font-size:18px">Association Espoir &amp; Vie</h2>
+            <p style="color:rgba(255,255,255,.7);margin:4px 0 0;font-size:13px">Plateforme d'archives numériques</p>
+          </div>
+          <div style="background:#f9fafb;padding:32px;border-radius:0 0 8px 8px;border:1px solid #e5e7eb">
+            <h3 style="margin:0 0 12px;color:#111827">Bienvenue, ${opts.name} !</h3>
+            <p style="color:#374151;font-size:14px;line-height:1.6">
+              Votre compte a bien été créé. Cliquez sur le bouton ci-dessous pour confirmer votre adresse email et activer toutes les fonctionnalités.
+            </p>
+            <p style="color:#6b7280;font-size:13px">Ce lien est valable pendant <strong>24 heures</strong>.</p>
+            <a href="${opts.verifyUrl}" style="display:inline-block;margin-top:20px;padding:12px 28px;background:#1E3A5F;color:white;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600">
+              Confirmer mon adresse email →
+            </a>
+            <p style="margin-top:24px;font-size:12px;color:#9ca3af;word-break:break-all">
+              Lien : ${opts.verifyUrl}
+            </p>
+          </div>
+          <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:16px">Association Espoir &amp; Vie · N'Djaména, Tchad</p>
+        </div>`,
+    });
+  }
+
   // ─── Réinitialisation mot de passe → membre ───────────────
   async sendPasswordResetEmail(opts: {
     to: string;

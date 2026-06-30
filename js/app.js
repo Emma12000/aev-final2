@@ -549,6 +549,15 @@ async function doRegister() {
     if (btn) { btn.disabled = false; btn.textContent = "Créer mon compte"; }
   }
 }
+async function doResendVerification() {
+  try {
+    await API.auth.resendVerification();
+    toast("Email de vérification renvoyé. Vérifiez votre boîte mail.", "ok");
+  } catch(e) {
+    toast(e.message || "Erreur lors du renvoi.", "err");
+  }
+}
+
 function openForgotPassword() {
   const el = document.getElementById("modal-forgot-password");
   document.getElementById("forgot-email").value = "";
@@ -860,12 +869,22 @@ async function renderMember(sec="dashboard") {
   if (sec==="dashboard") {
     const myDocs = DB.docs.slice(0,5);
     const pending = myDocs.filter(d=>d.status==="pending").length;
+    const verifyBanner = APP.user && !APP.user.emailVerified ? `
+      <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px">
+        <i class="ti ti-mail-exclamation" style="font-size:20px;color:#D97706;flex-shrink:0"></i>
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:600;color:#92400E">Vérifiez votre adresse email</div>
+          <div style="font-size:12px;color:#B45309;margin-top:2px">Un email de confirmation a été envoyé à <strong>${APP.user.email}</strong>. Cliquez sur le lien pour activer votre compte.</div>
+        </div>
+        <button class="btn btn-sm" style="background:#F59E0B;color:white;border:none;white-space:nowrap" onclick="doResendVerification()"><i class="ti ti-send"></i>Renvoyer</button>
+      </div>` : "";
     c.innerHTML = `
       <div class="topbar">
         <div><div class="topbar-title">Bonjour, ${APP.user?.name?.split(" ")[0]||"vous"} 👋</div><div class="topbar-sub">Bienvenue sur votre espace personnel</div></div>
         <button class="btn btn-primary" onclick="renderMember('upload')"><i class="ti ti-upload"></i>Déposer un document</button>
       </div>
       <div class="page-inner">
+        ${verifyBanner}
         <div class="stats-grid">
           ${[["ti-files","si-blue","12","Mes documents","↑ +2 ce mois"],["ti-clock","si-red",pending,"En attente","À valider"],["ti-star","si-blue","8","Favoris","Sauvegardés"],["ti-download","si-blue","143","Téléchargements","Total cumulé"]].map(([ic,cls,val,lbl,trend])=>`
             <div class="stat-card">
@@ -2274,8 +2293,21 @@ document.addEventListener("DOMContentLoaded", async () => {
     updateNavbarUser();
   }
 
-  // Détecter un token de réinitialisation dans l'URL (?reset=TOKEN)
+  // Détecter un token de vérification email (?verify=TOKEN)
   const urlParams = new URLSearchParams(window.location.search);
+  const verifyToken = urlParams.get("verify");
+  if (verifyToken) {
+    window.history.replaceState({}, "", window.location.pathname);
+    try {
+      await API.auth.verifyEmail(verifyToken);
+      if (APP.user) APP.user.emailVerified = true;
+      toast("Email vérifié avec succès ! Bienvenue.", "ok");
+    } catch(e) {
+      toast(e.message || "Lien de vérification invalide ou expiré.", "err");
+    }
+  }
+
+  // Détecter un token de réinitialisation dans l'URL (?reset=TOKEN)
   const resetToken = urlParams.get("reset");
   if (resetToken) {
     document.getElementById("reset-token").value = resetToken;

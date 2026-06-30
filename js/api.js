@@ -68,7 +68,8 @@ function mapUser(u) {
     roleLabel: roleLbl[u.role] || "Lecteur",
     email:     u.email,
     docs:      0,
-    status:    u.isActive !== false ? "active" : "inactive",
+    status:        u.isActive !== false ? "active" : "inactive",
+    emailVerified: u.emailVerified === true,
     joined:    u.createdAt
       ? new Date(u.createdAt).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })
       : "—",
@@ -206,6 +207,18 @@ const API = {
       } catch (_) {
         return null;
       }
+    },
+
+    async verifyEmail(token) {
+      const res = await fetch(API_BASE + "/auth/verify-email?token=" + encodeURIComponent(token));
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Lien invalide ou expiré.");
+      return data;
+    },
+
+    async resendVerification() {
+      const res = await apiFetch("/auth/resend-verification", { method: "POST" });
+      return res;
     },
 
     async forgotPassword(email) {

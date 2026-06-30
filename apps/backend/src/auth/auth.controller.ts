@@ -1,5 +1,5 @@
 import {
-  Controller, Post, Get, Body, Req, HttpCode, HttpStatus, UseGuards,
+  Controller, Post, Get, Body, Req, Query, HttpCode, HttpStatus, UseGuards, BadRequestException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { ThrottlerGuard } from '@nestjs/throttler';
@@ -71,6 +71,26 @@ export class AuthController {
   @ApiOperation({ summary: 'Déconnexion — révoque le refresh token' })
   logout(@CurrentUser() user: JwtPayload, @Body() dto: RefreshDto, @Req() req: Request) {
     return this.auth.logout(user.sub, dto.refreshToken, req.ip, req.headers['user-agent']);
+  }
+
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @Get('verify-email')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Confirmer l\'adresse email via le token reçu' })
+  async verifyEmail(@Query('token') token: string) {
+    if (!token) throw new BadRequestException('Token manquant.');
+    await this.auth.verifyEmail(token);
+    return { message: 'Email vérifié avec succès.' };
+  }
+
+  @Post('resend-verification')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Renvoyer l\'email de vérification' })
+  async resendVerification(@CurrentUser() user: JwtPayload) {
+    await this.auth.resendVerification(user.sub);
+    return { message: 'Email de vérification renvoyé.' };
   }
 
   @Get('me')
