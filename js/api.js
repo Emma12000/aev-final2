@@ -222,6 +222,21 @@ const API = {
       return data;
     },
 
+    async updateProfile(fullName) {
+      const res = await apiFetch("/auth/profile", {
+        method: "PATCH",
+        body: JSON.stringify({ fullName }),
+      });
+      return res?.data || null;
+    },
+
+    async changePassword(oldPassword, newPassword) {
+      return apiFetch("/auth/change-password", {
+        method: "POST",
+        body: JSON.stringify({ oldPassword, newPassword }),
+      });
+    },
+
     async resendVerification() {
       const res = await apiFetch("/auth/resend-verification", { method: "POST" });
       return res;

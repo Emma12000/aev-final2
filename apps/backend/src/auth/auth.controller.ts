@@ -1,5 +1,5 @@
 import {
-  Controller, Post, Get, Body, Req, Res, Query, HttpCode, HttpStatus, UseGuards,
+  Controller, Post, Get, Patch, Body, Req, Res, Query, HttpCode, HttpStatus, UseGuards,
   BadRequestException, UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
@@ -144,5 +144,25 @@ export class AuthController {
   @ApiOperation({ summary: 'Profil de l\'utilisateur connecté' })
   me(@CurrentUser() user: JwtPayload) {
     return this.auth.getProfile(user.sub);
+  }
+
+  @Patch('profile')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Mettre à jour son propre profil (nom)' })
+  async updateProfile(@CurrentUser() user: JwtPayload, @Body() body: { fullName?: string }) {
+    return this.auth.updateProfile(user.sub, body.fullName);
+  }
+
+  @Post('change-password')
+  @HttpCode(HttpStatus.OK)
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Changer son mot de passe' })
+  async changePassword(
+    @CurrentUser() user: JwtPayload,
+    @Body() body: { oldPassword: string; newPassword: string },
+  ) {
+    await this.auth.changePassword(user.sub, body.oldPassword, body.newPassword);
+    return { message: 'Mot de passe mis à jour avec succès.' };
   }
 }

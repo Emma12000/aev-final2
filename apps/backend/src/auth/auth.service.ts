@@ -186,6 +186,16 @@ export class AuthService {
     return crypto.createHash('sha256').update(raw).digest('hex');
   }
 
+  async updateProfile(userId: string, fullName?: string) {
+    if (!fullName?.trim()) throw new BadRequestException('Le nom complet est requis.');
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { fullName: fullName.trim() },
+      select: { id: true, email: true, fullName: true, role: true, emailVerified: true },
+    });
+    return user;
+  }
+
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },

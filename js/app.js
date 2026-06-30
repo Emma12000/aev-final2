@@ -586,6 +586,49 @@ function doGoogleLogin() {
   });
 }
 
+async function doSaveProfile() {
+  const prenom = document.getElementById("profile-prenom")?.value.trim();
+  const nom    = document.getElementById("profile-nom")?.value.trim();
+  if (!prenom) { toast("Le prénom est requis.", "err"); return; }
+  const fullName = [prenom, nom].filter(Boolean).join(" ");
+  const btn = document.querySelector("#member-main .btn-primary");
+  if (btn) { btn.disabled = true; btn.innerHTML = '<i class="ti ti-loader"></i>Enregistrement…'; }
+  try {
+    const updated = await API.auth.updateProfile(fullName);
+    if (updated) {
+      APP.user = mapUser(updated);
+      updateNavbarUser();
+    }
+    toast("Profil mis à jour avec succès.", "ok");
+  } catch(e) {
+    toast(e.message || "Erreur lors de la mise à jour.", "err");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-device-floppy"></i>Enregistrer les modifications'; }
+  }
+}
+
+async function doChangePassword() {
+  const oldPwd  = document.getElementById("pwd-old")?.value;
+  const newPwd  = document.getElementById("pwd-new")?.value;
+  const confirm = document.getElementById("pwd-confirm")?.value;
+  if (!oldPwd)               { toast("Entrez votre mot de passe actuel.", "err"); return; }
+  if (!newPwd || newPwd.length < 8) { toast("Le nouveau mot de passe doit contenir au moins 8 caractères.", "err"); return; }
+  if (newPwd !== confirm)    { toast("Les mots de passe ne correspondent pas.", "err"); return; }
+  const btn = document.querySelector("#member-main .btn-outline");
+  if (btn) { btn.disabled = true; btn.textContent = "Mise à jour…"; }
+  try {
+    await API.auth.changePassword(oldPwd, newPwd);
+    document.getElementById("pwd-old").value = "";
+    document.getElementById("pwd-new").value = "";
+    document.getElementById("pwd-confirm").value = "";
+    toast("Mot de passe mis à jour avec succès.", "ok");
+  } catch(e) {
+    toast(e.message || "Mot de passe actuel incorrect.", "err");
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i class="ti ti-lock"></i>Mettre à jour'; }
+  }
+}
+
 async function doResendVerification() {
   try {
     await API.auth.resendVerification();
@@ -1100,19 +1143,20 @@ async function renderMember(sec="dashboard") {
             <div><div style="font-size:18px;font-weight:700;color:var(--text)">${u.name||"Utilisateur"}</div><div class="doc-meta">${roleLbl} · ${u.email||""}</div><span class="tag ${roleCls} mt-4" style="display:inline-block">${roleLbl}</span></div>
           </div>
           <div class="grid-2 gap-12">
-            <div class="form-group"><label class="form-label">Prénom</label><input class="form-control" value="${prenom}"></div>
-            <div class="form-group"><label class="form-label">Nom</label><input class="form-control" value="${nom}"></div>
-            <div class="form-group"><label class="form-label">Email</label><input class="form-control" type="email" value="${u.email||""}"></div>
-            <div class="form-group"><label class="form-label">Organisation</label><input class="form-control" value="Association Espoir & Vie"></div>
+            <div class="form-group"><label class="form-label">Prénom</label><input id="profile-prenom" class="form-control" value="${prenom}"></div>
+            <div class="form-group"><label class="form-label">Nom</label><input id="profile-nom" class="form-control" value="${nom}"></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-control" type="email" value="${u.email||""}" disabled style="opacity:.6"></div>
+            <div class="form-group"><label class="form-label">Rôle</label><input class="form-control" value="${roleLbl}" disabled style="opacity:.6"></div>
           </div>
-          <button class="btn btn-primary btn-sm mt-16" onclick="toast('Profil mis à jour !','ok')"><i class="ti ti-device-floppy"></i>Enregistrer</button>
+          <button class="btn btn-primary btn-sm mt-16" onclick="doSaveProfile()"><i class="ti ti-device-floppy"></i>Enregistrer les modifications</button>
         </div>
         <div class="card card-body">
           <div class="card-title mb-12">Changer le mot de passe</div>
           <div class="flex-col gap-10">
-            <div class="form-group"><label class="form-label">Mot de passe actuel</label><input type="password" class="form-control" placeholder="••••••••"></div>
-            <div class="form-group"><label class="form-label">Nouveau mot de passe</label><input type="password" class="form-control" placeholder="••••••••"></div>
-            <button class="btn btn-outline btn-sm" style="align-self:flex-start" onclick="toast('Mot de passe modifié !','ok')">Mettre à jour</button>
+            <div class="form-group"><label class="form-label">Mot de passe actuel</label><input type="password" id="pwd-old" class="form-control" placeholder="••••••••"></div>
+            <div class="form-group"><label class="form-label">Nouveau mot de passe</label><input type="password" id="pwd-new" class="form-control" placeholder="Minimum 8 caractères"></div>
+            <div class="form-group"><label class="form-label">Confirmer</label><input type="password" id="pwd-confirm" class="form-control" placeholder="Répétez le nouveau mot de passe"></div>
+            <button class="btn btn-outline btn-sm" style="align-self:flex-start" onclick="doChangePassword()"><i class="ti ti-lock"></i>Mettre à jour</button>
           </div>
         </div>
       </div>`;
