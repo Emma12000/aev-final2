@@ -23,6 +23,7 @@ export default () => ({
   email: {
     resendApiKey: process.env.RESEND_API_KEY ?? '',
     from: process.env.EMAIL_FROM ?? 'no-reply@espoiretvie.td',
+    adminEmail: process.env.ADMIN_EMAIL ?? 'admin@espoiretvie.td',
   },
 
   upload: {

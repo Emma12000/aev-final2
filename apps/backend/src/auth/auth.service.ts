@@ -11,6 +11,7 @@ import * as bcrypt from 'bcrypt';
 import * as crypto from 'crypto';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
+import { MailService } from '../mail/mail.service';
 import { LoginDto } from './dto/login.dto';
 import { RegisterDto } from './dto/register.dto';
 
@@ -23,6 +24,7 @@ export class AuthService {
     private readonly jwt: JwtService,
     private readonly config: ConfigService,
     private readonly activity: ActivityService,
+    private readonly mail: MailService,
   ) {}
 
   // ─── Login ────────────────────────────────────────────────────────────────
@@ -76,6 +78,13 @@ export class AuthService {
     const tokens = await this.generateTokens(user.id, user.role);
     await this.storeRefreshToken(user.id, tokens.refreshToken);
     await this.activity.log({ userId: user.id, action: 'USER_CREATE', resourceType: 'user', resourceId: user.id, ipAddress: ip, userAgent: ua });
+
+    // Notifier l'admin de la nouvelle inscription
+    this.mail.notifyAdminNewMember({
+      memberName:  user.fullName,
+      memberEmail: user.email,
+      role:        user.role,
+    }).catch(() => null);
 
     return {
       ...tokens,

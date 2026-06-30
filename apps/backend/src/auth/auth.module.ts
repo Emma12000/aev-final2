@@ -1,6 +1,7 @@
 import { Module } from '@nestjs/common';
 import { JwtModule } from '@nestjs/jwt';
 import { PassportModule } from '@nestjs/passport';
+import { MailModule } from '../mail/mail.module';
 import { APP_GUARD } from '@nestjs/core';
 import { AuthService } from './auth.service';
 import { AuthController } from './auth.controller';
@@ -12,6 +13,7 @@ import { RolesGuard } from './guards/roles.guard';
   imports: [
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({}), // options injectées dynamiquement dans AuthService
+    MailModule,
   ],
   providers: [
     AuthService,

@@ -6,6 +6,7 @@ import { Confidentiality, DocumentStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 import { StorageService } from './storage.service';
+import { MailService } from '../mail/mail.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { QueryDocumentsDto } from './dto/query-documents.dto';
 import { JwtPayload } from '../auth/decorators/current-user.decorator';
@@ -20,6 +21,7 @@ export class DocumentsService {
     private readonly prisma: PrismaService,
     private readonly storage: StorageService,
     private readonly activity: ActivityService,
+    private readonly mail: MailService,
     config: ConfigService,
   ) {
     this.allowedMimeTypes = config.get<string[]>('upload.allowedMimeTypes') ?? [];
@@ -142,6 +144,16 @@ export class DocumentsService {
     });
 
     await this.activity.log({ userId: actor.sub, action: 'DOCUMENT_UPLOAD', resourceType: 'document', resourceId: doc.id });
+
+    // Notifier l'admin si le doc part en attente de validation
+    if (doc.status !== DocumentStatus.ACTIVE) {
+      this.mail.notifyAdminNewDocument({
+        docTitle:      doc.title,
+        uploaderName:  doc.uploadedBy.fullName,
+        uploaderEmail: (await this.prisma.user.findUnique({ where: { id: actor.sub }, select: { email: true } }))?.email ?? '',
+        category:      doc.category.name,
+      }).catch(() => null);
+    }
     return doc;
   }
 
@@ -188,11 +200,35 @@ export class DocumentsService {
   // ─── Validation admin ─────────────────────────────────────────────────────
 
   async approve(id: string, actor: JwtPayload) {
-    return this.update(id, { status: DocumentStatus.ACTIVE }, actor);
+    const doc = await this.prisma.document.findUnique({
+      where: { id },
+      include: { uploadedBy: { select: { fullName: true, email: true } } },
+    });
+    const result = await this.update(id, { status: DocumentStatus.ACTIVE }, actor);
+    if (doc?.uploadedBy?.email) {
+      this.mail.notifyMemberDocApproved({
+        to:         doc.uploadedBy.email,
+        memberName: doc.uploadedBy.fullName,
+        docTitle:   doc.title,
+      }).catch(() => null);
+    }
+    return result;
   }
 
   async reject(id: string, actor: JwtPayload) {
-    return this.update(id, { status: DocumentStatus.ARCHIVED }, actor);
+    const doc = await this.prisma.document.findUnique({
+      where: { id },
+      include: { uploadedBy: { select: { fullName: true, email: true } } },
+    });
+    const result = await this.update(id, { status: DocumentStatus.ARCHIVED }, actor);
+    if (doc?.uploadedBy?.email) {
+      this.mail.notifyMemberDocRejected({
+        to:         doc.uploadedBy.email,
+        memberName: doc.uploadedBy.fullName,
+        docTitle:   doc.title,
+      }).catch(() => null);
+    }
+    return result;
   }
 
   // ─── Privé ────────────────────────────────────────────────────────────────
