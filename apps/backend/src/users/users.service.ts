@@ -8,7 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 const SELECT_USER = {
   id: true, email: true, fullName: true, role: true,
-  isActive: true, createdAt: true, lastLoginAt: true,
+  isActive: true, emailVerified: true, createdAt: true, lastLoginAt: true,
 } as const;
 
 @Injectable()

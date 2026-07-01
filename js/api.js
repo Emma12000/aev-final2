@@ -66,7 +66,7 @@ function mapUser(u) {
     roleLabel: roleLbl[u.role] || "Lecteur",
     email:     u.email,
     docs:      0,
-    status:        u.isActive !== false ? "active" : "inactive",
+    status:        u.isActive === false ? "inactive" : (u.emailVerified === false ? "new" : "active"),
     emailVerified: u.emailVerified === true,
     joined:    u.createdAt
       ? new Date(u.createdAt).toLocaleDateString("fr-FR", { month: "long", year: "numeric" })

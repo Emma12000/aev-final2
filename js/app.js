@@ -16,36 +16,36 @@ const DB = {
   ],
   docs: [
     // Administration
-    { id:1,  title:"Statuts de l'Association Espoir & Vie — Version 2023", type:"Administration", cat:"admin",    fmt:"PDF",   size:"1,2 Mo", pages:18, date:"2023-03-15", dateStr:"15 mars 2023",  author:"Admin AEV",     access:"Public",       dl:245, views:980,  tags:["Statuts","Légal","2023"],         status:"published", desc:"Texte officiel des statuts de l'Association Espoir & Vie adoptés lors de l'assemblée générale constitutive de mars 2023." },
-    { id:11, title:"Procès-verbal — Assemblée Générale Ordinaire 2025",    type:"Administration", cat:"admin",    fmt:"PDF",   size:"680 Ko", pages:12, date:"2025-12-10", dateStr:"10 déc. 2025",  author:"Admin AEV",     access:"Membres",      dl:34,  views:89,   tags:["PV","AG","2025"],                status:"published", desc:"Procès-verbal de l'Assemblée Générale Ordinaire tenue le 10 décembre 2025, incluant les résolutions adoptées et le rapport moral." },
+    { id:1,  title:"Statuts de l'Association Espoir & Vie, Version 2023", type:"Administration", cat:"admin",    fmt:"PDF",   size:"1,2 Mo", pages:18, date:"2023-03-15", dateStr:"15 mars 2023",  author:"Admin AEV",     access:"Public",       dl:245, views:980,  tags:["Statuts","Légal","2023"],         status:"published", desc:"Texte officiel des statuts de l'Association Espoir & Vie adoptés lors de l'assemblée générale constitutive de mars 2023." },
+    { id:11, title:"Procès-verbal, Assemblée Générale Ordinaire 2025",    type:"Administration", cat:"admin",    fmt:"PDF",   size:"680 Ko", pages:12, date:"2025-12-10", dateStr:"10 déc. 2025",  author:"Admin AEV",     access:"Membres",      dl:34,  views:89,   tags:["PV","AG","2025"],                status:"published", desc:"Procès-verbal de l'Assemblée Générale Ordinaire tenue le 10 décembre 2025, incluant les résolutions adoptées et le rapport moral." },
     // Finance et comptabilité
     { id:3,  title:"Budget annuel prévisionnel 2026",                      type:"Finance",        cat:"finance",  fmt:"Excel", size:"1,1 Mo", pages:22, date:"2026-01-10", dateStr:"10 jan. 2026",  author:"F. Adoum",      access:"Confidentiel", dl:12,  views:45,   tags:["Budget","2026","Finance"],        status:"published", desc:"Budget annuel prévisionnel 2026 de l'association incluant les recettes projetées, dépenses par poste et analyse de l'équilibre financier." },
-    { id:7,  title:"Bilan financier — Exercice 2024",                      type:"Finance",        cat:"finance",  fmt:"Excel", size:"890 Ko", pages:18, date:"2025-03-05", dateStr:"5 mars 2025",   author:"F. Adoum",      access:"Confidentiel", dl:28,  views:76,   tags:["Bilan","2024","Comptabilité"],   status:"published", desc:"Bilan comptable et financier de l'exercice 2024 présenté lors de l'assemblée générale 2025." },
+    { id:7,  title:"Bilan financier, Exercice 2024",                      type:"Finance",        cat:"finance",  fmt:"Excel", size:"890 Ko", pages:18, date:"2025-03-05", dateStr:"5 mars 2025",   author:"F. Adoum",      access:"Confidentiel", dl:28,  views:76,   tags:["Bilan","2024","Comptabilité"],   status:"published", desc:"Bilan comptable et financier de l'exercice 2024 présenté lors de l'assemblée générale 2025." },
     { id:8,  title:"Facture prestation logistique #2026-091",              type:"Finance",        cat:"finance",  fmt:"PDF",   size:"280 Ko", pages:3,  date:"2026-06-06", dateStr:"6 juin 2026",   author:"S. Mahamat",    access:"Confidentiel", dl:0,   views:4,    tags:["Facture","2026","Logistique"],   status:"pending",   desc:"Facture de prestation logistique soumise pour validation avant paiement." },
     // Contrats et conventions
-    { id:2,  title:"Contrat de partenariat — Forum Santé juin 2026",       type:"Contrat",        cat:"contrat",  fmt:"Word",  size:"845 Ko", pages:12, date:"2026-06-03", dateStr:"3 juin 2026",   author:"A. Ngaradoum",  access:"Membres",      dl:89,  views:342,  tags:["Partenariat","2026","Santé"],    status:"published", desc:"Accord de partenariat entre l'Association Espoir & Vie et les parties prenantes du Forum Santé 2026." },
-    { id:6,  title:"Contrat prestation médicale — Mai 2026",               type:"Contrat",        cat:"contrat",  fmt:"Word",  size:"620 Ko", pages:8,  date:"2026-05-28", dateStr:"28 mai 2026",   author:"M. Dupont",     access:"Membres",      dl:5,   views:18,   tags:["Prestation","2026","Médical"],   status:"pending",   desc:"Contrat de prestation de services médicaux en attente de validation administrative." },
-    { id:10, title:"Convention de subvention PNUD — Programme 2025",       type:"Contrat",        cat:"contrat",  fmt:"PDF",   size:"560 Ko", pages:10, date:"2025-06-15", dateStr:"15 juin 2025",  author:"Admin AEV",     access:"Membres",      dl:14,  views:58,   tags:["PNUD","2025","Subvention"],      status:"published", desc:"Convention de subvention conclue avec le PNUD pour le financement du programme de développement communautaire." },
+    { id:2,  title:"Contrat de partenariat, Forum Santé juin 2026",       type:"Contrat",        cat:"contrat",  fmt:"Word",  size:"845 Ko", pages:12, date:"2026-06-03", dateStr:"3 juin 2026",   author:"A. Ngaradoum",  access:"Membres",      dl:89,  views:342,  tags:["Partenariat","2026","Santé"],    status:"published", desc:"Accord de partenariat entre l'Association Espoir & Vie et les parties prenantes du Forum Santé 2026." },
+    { id:6,  title:"Contrat prestation médicale, Mai 2026",               type:"Contrat",        cat:"contrat",  fmt:"Word",  size:"620 Ko", pages:8,  date:"2026-05-28", dateStr:"28 mai 2026",   author:"M. Dupont",     access:"Membres",      dl:5,   views:18,   tags:["Prestation","2026","Médical"],   status:"pending",   desc:"Contrat de prestation de services médicaux en attente de validation administrative." },
+    { id:10, title:"Convention de subvention PNUD, Programme 2025",       type:"Contrat",        cat:"contrat",  fmt:"PDF",   size:"560 Ko", pages:10, date:"2025-06-15", dateStr:"15 juin 2025",  author:"Admin AEV",     access:"Membres",      dl:14,  views:58,   tags:["PNUD","2025","Subvention"],      status:"published", desc:"Convention de subvention conclue avec le PNUD pour le financement du programme de développement communautaire." },
     // Courriers
-    { id:12, title:"Courrier officiel — Ministère de la Santé (mars 2026)",type:"Courrier",        cat:"courrier", fmt:"PDF",   size:"320 Ko", pages:3,  date:"2026-03-12", dateStr:"12 mars 2026",  author:"Admin AEV",     access:"Membres",      dl:6,   views:23,   tags:["Officiel","Ministère","2026"],   status:"published", desc:"Courrier adressé au Ministère de la Santé relatif à la demande d'agrément pour les activités de santé communautaire." },
-    { id:13, title:"Réponse demande partenariat — ONG Solidarité Monde",   type:"Courrier",        cat:"courrier", fmt:"PDF",   size:"280 Ko", pages:2,  date:"2026-05-18", dateStr:"18 mai 2026",   author:"A. Ngaradoum",  access:"Membres",      dl:3,   views:12,   tags:["Partenariat","ONG","2026"],      status:"published", desc:"Réponse favorable adressée à l'ONG Solidarité Monde suite à leur proposition de collaboration sur les programmes nutrition." },
+    { id:12, title:"Courrier officiel, Ministère de la Santé (mars 2026)",type:"Courrier",        cat:"courrier", fmt:"PDF",   size:"320 Ko", pages:3,  date:"2026-03-12", dateStr:"12 mars 2026",  author:"Admin AEV",     access:"Membres",      dl:6,   views:23,   tags:["Officiel","Ministère","2026"],   status:"published", desc:"Courrier adressé au Ministère de la Santé relatif à la demande d'agrément pour les activités de santé communautaire." },
+    { id:13, title:"Réponse demande partenariat, ONG Solidarité Monde",   type:"Courrier",        cat:"courrier", fmt:"PDF",   size:"280 Ko", pages:2,  date:"2026-05-18", dateStr:"18 mai 2026",   author:"A. Ngaradoum",  access:"Membres",      dl:3,   views:12,   tags:["Partenariat","ONG","2026"],      status:"published", desc:"Réponse favorable adressée à l'ONG Solidarité Monde suite à leur proposition de collaboration sur les programmes nutrition." },
     // Rapports et comptes rendus
-    { id:4,  title:"Rapport annuel Espoir & Vie — Exercice 2024",          type:"Rapport",         cat:"rapport",  fmt:"PDF",   size:"2,4 Mo", pages:48, date:"2026-06-05", dateStr:"5 juin 2026",   author:"Admin AEV",     access:"Public",       dl:347, views:1284, tags:["Annuel","2024","Bilan","Activités"], status:"published", desc:"Bilan complet des activités et résultats de l'association pour l'exercice 2024, couvrant les programmes santé, éducation et actions communautaires." },
-    { id:5,  title:"Rapport annuel Espoir & Vie — Exercice 2023",          type:"Rapport",         cat:"rapport",  fmt:"PDF",   size:"2,1 Mo", pages:44, date:"2024-01-10", dateStr:"10 jan. 2024",  author:"Admin AEV",     access:"Public",       dl:520, views:2100, tags:["Annuel","2023","Bilan"],         status:"published", desc:"Rapport d'activité complet pour l'exercice 2023." },
+    { id:4,  title:"Rapport annuel Espoir & Vie, Exercice 2024",          type:"Rapport",         cat:"rapport",  fmt:"PDF",   size:"2,4 Mo", pages:48, date:"2026-06-05", dateStr:"5 juin 2026",   author:"Admin AEV",     access:"Public",       dl:347, views:1284, tags:["Annuel","2024","Bilan","Activités"], status:"published", desc:"Bilan complet des activités et résultats de l'association pour l'exercice 2024, couvrant les programmes santé, éducation et actions communautaires." },
+    { id:5,  title:"Rapport annuel Espoir & Vie, Exercice 2023",          type:"Rapport",         cat:"rapport",  fmt:"PDF",   size:"2,1 Mo", pages:44, date:"2024-01-10", dateStr:"10 jan. 2024",  author:"Admin AEV",     access:"Public",       dl:520, views:2100, tags:["Annuel","2023","Bilan"],         status:"published", desc:"Rapport d'activité complet pour l'exercice 2023." },
     { id:14, title:"Rapport financier Q1 2026",                             type:"Rapport",         cat:"rapport",  fmt:"Excel", size:"1,1 Mo", pages:22, date:"2026-04-15", dateStr:"15 avr. 2026",  author:"F. Adoum",      access:"Membres",      dl:42,  views:118,  tags:["Financier","Q1","2026"],         status:"published", desc:"Rapport financier du premier trimestre 2026 incluant les recettes, dépenses et analyse des écarts budgétaires." },
     // Projets et programmes
     { id:9,  title:"Programme de santé communautaire 2025-2026",           type:"Projet",          cat:"projet",   fmt:"PDF",   size:"3,2 Mo", pages:60, date:"2025-07-20", dateStr:"20 juil. 2025", author:"Admin AEV",     access:"Public",       dl:430, views:1650, tags:["Santé","Programme","2025"],      status:"published", desc:"Programme détaillé des actions de santé communautaire pour la période 2025-2026." },
-    { id:15, title:"Plan de travail — Projet Nutrition Rurale 2026",        type:"Projet",          cat:"projet",   fmt:"PDF",   size:"1,8 Mo", pages:32, date:"2026-02-20", dateStr:"20 fév. 2026",  author:"A. Ngaradoum",  access:"Membres",      dl:18,  views:67,   tags:["Nutrition","2026","Rurales"],    status:"published", desc:"Plan de travail annuel du projet de nutrition rurale, incluant les activités planifiées, les indicateurs de suivi et le budget prévisionnel." },
+    { id:15, title:"Plan de travail, Projet Nutrition Rurale 2026",        type:"Projet",          cat:"projet",   fmt:"PDF",   size:"1,8 Mo", pages:32, date:"2026-02-20", dateStr:"20 fév. 2026",  author:"A. Ngaradoum",  access:"Membres",      dl:18,  views:67,   tags:["Nutrition","2026","Rurales"],    status:"published", desc:"Plan de travail annuel du projet de nutrition rurale, incluant les activités planifiées, les indicateurs de suivi et le budget prévisionnel." },
     // Partenariats
-    { id:16, title:"Profil partenaire — Croix-Rouge Tchad 2026",           type:"Partenariat",     cat:"partenariat",fmt:"PDF", size:"740 Ko", pages:8,  date:"2026-01-15", dateStr:"15 jan. 2026",  author:"Admin AEV",     access:"Membres",      dl:11,  views:38,   tags:["Croix-Rouge","2026","Accord"],  status:"published", desc:"Fiche de présentation et cadre de collaboration avec la Croix-Rouge Tchad pour l'exercice 2026." },
-    { id:17, title:"Accord de collaboration — ONG Santé Frontières",       type:"Partenariat",     cat:"partenariat",fmt:"PDF", size:"520 Ko", pages:6,  date:"2025-09-10", dateStr:"10 sept. 2025", author:"A. Ngaradoum",  access:"Membres",      dl:7,   views:29,   tags:["ONG","2025","Collaboration"],   status:"published", desc:"Accord de collaboration signé avec l'ONG Santé Frontières pour des activités conjointes de santé communautaire." },
+    { id:16, title:"Profil partenaire, Croix-Rouge Tchad 2026",           type:"Partenariat",     cat:"partenariat",fmt:"PDF", size:"740 Ko", pages:8,  date:"2026-01-15", dateStr:"15 jan. 2026",  author:"Admin AEV",     access:"Membres",      dl:11,  views:38,   tags:["Croix-Rouge","2026","Accord"],  status:"published", desc:"Fiche de présentation et cadre de collaboration avec la Croix-Rouge Tchad pour l'exercice 2026." },
+    { id:17, title:"Accord de collaboration, ONG Santé Frontières",       type:"Partenariat",     cat:"partenariat",fmt:"PDF", size:"520 Ko", pages:6,  date:"2025-09-10", dateStr:"10 sept. 2025", author:"A. Ngaradoum",  access:"Membres",      dl:7,   views:29,   tags:["ONG","2025","Collaboration"],   status:"published", desc:"Accord de collaboration signé avec l'ONG Santé Frontières pour des activités conjointes de santé communautaire." },
     // Communication institutionnelle
     { id:18, title:"Plaquette institutionnelle AEV 2026",                  type:"Communication",   cat:"communication",fmt:"PDF",size:"4,2 Mo",pages:8, date:"2026-03-01", dateStr:"1 mars 2026",   author:"Admin AEV",     access:"Public",       dl:312, views:1040, tags:["Plaquette","2026","Identité"],  status:"published", desc:"Plaquette de présentation officielle de l'Association Espoir & Vie 2026 destinée aux partenaires et bailleurs de fonds." },
-    { id:19, title:"Communiqué de presse — Forum Santé juin 2026",         type:"Communication",   cat:"communication",fmt:"PDF",size:"380 Ko",pages:2, date:"2026-06-01", dateStr:"1 juin 2026",   author:"A. Ngaradoum",  access:"Public",       dl:54,  views:178,  tags:["Presse","ForumSanté","2026"],   status:"published", desc:"Communiqué de presse annonçant la participation de l'AEV au Forum National Santé de juin 2026." },
+    { id:19, title:"Communiqué de presse, Forum Santé juin 2026",         type:"Communication",   cat:"communication",fmt:"PDF",size:"380 Ko",pages:2, date:"2026-06-01", dateStr:"1 juin 2026",   author:"A. Ngaradoum",  access:"Public",       dl:54,  views:178,  tags:["Presse","ForumSanté","2026"],   status:"published", desc:"Communiqué de presse annonçant la participation de l'AEV au Forum National Santé de juin 2026." },
     // Bénévoles
-    { id:20, title:"Registre du personnel — Exercice 2026",                type:"Bénévoles",       cat:"rh",       fmt:"Excel", size:"640 Ko", pages:5,  date:"2026-01-05", dateStr:"5 jan. 2026",   author:"Admin AEV",     access:"Confidentiel", dl:2,   views:8,    tags:["Personnel","2026","Registre"],  status:"published", desc:"Registre officiel du personnel salarié et bénévole de l'association pour l'exercice 2026." },
+    { id:20, title:"Registre du personnel, Exercice 2026",                type:"Bénévoles",       cat:"rh",       fmt:"Excel", size:"640 Ko", pages:5,  date:"2026-01-05", dateStr:"5 jan. 2026",   author:"Admin AEV",     access:"Confidentiel", dl:2,   views:8,    tags:["Personnel","2026","Registre"],  status:"published", desc:"Registre officiel du personnel salarié et bénévole de l'association pour l'exercice 2026." },
     // Pièces diverses
-    { id:21, title:"Supports de formation — Atelier Gouvernance 2025",     type:"Divers",          cat:"divers",   fmt:"PDF",   size:"2,1 Mo", pages:40, date:"2025-11-18", dateStr:"18 nov. 2025",  author:"S. Mahamat",    access:"Membres",      dl:23,  views:74,   tags:["Formation","Gouvernance","2025"],status:"published", desc:"Supports pédagogiques utilisés lors de l'atelier de renforcement de la gouvernance organisationnelle de novembre 2025." },
+    { id:21, title:"Supports de formation, Atelier Gouvernance 2025",     type:"Divers",          cat:"divers",   fmt:"PDF",   size:"2,1 Mo", pages:40, date:"2025-11-18", dateStr:"18 nov. 2025",  author:"S. Mahamat",    access:"Membres",      dl:23,  views:74,   tags:["Formation","Gouvernance","2025"],status:"published", desc:"Supports pédagogiques utilisés lors de l'atelier de renforcement de la gouvernance organisationnelle de novembre 2025." },
   ],
   users: [
     { id:1, name:"Admin AEV", initials:"AA", role:"admin",   roleLabel:"Administrateur", email:"admin@espoiretvie.td",    docs:18, status:"active", joined:"Depuis 2022" },
@@ -97,14 +97,14 @@ const DB = {
     { id:1,  date:"2026-06-28T10:05", dateStr:"Aujourd'hui, 10:05",  action:"CONNEXION",      resource:"—",                                        resourceType:"auth",     fmt:null    },
     { id:2,  date:"2026-06-27T16:30", dateStr:"Hier, 16:30",         action:"TÉLÉCHARGEMENT", resource:"Convention subvention PNUD 2025",            resourceType:"document", fmt:"PDF"   },
     { id:3,  date:"2026-06-25T15:50", dateStr:"25 juin, 15:50",      action:"MODIFICATION",   resource:"Contrat partenariat Forum Santé 2026",       resourceType:"document", fmt:"Word"  },
-    { id:4,  date:"2026-06-23T11:30", dateStr:"23 juin, 11:30",      action:"ACCÈS",          resource:"Bilan financier — Exercice 2024",            resourceType:"document", fmt:"Excel" },
+    { id:4,  date:"2026-06-23T11:30", dateStr:"23 juin, 11:30",      action:"ACCÈS",          resource:"Bilan financier, Exercice 2024",            resourceType:"document", fmt:"Excel" },
     { id:5,  date:"2026-06-20T09:15", dateStr:"20 juin, 09:15",      action:"CONNEXION",      resource:"—",                                        resourceType:"auth",     fmt:null    },
     { id:6,  date:"2026-06-19T15:20", dateStr:"19 juin, 15:20",      action:"DÉPÔT",          resource:"Courrier Ministère Santé mars 2026",         resourceType:"document", fmt:"PDF"   },
     { id:7,  date:"2026-06-18T10:45", dateStr:"18 juin, 10:45",      action:"TÉLÉCHARGEMENT", resource:"Rapport annuel 2024",                        resourceType:"document", fmt:"PDF"   },
     { id:8,  date:"2026-06-15T14:30", dateStr:"15 juin, 14:30",      action:"TÉLÉCHARGEMENT", resource:"Programme santé communautaire 2025-2026",    resourceType:"document", fmt:"PDF"   },
     { id:9,  date:"2026-06-12T11:00", dateStr:"12 juin, 11:00",      action:"CONNEXION",      resource:"—",                                        resourceType:"auth",     fmt:null    },
     { id:10, date:"2026-06-10T09:30", dateStr:"10 juin, 09:30",      action:"ACCÈS",          resource:"Statuts de l'Association Espoir & Vie 2023",resourceType:"document", fmt:"PDF"   },
-    { id:11, date:"2026-06-05T14:15", dateStr:"5 juin, 14:15",       action:"DÉPÔT",          resource:"Communiqué de presse — Forum Santé 2026",   resourceType:"document", fmt:"PDF"   },
+    { id:11, date:"2026-06-05T14:15", dateStr:"5 juin, 14:15",       action:"DÉPÔT",          resource:"Communiqué de presse, Forum Santé 2026",   resourceType:"document", fmt:"PDF"   },
     { id:12, date:"2026-06-01T08:50", dateStr:"1 juin, 08:50",       action:"CONNEXION",      resource:"—",                                        resourceType:"auth",     fmt:null    },
   ],
   access: [
@@ -398,19 +398,20 @@ async function renderDoc(id) {
     return;
   }
   const catObj = d.cat ? DB.cats.find(c => c.id === d.cat) : null;
-  const relatedRaw = catObj?.apiId
-    ? await API.documents.list({ status: "ACTIVE", categoryId: catObj.apiId, limit: 4 }).catch(() => [])
-    : [];
+  const [relatedRaw, favIds] = await Promise.all([
+    catObj?.apiId
+      ? API.documents.list({ status: "ACTIVE", categoryId: catObj.apiId, limit: 4 }).catch(() => [])
+      : Promise.resolve([]),
+    APP.user
+      ? API.favorites.list().then(fs => fs.map(f => f.id)).catch(() => [])
+      : Promise.resolve([]),
+  ]);
   const related = relatedRaw.filter(x => x.id !== id).slice(0, 3);
   const fmtIcon = { PDF:"ti-file-type-pdf", Word:"ti-file-type-doc", Excel:"ti-file-spreadsheet" }[d.fmt]||"ti-file";
 
-  const favIds = APP.user
-    ? await API.favorites.list().then(fs => fs.map(f => f.id)).catch(() => [])
-    : [];
-
   $("#doc-content").innerHTML = `
     <!-- HERO -->
-    <div style="background:linear-gradient(135deg,var(--blue-deep),var(--blue-darker));padding:24px 36px 30px">
+    <div class="doc-hero" style="background:linear-gradient(135deg,var(--blue-deep),var(--blue-darker));padding:24px 36px 30px">
       <div class="breadcrumb mb-12">
         <i class="ti ti-home"></i>
         <span onclick="navigate('home')">Accueil</span>
@@ -440,13 +441,14 @@ async function renderDoc(id) {
           <button class="btn btn-ghost btn-sm" onclick="openShareModal('${d.id}','${d.title.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')"><i class="ti ti-share"></i>Partager</button>
           <button class="btn btn-ghost btn-sm" id="fav-btn-${d.id}" onclick="toggleFav('${d.id}')"><i class="ti ${favIds.includes(d.id)?"ti-star-filled":"ti-star"}" style="${favIds.includes(d.id)?"color:var(--blue)":""}"></i>Favori</button>
         </div>
+
       </div>
     </div>
 
     <!-- BODY -->
-    <div style="display:flex;gap:0;background:var(--gray-50);min-height:calc(100vh - 300px)">
+    <div class="doc-body-wrap" style="display:flex;gap:0;background:var(--gray-50);min-height:calc(100vh - 300px)">
       <!-- MAIN -->
-      <div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0">
+      <div style="flex:1;padding:24px;display:flex;flex-direction:column;gap:16px;min-width:0;overflow:hidden">
 
         <!-- APERÇU -->
         <div class="card">
@@ -502,14 +504,14 @@ async function renderDoc(id) {
         <div style="background:var(--blue-deep);border-radius:var(--r-xl);padding:20px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap">
           <div>
             <div style="font-size:14px;font-weight:700;color:white;margin-bottom:4px">Téléchargement gratuit et immédiat</div>
-            <div style="font-size:12px;color:var(--blue)">Ce document est en accès libre — aucune inscription requise.</div>
+            <div style="font-size:12px;color:var(--blue)">Ce document est en accès libre. Aucune inscription requise.</div>
           </div>
           <button class="btn btn-red btn-lg" onclick="memberDownloadDoc('${d.id}')"><i class="ti ti-download"></i>Télécharger gratuitement</button>
         </div>` : ""}
       </div>
 
       <!-- SIDEBAR DOC -->
-      <div style="width:260px;flex-shrink:0;padding:20px;display:flex;flex-direction:column;gap:14px;border-left:1px solid var(--border-lt);background:var(--white)">
+      <div class="doc-sidebar" style="width:260px;flex-shrink:0;padding:20px;display:flex;flex-direction:column;gap:14px;border-left:1px solid var(--border-lt);background:var(--white)">
 
         <!-- DOWNLOAD -->
         <div class="card card-body" style="text-align:center">
@@ -903,12 +905,12 @@ function renderAbout() {
     ["ti-file-research","Études, enquêtes, recherches et publications"],
   ];
   const organes = [
-    ["Assemblée Générale","Organe suprême de délibération — vote annuel en décembre"],
-    ["Bureau Exécutif","Gestion quotidienne — élu pour 5 ans, mandat renouvelable"],
+    ["Assemblée Générale","Organe suprême de délibération, vote annuel en décembre"],
+    ["Bureau Exécutif","Gestion quotidienne, élu pour 5 ans, mandat renouvelable"],
     ["Commissions spécialisées","Santé · Mobilisation sociale · Formation · Projets"],
   ];
   const membres = [
-    ["Membres actifs","Participent effectivement à la vie et aux activités — droit de vote"],
+    ["Membres actifs","Participent effectivement à la vie et aux activités, droit de vote"],
     ["Membres sympathisants","Soutiennent moralement, matériellement ou occasionnellement"],
     ["Membres honoraires","Désignés pour contribution, notoriété ou engagement exceptionnel"],
   ];
@@ -918,7 +920,7 @@ function renderAbout() {
     ["ti-globe","Domaine web","espoiretvie.td (ADETIC)"],
     ["ti-clock","Durée statutaire","99 ans, renouvelable"],
     ["ti-scale","Régime juridique","Ordonnance n°023/PR/2018 du 27 juin 2018"],
-    ["ti-mail","Contact","contact@espoiretvie.td"],
+    ["ti-mail","Contact","association@espoiretvie.td"],
   ];
 
   $("#about-content").innerHTML = `
@@ -1104,7 +1106,7 @@ function renderAbout() {
     </div>
 
     <footer class="site-footer" style="margin-top:32px">
-      <div class="footer-brand"><div class="footer-logo"><img src="assets/logo-aev.png" alt="AEV"></div><div><div class="footer-name">Association Espoir &amp; Vie — espoiretvie.td</div><div class="footer-dev">Conçu par <strong style="color:rgba(255,255,255,.5)">Akora Agency</strong> · N'Djaména, Tchad</div></div></div>
+      <div class="footer-brand"><div class="footer-logo"><img src="assets/logo-aev.png" alt="AEV"></div><div><div class="footer-name">Association Espoir &amp; Vie · espoiretvie.td</div><div class="footer-dev">Conçu par <strong style="color:rgba(255,255,255,.5)">Akora Agency</strong> · N'Djaména, Tchad</div></div></div>
       <div class="footer-links"><span class="footer-link" onclick="navigate('home')">Accueil</span><span class="footer-link" onclick="navigate('catalogue')">Catalogue</span></div>
       <div style="font-size:11px;color:rgba(255,255,255,.25)">© 2026 AEV · Tous droits réservés</div>
     </footer>`;
@@ -1131,7 +1133,7 @@ async function renderMember(sec="dashboard") {
     const pending     = pendingDocs.length;
     const totalDl     = myDocs.reduce((s, d) => s + (d.dl || 0), 0);
     const verifyBanner = APP.user && !APP.user.emailVerified ? `
-      <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
         <i class="ti ti-mail-exclamation" style="font-size:20px;color:#D97706;flex-shrink:0"></i>
         <div style="flex:1">
           <div style="font-size:13px;font-weight:600;color:#92400E">Vérifiez votre adresse email</div>
@@ -1297,7 +1299,7 @@ async function renderMember(sec="dashboard") {
     const myLogs = await API.activity.me().catch(() => []);
 
     const actionCls = {
-      "CONNEXION":"tag-blue","DÉCONNEXION":"tag-gray","DÉPÔT":"tag-green","DÉPÔT":"tag-green",
+      "CONNEXION":"tag-blue","DÉCONNEXION":"tag-gray","DÉPÔT":"tag-green",
       "TÉLÉCHARGEMENT":"tag-pub","MODIFICATION":"tag-orange","ACCÈS":"tag-gray",
       "CRÉATION COMPTE":"tag-purple","SUPPRESSION":"tag-red","INSCRIPTION":"tag-blue",
     };
@@ -1324,7 +1326,7 @@ async function renderMember(sec="dashboard") {
         <div><div class="topbar-title">Mon activité</div><div class="topbar-sub">${myLogs.length} action${myLogs.length!==1?"s":""} enregistrée${myLogs.length!==1?"s":""}</div></div>
       </div>
       <div class="page-inner">
-        <div class="stats-grid" style="grid-template-columns:repeat(4,1fr);margin-bottom:16px">
+        <div class="stats-grid" style="margin-bottom:16px">
           ${[
             ["ti-login",    "si-blue", conn,  "Connexions",      "Sessions ouvertes"],
             ["ti-upload",   "si-blue", depot, "Dépôts",          "Documents soumis"],
@@ -1397,9 +1399,9 @@ function renderUploadStep(c) {
     </div>
     <input type="file" id="fi" style="display:none" onchange="fileSelected(this)">
     <div id="file-preview" style="display:none" class="card card-body flex-c gap-12 mt-12">
-      <i class="ti ti-file-check" style="font-size:28px;color:var(--blue)"></i>
-      <div><div id="fp-name" style="font-weight:700;color:var(--text)">fichier.pdf</div><div id="fp-size" class="doc-meta">0 Ko</div></div>
-      <i class="ti ti-circle-check" style="color:#16A34A;font-size:24px;margin-left:auto"></i>
+      <i class="ti ti-file-check" style="font-size:28px;color:var(--blue);flex-shrink:0"></i>
+      <div style="min-width:0;flex:1"><div id="fp-name" style="font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">fichier.pdf</div><div id="fp-size" class="doc-meta">0 Ko</div></div>
+      <i class="ti ti-circle-check" style="color:#16A34A;font-size:24px;flex-shrink:0"></i>
     </div>`;
   if (s===2) body=`
     <div class="flex-col gap-14">
@@ -1464,15 +1466,13 @@ function renderUploadStep(c) {
   c.innerHTML = `
     <div class="topbar"><div><div class="topbar-title">Déposer un document</div><div class="topbar-sub">Étape ${Math.min(s,4)} sur 4</div></div></div>
     <div class="page-inner">
-      <div class="card" style="max-width:700px;margin:0 auto">
-        <div style="padding:18px 24px;border-bottom:1px solid var(--border-lt)">
-          <div class="stepper">${stepHtml}</div>
-        </div>
-        <div class="card-body" style="padding:28px">${body}</div>
+      <div class="card upload-wizard" style="max-width:700px;margin:0 auto">
+        <div class="upload-stepper-wrap"><div class="stepper">${stepHtml}</div></div>
+        <div class="card-body upload-body">${body}</div>
         ${s<4?`
-        <div class="card-footer flex-b">
+        <div class="card-footer upload-footer">
           <button class="btn btn-outline" ${s===1?"disabled":""} onclick="APP.uploadStep--;renderUploadStep($('#member-main'))"><i class="ti ti-arrow-left"></i>Précédent</button>
-          <div class="flex-c gap-8">
+          <div class="upload-footer-actions">
             <button class="btn" style="background:var(--gray-100);color:var(--text-sec)" onclick="toast('Brouillon sauvegardé.','info')"><i class="ti ti-device-floppy"></i>Brouillon</button>
             <button class="btn btn-primary" onclick="nextUploadStep()">
               ${s===3?`<i class="ti ti-send"></i>Soumettre`:`Suivant <i class="ti ti-arrow-right"></i>`}
@@ -1488,8 +1488,8 @@ async function nextUploadStep() {
 
   if (APP.uploadStep===1) {
     const fi = $("#fi");
-    if (!fi?.files[0]) { toast("Veuillez sélectionner un fichier avant de continuer.","err"); return; }
-    APP.uploadFile = fi.files[0];
+    if (!fi?.files[0] && !APP.uploadFile) { toast("Veuillez sélectionner un fichier avant de continuer.","err"); return; }
+    if (fi?.files[0]) APP.uploadFile = fi.files[0];
   }
 
   if (APP.uploadStep===2) {
@@ -1534,7 +1534,7 @@ async function nextUploadStep() {
       APP.uploadDraft = null;
       renderUploadStep(c);
       const isPublished = uploaded?.status === "published";
-      toast(isPublished ? "Document publié dans le catalogue !" : "Document soumis — en attente de validation.", isPublished ? "ok" : "info");
+      toast(isPublished ? "Document publié dans le catalogue !" : "Document soumis, en attente de validation.", isPublished ? "ok" : "info");
     } catch(e) {
       toast(e.message || "Erreur lors du dépôt. Vérifiez le fichier.", "err");
       if (btn) { btn.disabled = false; btn.innerHTML = `<i class="ti ti-send"></i>Soumettre`; }
@@ -1560,7 +1560,12 @@ function handleDrop(e) {
   e.preventDefault();
   $("#dz")?.classList.remove("over");
   const f = e.dataTransfer.files[0];
-  if (f) { $("#file-preview").style.display="flex"; $("#fp-name").textContent=f.name; $("#fp-size").textContent=(f.size/1024).toFixed(0)+" Ko"; }
+  if (f) {
+    APP.uploadFile = f;
+    $("#file-preview").style.display="flex";
+    $("#fp-name").textContent=f.name;
+    $("#fp-size").textContent=(f.size/1024).toFixed(0)+" Ko";
+  }
 }
 function addTag() {
   const t = prompt("Nom du tag :");
@@ -1592,20 +1597,6 @@ async function renderAdmin(sec="dashboard") {
     APP.adminSec = "dashboard";
     $$("#admin-sidebar .sidebar-item").forEach(el=>el.classList.toggle("active",el.dataset.sec==="dashboard"));
   }
-  // Badge dynamique — vrais documents en attente depuis l'API
-  API.documents.adminList({ status: "ARCHIVED", limit: 1 }).then(({ total }) => {
-    const navDocs = $("#admin-docs-nav");
-    if (!navDocs) return;
-    const badge = navDocs.querySelector(".s-badge");
-    if (badge) badge.remove();
-    if (total > 0) {
-      const b = document.createElement("span");
-      b.className = "s-badge";
-      b.textContent = total;
-      navDocs.appendChild(b);
-    }
-  }).catch(() => null);
-
   if (sec==="dashboard") {
     // Spinner pendant le chargement des vraies stats
     c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
@@ -1619,7 +1610,7 @@ async function renderAdmin(sec="dashboard") {
     const totalDocs   = apiOk ? (stats.documents?.total ?? 0) : DB.docs.filter(d=>d.status==="published").length;
     const totalUsers  = apiOk ? (stats.users?.total ?? 0) : DB.users.length;
     const recentUps   = apiOk ? (stats.documents?.recentUploads ?? 0) : 0;
-    const pendingDocs = apiOk ? (stats.documents?.byStatus?.find(s=>s.status==="PENDING")?.count ?? 0) : pending.length;
+    const pendingDocs = apiOk ? (stats.documents?.byStatus?.find(s=>s.status==="PENDING")?.count ?? 0) : DB.docs.filter(d=>d.status==="pending").length;
     // Mettre à jour le badge sidebar avec la vraie valeur
     const navDocsAfter = $("#admin-docs-nav");
     if (navDocsAfter) {
@@ -1635,7 +1626,7 @@ async function renderAdmin(sec="dashboard") {
       const actionMap = { LOGIN:"CONNEXION", LOGOUT:"DÉCONNEXION", LOGIN_FAILED:"ÉCHEC CONNEXION", UPLOAD:"DÉPÔT", DOWNLOAD:"TÉLÉCHARGEMENT", UPDATE:"MODIFICATION", VIEW:"ACCÈS", CREATE:"CRÉATION", USER_CREATE:"CRÉATION COMPTE", REGISTER:"INSCRIPTION", DELETE:"SUPPRESSION", USER_DELETE:"SUPPRESSION COMPTE", APPROVE:"APPROBATION", REJECT:"REJET" };
       const diff = a.createdAt ? Date.now() - new Date(a.createdAt).getTime() : Infinity;
       const ago  = diff < 3_600_000 ? `Il y a ${Math.round(diff/60000)} min` : diff < 86_400_000 ? `Il y a ${Math.round(diff/3_600_000)}h` : "Hier";
-      return { msg: `${a.user?.fullName||"Inconnu"} — ${actionMap[a.action]||a.action}`, time: ago, isNew: diff < 3_600_000 };
+      return { msg: `${a.user?.fullName||"Inconnu"} · ${actionMap[a.action]||a.action}`, time: ago, isNew: diff < 3_600_000 };
     });
     const activity = recentActivity.length ? recentActivity : DB.activity;
     // Répartition par catégorie
@@ -1661,7 +1652,7 @@ async function renderAdmin(sec="dashboard") {
             <div class="stat-card"><div class="stat-icon ${cls}"><i class="ti ${ic}"></i></div><div><div class="stat-val">${val}</div><div class="stat-label">${lbl}</div><div class="stat-trend">${trend}</div></div></div>
           `).join("")}
         </div>
-        <div style="display:grid;grid-template-columns:1fr 290px;gap:16px">
+        <div class="admin-main-grid">
           <!-- VALIDATION -->
           <div class="card">
             <div class="card-header">
@@ -1750,9 +1741,9 @@ async function renderAdmin(sec="dashboard") {
     c.innerHTML = `
       <div class="topbar">
         <div><div class="topbar-title">Tous les documents</div><div class="topbar-sub" id="docs-sub">${total} document${total!==1?"s":""}</div></div>
-        <div class="flex-c gap-8">
-          <input type="text" id="admin-doc-q" class="form-control" style="width:220px;height:38px" placeholder="Rechercher…" value="${f.q}" oninput="adminDocsSearch(this.value)">
-          <select id="admin-doc-status" class="form-control" style="width:160px;height:38px" onchange="adminDocsStatusFilter(this.value)">
+        <div class="flex-c gap-8 topbar-filters">
+          <input type="text" id="admin-doc-q" class="form-control topbar-input" placeholder="Rechercher…" value="${f.q}" oninput="adminDocsSearch(this.value)">
+          <select id="admin-doc-status" class="form-control topbar-select" onchange="adminDocsStatusFilter(this.value)">
             <option value="" ${!f.status?"selected":""}>Tous les statuts</option>
             <option value="ARCHIVED" ${f.status==="ARCHIVED"?"selected":""}>En attente</option>
             <option value="ACTIVE"   ${f.status==="ACTIVE"  ?"selected":""}>Publiés</option>
@@ -1776,19 +1767,22 @@ async function renderAdmin(sec="dashboard") {
   if (sec==="users") {
     c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
     const users = await API.admin.users({ limit: 100 }).catch(() => []);
+    const newUsers = users.filter(u => u.status === "new");
     const roleClsMap = { admin:"tag-red", superviseur:"tag-orange", member:"tag-blue", consultant:"tag-cyan", lecteur:"tag-gray" };
+    const sortedUsers = [...users].sort((a,b) => (a.status==="new"?0:1)-(b.status==="new"?0:1));
     c.innerHTML = `
       <div class="topbar">
         <div><div class="topbar-title">Gestion des membres</div><div class="topbar-sub">${users.length} membre${users.length!==1?"s":""} inscrit${users.length!==1?"s":""}</div></div>
         <button class="btn btn-primary btn-sm" onclick="openCreateUserModal()"><i class="ti ti-user-plus"></i>Créer un compte</button>
       </div>
       <div class="page-inner">
+        ${newUsers.length ? `<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:10px;padding:10px 16px;font-size:13px;color:#92400E;display:flex;align-items:center;gap:10px;margin-bottom:14px"><i class="ti ti-user-exclamation" style="font-size:18px;flex-shrink:0"></i><div><strong>${newUsers.length} nouvelle${newUsers.length>1?"s":""} demande${newUsers.length>1?"s":""} d'adhésion</strong> en attente — cliquez sur <strong>Valider</strong> pour attribuer un rôle.</div></div>` : ""}
         <div class="table-wrap">
           <table class="table">
             <thead><tr><th>Membre</th><th>Email</th><th>Rôle</th><th>Inscrit</th><th>Statut</th><th>Actions</th></tr></thead>
             <tbody>
-              ${users.map(u=>`
-              <tr id="user-row-${u.id}">
+              ${sortedUsers.map(u=>`
+              <tr id="user-row-${u.id}" ${u.status==="new"?'style="background:var(--amber-light,#FFFBEB)"':""}>
                 <td><div class="flex-c gap-10">
                   <div class="u-avatar" style="background:${u.role==="admin"?"var(--red)":u.role==="superviseur"?"#F97316":"var(--blue)"}">${u.initials}</div>
                   <div style="font-size:13px;font-weight:700">${u.name}</div>
@@ -1796,10 +1790,11 @@ async function renderAdmin(sec="dashboard") {
                 <td class="text-sec text-sm">${u.email}</td>
                 <td><span class="tag ${roleClsMap[u.role]||"tag-gray"}">${u.roleLabel}</span></td>
                 <td class="text-sec text-sm">${u.joined}</td>
-                <td><span class="status ${u.status==="active"?"s-published":"s-draft"}">${u.status==="active"?"Actif":"Inactif"}</span></td>
+                <td><span class="status ${u.status==="new"?"s-pending":u.status==="active"?"s-published":"s-draft"}">${u.status==="new"?"Nouveau":u.status==="active"?"Actif":"Inactif"}</span></td>
                 <td><div class="flex-c gap-6">
+                  ${u.status==="new"?`<div class="btn-icon green" title="Valider l'inscription (attribuer un rôle)" onclick="openEditUserModal('${u.id}','${u.name.replace(/'/g,"\\'")}','${u.role}','${u.status}')"><i class="ti ti-user-check"></i></div>`:""}
                   <div class="btn-icon" title="Modifier" onclick="openEditUserModal('${u.id}','${u.name.replace(/'/g,"\\'")}','${u.role}','${u.status}')"><i class="ti ti-pencil"></i></div>
-                  <div class="btn-icon ${u.status==="active"?"red":""}" title="${u.status==="active"?"Désactiver":"Réactiver"}" onclick="adminToggleUser('${u.id}',${u.status==="active"})"><i class="ti ti-user-${u.status==="active"?"off":"check"}"></i></div>
+                  <div class="btn-icon ${u.status!=="inactive"?"red":""}" title="${u.status!=="inactive"?"Désactiver":"Réactiver"}" onclick="adminToggleUser('${u.id}',${u.status!=="inactive"})"><i class="ti ti-user-${u.status!=="inactive"?"off":"check"}"></i></div>
                 </div></td>
               </tr>`).join("")}
             </tbody>
@@ -1814,7 +1809,7 @@ async function renderAdmin(sec="dashboard") {
     APP._adminLogs = logs;
 
     const actionCls = {
-      "CONNEXION":"tag-blue","DÉCONNEXION":"tag-gray","DÉPÔT":"tag-green","DÉPÔT":"tag-green",
+      "CONNEXION":"tag-blue","DÉCONNEXION":"tag-gray","DÉPÔT":"tag-green",
       "TÉLÉCHARGEMENT":"tag-pub","APPROBATION":"tag-green","REJET":"tag-red",
       "SUPPRESSION":"tag-red","MODIFICATION":"tag-orange","CRÉATION":"tag-purple",
       "CRÉATION COMPTE":"tag-purple","SUPPRESSION COMPTE":"tag-red",
@@ -1848,13 +1843,13 @@ async function renderAdmin(sec="dashboard") {
         <button class="btn btn-outline btn-sm" onclick="exportLogsCSV()"><i class="ti ti-download"></i>Exporter CSV</button>
       </div>
       <div class="page-inner">
-        <div class="flex-c gap-10 mb-14" style="flex-wrap:wrap">
-          <input id="log-search" type="text" class="form-control" style="width:240px;height:36px" placeholder="Rechercher utilisateur, ressource…" oninput="logsFilter()">
-          <select id="log-action" class="form-control" style="width:180px;height:36px" onchange="logsFilter()">
+        <div class="flex-c gap-10 mb-14 topbar-filters" style="flex-wrap:wrap">
+          <input id="log-search" type="text" class="form-control topbar-input" placeholder="Rechercher utilisateur, ressource…" oninput="logsFilter()">
+          <select id="log-action" class="form-control topbar-select" onchange="logsFilter()">
             <option value="">Toutes les actions</option>
             ${actions.map(a=>`<option value="${a}">${a}</option>`).join("")}
           </select>
-          <select id="log-period" class="form-control" style="width:160px;height:36px" onchange="logsFilter()">
+          <select id="log-period" class="form-control topbar-select" onchange="logsFilter()">
             <option value="all">Toute la période</option>
             <option value="today">Aujourd'hui</option>
             <option value="week">Cette semaine</option>
@@ -1894,7 +1889,7 @@ async function renderAdmin(sec="dashboard") {
         <button class="btn btn-primary btn-sm" onclick="openCatForm()"><i class="ti ti-folder-plus"></i>Nouvelle catégorie</button>
       </div>
       <div class="page-inner">
-        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:14px">
+        <div class="grid-2 gap-14">
           ${DB.cats.map(cat=>{
             const docCount = DB.docs.filter(d=>d.cat===cat.id).length;
             return `
@@ -1937,14 +1932,18 @@ async function renderAdmin(sec="dashboard") {
 
     const rules = [
       ...docRules.map(r => ({
-        id: r.id, type:"document", userId: r.user.id, userName: r.user.fullName,
-        userRole: usersById[r.user.id]?.role, userRoleLabel: usersById[r.user.id]?.roleLabel || "—",
-        resourceLabel: r.document.title, grantedAt: fmtDate(r.createdAt), grantedBy: r.grantedBy.fullName,
+        id: r.id, type:"document",
+        userId: r.user?.id, userName: r.user?.fullName || "Utilisateur supprimé",
+        userRole: usersById[r.user?.id]?.role, userRoleLabel: usersById[r.user?.id]?.roleLabel || "—",
+        resourceLabel: r.document?.title || "Document supprimé",
+        grantedAt: fmtDate(r.createdAt), grantedBy: r.grantedBy?.fullName || "Inconnu",
       })),
       ...catRules.map(r => ({
-        id: r.id, type:"categorie", userId: r.user.id, userName: r.user.fullName,
-        userRole: usersById[r.user.id]?.role, userRoleLabel: usersById[r.user.id]?.roleLabel || "—",
-        resourceLabel: r.category.name, grantedAt: fmtDate(r.createdAt), grantedBy: r.grantedBy.fullName,
+        id: r.id, type:"categorie",
+        userId: r.user?.id, userName: r.user?.fullName || "Utilisateur supprimé",
+        userRole: usersById[r.user?.id]?.role, userRoleLabel: usersById[r.user?.id]?.roleLabel || "—",
+        resourceLabel: r.category?.name || "Catégorie supprimée",
+        grantedAt: fmtDate(r.createdAt), grantedBy: r.grantedBy?.fullName || "Inconnu",
       })),
     ];
     DB.access = rules; // cache pour openAccessForm / revokeAccess
@@ -1983,7 +1982,7 @@ async function renderAdmin(sec="dashboard") {
               ${rules.length===0 ? `
                 <div style="padding:14px;text-align:center;color:var(--text-sec);font-size:13px;background:var(--gray-100);border-radius:var(--r-lg)">
                   <i class="ti ti-lock-off" style="font-size:18px;display:block;margin-bottom:6px"></i>
-                  Aucun accès spécifique — limité aux documents publics uniquement
+                  Aucun accès spécifique, limité aux documents publics uniquement
                 </div>` : `
                 <div class="flex-col gap-8">
                   ${rules.map(r=>`
@@ -2043,7 +2042,7 @@ async function renderAdmin(sec="dashboard") {
             <div style="display:flex;align-items:flex-end;gap:6px;height:150px">
               ${[48,72,55,90,65,95,78,88,62,74,82,100].map((h,i)=>`
                 <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
-                  <div style="width:100%;background:${h>85?"var(--blue)":"var(--blue-light)"};border-radius:4px 4px 0 0;height:${h*1.2}px;cursor:pointer;transition:var(--t)" onmouseover="this.style.background='var(--blue)';toast('${h} télécharg. en ${'JFMAMJJASOND'[i]}','info')" onmouseout="this.style.background='${h>85?"var(--blue)":"var(--blue-light)"}'"></div>
+                  <div style="width:100%;background:${h>85?"var(--blue)":"var(--blue-light)"};border-radius:4px 4px 0 0;height:${h*1.2}px;cursor:pointer;transition:var(--t)" title="${h} téléchargements en ${'JFMAMJJASOND'[i]}" onmouseover="this.style.background='var(--blue)'" onmouseout="this.style.background='${h>85?"var(--blue)":"var(--blue-light)"}'"></div>
                   <span style="font-size:9px;color:var(--text-sec)">${'JFMAMJJASOND'[i]}</span>
                 </div>`).join("")}
             </div>
@@ -2070,7 +2069,7 @@ async function renderAdmin(sec="dashboard") {
           <div class="flex-col gap-12">
             <div class="form-group"><label class="form-label">Nom de l'association</label><input class="form-control" value="Association Espoir & Vie"></div>
             <div class="grid-2 gap-12">
-              <div class="form-group"><label class="form-label">Email de contact</label><input class="form-control" value="contact@espoiretvie.td"></div>
+              <div class="form-group"><label class="form-label">Email de contact</label><input class="form-control" value="association@espoiretvie.td"></div>
               <div class="form-group"><label class="form-label">Domaine</label><input class="form-control" value="espoiretvie.td"></div>
             </div>
             <div class="form-group"><label class="form-label">Ville / Pays</label><input class="form-control" value="N'Djaména, Tchad"></div>
@@ -2169,15 +2168,19 @@ function accessTab(which) {
   document.getElementById("tab-res").classList.toggle("active",  which==="res");
 }
 
-function openAccessForm(userId) {
+async function openAccessForm(userId) {
   const restricted = DB._restrictedUsers || [];
+  const apiCats = DB.cats.some(c=>c.apiId)
+    ? DB.cats.filter(c=>c.apiId)
+    : await API.categories.list().catch(()=>[]);
+  if (apiCats.length) DB._apiCatsCache = apiCats;
   openModal(`
     <div class="flex-col gap-12">
       <div class="form-group">
         <label class="form-label">Utilisateur <span class="req">*</span></label>
         <select id="acc-user" class="form-control">
           <option value="">Choisir un utilisateur…</option>
-          ${restricted.map(u=>`<option value="${u.id}" ${u.id===userId?"selected":""}>${u.name} — ${u.roleLabel}</option>`).join("")}
+          ${restricted.map(u=>`<option value="${u.id}" ${u.id===userId?"selected":""}>${u.name} (${u.roleLabel})</option>`).join("")}
         </select>
       </div>
       <div class="form-group">
@@ -2190,7 +2193,7 @@ function openAccessForm(userId) {
       <div class="form-group">
         <label class="form-label">Ressource <span class="req">*</span></label>
         <select id="acc-resource" class="form-control">
-          ${DB.cats.map(cat=>`<option value="${cat.apiId}">${cat.name}</option>`).join("")}
+          ${apiCats.map(cat=>`<option value="${cat.apiId}">${cat.name}</option>`).join("")}
         </select>
       </div>
       <div class="flex-c gap-10 mt-8">
@@ -2204,7 +2207,8 @@ async function accessTypeChange() {
   const type = document.getElementById("acc-type").value;
   const sel  = document.getElementById("acc-resource");
   if (type==="categorie") {
-    sel.innerHTML = DB.cats.map(cat=>`<option value="${cat.apiId}">${cat.name}</option>`).join("");
+    const cats = DB._apiCatsCache || DB.cats.filter(c=>c.apiId);
+    sel.innerHTML = cats.map(cat=>`<option value="${cat.apiId}">${cat.name}</option>`).join("");
     return;
   }
   sel.innerHTML = `<option>Chargement…</option>`;
@@ -2282,16 +2286,16 @@ function openCatForm(id) {
       <div class="form-group">
         <label class="form-label">Confidentialité par défaut</label>
         <select id="cf-conf" class="form-control">
-          <option value="public"        ${cat?.conf==="public"       ?"selected":""}>PUBLIC — visible par tous</option>
-          <option value="interne"       ${!cat||cat.conf==="interne" ?"selected":""}>INTERNE — membres uniquement</option>
-          <option value="confidentiel"  ${cat?.conf==="confidentiel" ?"selected":""}>CONFIDENTIEL — accès restreint</option>
+          <option value="public"        ${cat?.conf==="public"       ?"selected":""}>PUBLIC : visible par tous</option>
+          <option value="interne"       ${!cat||cat.conf==="interne" ?"selected":""}>INTERNE : membres uniquement</option>
+          <option value="confidentiel"  ${cat?.conf==="confidentiel" ?"selected":""}>CONFIDENTIEL : accès restreint</option>
         </select>
       </div>
       <div class="flex-c gap-10 mt-8">
         <button class="btn btn-primary" onclick="saveCat('${id||""}')"><i class="ti ti-device-floppy"></i>${cat?"Enregistrer":"Créer"}</button>
         <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
       </div>
-    </div>`, cat ? `Modifier — ${cat.name}` : "Nouvelle catégorie");
+    </div>`, cat ? `Modifier : ${cat.name}` : "Nouvelle catégorie");
 }
 function saveCat(id) {
   const name = document.getElementById("cf-name").value.trim();
@@ -2396,14 +2400,16 @@ async function submitCreateUser() {
 function openEditUserModal(id, name, role, status) {
   const roleMap = { admin:"ADMINISTRATEUR", superviseur:"SUPERVISEUR", member:"AGENT", consultant:"CONSULTANT", lecteur:"LECTEUR" };
   const apiRole = roleMap[role] || "AGENT";
+  const isNew   = status === "new";
   openModal(`
     <div class="flex-col gap-14">
+      ${isNew ? `<div style="background:#FEF3C7;border:1px solid #FDE68A;border-radius:8px;padding:10px 14px;font-size:13px;color:#92400E"><i class="ti ti-info-circle" style="margin-right:6px"></i>Nouvelle demande d'adhésion — attribuez un rôle pour valider l'inscription.</div>` : ""}
       <div class="form-group">
         <label class="form-label">Nom complet</label>
         <input id="eu-name" type="text" class="form-control" value="${name}">
       </div>
       <div class="form-group">
-        <label class="form-label">Rôle</label>
+        <label class="form-label">Rôle <span class="req">*</span></label>
         <select id="eu-role" class="form-control">
           <option value="AGENT" ${apiRole==="AGENT"?"selected":""}>Agent</option>
           <option value="SUPERVISEUR" ${apiRole==="SUPERVISEUR"?"selected":""}>Superviseur</option>
@@ -2413,26 +2419,26 @@ function openEditUserModal(id, name, role, status) {
         </select>
       </div>
       <div class="flex-c gap-10 mt-4">
-        <button class="btn btn-primary" onclick="submitEditUser('${id}')"><i class="ti ti-check"></i>Enregistrer</button>
+        <button class="btn btn-primary" onclick="submitEditUser('${id}',${isNew})"><i class="ti ti-${isNew?"user-check":"check"}"></i>${isNew?"Valider l'inscription":"Enregistrer"}</button>
         <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
       </div>
-    </div>`, `Modifier — ${name}`);
+    </div>`, isNew ? `Valider l'inscription : ${name}` : `Modifier : ${name}`);
 }
 
-async function submitEditUser(id) {
+async function submitEditUser(id, isNew=false) {
   const fullName = $("#eu-name")?.value.trim();
   const role     = $("#eu-role")?.value;
   if (!fullName) { toast("Le nom est requis.","err"); return; }
   const btn = document.querySelector("#modal-overlay .btn-primary");
   if (btn) { btn.disabled=true; btn.innerHTML=`<i class="ti ti-loader-2" style="animation:spin 1s linear infinite"></i> Enregistrement…`; }
   try {
-    await API.admin.updateUser(id, { fullName, role });
+    await API.admin.updateUser(id, { fullName, role, emailVerified: true });
     closeModal();
-    toast("Modifications enregistrées.", "ok");
+    toast(isNew ? "Inscription validée. Le membre est maintenant actif." : "Modifications enregistrées.", "ok");
     renderAdmin("users");
   } catch(e) {
     toast(e.message || "Erreur lors de la modification.", "err");
-    if (btn) { btn.disabled=false; btn.innerHTML=`<i class="ti ti-check"></i>Enregistrer`; }
+    if (btn) { btn.disabled=false; btn.innerHTML=`<i class="ti ti-${isNew?"user-check":"check"}"></i>${isNew?"Valider l'inscription":"Enregistrer"}`; }
   }
 }
 
@@ -2606,7 +2612,8 @@ async function openDocFullscreen(id) {
   metaEl.textContent = "";
 
   // Fermer avec Escape
-  document.onkeydown = (e) => { if (e.key === "Escape") closeDocFullscreen(); };
+  document._previewEscHandler = (e) => { if (e.key === "Escape") closeDocFullscreen(); };
+  document.addEventListener("keydown", document._previewEscHandler);
 
   try {
     const result = await API.documents.download(id);
@@ -2672,7 +2679,10 @@ function closeDocFullscreen() {
   const iframe = document.getElementById("preview-iframe");
   modal.style.display = "none";
   iframe.src = "";
-  document.onkeydown = null;
+  if (document._previewEscHandler) {
+    document.removeEventListener("keydown", document._previewEscHandler);
+    document._previewEscHandler = null;
+  }
 }
 function _fallbackCopy(text) {
   const ta = document.createElement("textarea");

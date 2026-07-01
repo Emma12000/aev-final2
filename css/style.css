@@ -464,7 +464,13 @@ select.form-control { cursor: pointer; }
 .drop-zone-icon { font-size: 48px; color: var(--blue); margin-bottom: 14px; display: block; }
 .drop-zone-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
 .drop-zone-sub { font-size: 13px; color: var(--text-sec); margin-bottom: 18px; }
-.stepper { display: flex; align-items: center; }
+.stepper { display: flex; align-items: center; overflow: hidden; }
+.upload-wizard { overflow: hidden; }
+.admin-main-grid { display: grid; grid-template-columns: 1fr 290px; gap: 16px; }
+.upload-stepper-wrap { padding: 18px 24px; border-bottom: 1px solid var(--border-lt); }
+.upload-body { padding: 28px; }
+.upload-footer { display: flex; justify-content: space-between; align-items: center; padding: 12px 20px; border-top: 1px solid var(--border-lt); }
+.upload-footer-actions { display: flex; gap: 8px; }
 .step-num { width: 30px; height: 30px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 12px; font-weight: 700; flex-shrink: 0; }
 .step-num.done    { background: var(--blue); color: white; }
 .step-num.current { background: var(--blue-light); color: var(--blue); border: 2px solid var(--blue); }
@@ -878,8 +884,35 @@ select.form-control { cursor: pointer; }
   /* Auth : padding réduit */
   .auth-box { padding: 20px 16px; }
 
-  /* Upload wizard */
-  .stepper { padding: 0 8px; }
+  /* Fiche document mobile */
+  .doc-hero { padding: 16px !important; }
+  .doc-body-wrap { flex-direction: column !important; }
+  .doc-body-wrap > div[style*="flex:1"] { padding: 14px !important; }
+  .doc-sidebar { width: 100% !important; border-left: none !important; border-top: 1px solid var(--border-lt) !important; flex-direction: row !important; flex-wrap: wrap !important; }
+  .doc-preview-wrap { padding: 12px !important; min-height: 180px !important; }
+  .pdf-page-sim { padding: 16px !important; }
+
+  /* Stats bar accueil */
+  .stats-bar-val { font-size: 18px; }
+  .stats-bar-item { padding: 12px 8px; }
+
+  /* Admin grille principale 1fr 290px → colonne */
+  .admin-main-grid { grid-template-columns: 1fr !important; }
+
+  /* Topbar filtres : inputs et selects flexibles */
+  .topbar-filters { width: 100%; }
+  .topbar-input { flex: 1; min-width: 120px; height: 38px; }
+  .topbar-select { flex: 1; min-width: 100px; height: 38px; }
+
+  /* Upload wizard — layout responsive */
+  .upload-stepper-wrap { padding: 14px 16px; border-bottom: 1px solid var(--border-lt); overflow: hidden; }
+  .upload-body { padding: 16px !important; }
+  .upload-footer { display: flex; flex-wrap: wrap; gap: 8px; padding: 10px 14px !important; align-items: center; }
+  .upload-footer-actions { display: flex; gap: 8px; margin-left: auto; }
+  .drop-zone { padding: 28px 14px; }
+  .drop-zone-sub { overflow-wrap: break-word; word-break: break-word; padding: 0 4px; }
+  .upload-wizard .grid-2 { grid-template-columns: 1fr; }
+  .stepper { padding: 0; gap: 2px; }
 
   /* Modal plein écran sur mobile */
   .modal-box { width: calc(100vw - 24px); margin: 12px; max-width: none; }
