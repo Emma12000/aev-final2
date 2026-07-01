@@ -120,7 +120,7 @@ const DB = {
 // ÉTAT GLOBAL
 const APP = {
   page:        "home",
-  user:        null,   // null = visiteur public
+  user:        null,
   docId:       null,
   adminSec:    "dashboard",
   memberSec:   "dashboard",
@@ -133,6 +133,19 @@ const APP = {
   searchSort:  "pertinence",
   _pageData:   {},
 };
+
+// Cache admin data (TTL 60s) — évite les appels dupliqués entre dashboard et badges
+const _AC = { stats: null, users: null, ts: 0 };
+async function fetchAdminData(force=false) {
+  if (!force && _AC.stats && _AC.users && (Date.now()-_AC.ts) < 60_000) return { stats:_AC.stats, users:_AC.users };
+  const [stats, users] = await Promise.all([
+    API.admin.stats().catch(()=>null),
+    API.admin.users({ limit: 100 }).catch(()=>[]),
+  ]);
+  _AC.stats = stats; _AC.users = users; _AC.ts = Date.now();
+  return { stats, users };
+}
+function invalidateAdminCache() { _AC.ts = 0; }
 
 // UTILITAIRES
 const $  = (sel, ctx=document) => ctx.querySelector(sel);
@@ -877,34 +890,22 @@ function toggleBellMenu(e) {
 }
 function closeBellMenu() { document.getElementById("bell-dropdown")?.remove(); }
 
-async function updateAdminBadges() {
+async function updateAdminBadges(force=false) {
   try {
-    const [users, stats] = await Promise.all([
-      API.admin.users({ limit: 100 }),
-      API.admin.stats(),
-    ]);
+    const { stats, users } = await fetchAdminData(force);
     const newMembers  = users.filter(u => u.status === "new").length;
     const pendingDocs = stats?.documents?.byStatus?.find(s => s.status === "ARCHIVED")?.count ?? 0;
     const total       = newMembers + pendingDocs;
 
-    // Cloche navbar
-    const bellBadge = document.getElementById("bell-badge");
-    if (bellBadge) { bellBadge.style.display = total > 0 ? "flex" : "none"; bellBadge.textContent = total || ""; }
-
-    // Badge sidebar Membres
+    const bellBadge   = document.getElementById("bell-badge");
     const membersBadge = document.getElementById("admin-members-badge");
-    if (membersBadge) { membersBadge.style.display = newMembers > 0 ? "flex" : "none"; membersBadge.textContent = newMembers || ""; }
+    const navDocsEl   = document.getElementById("admin-docs-nav");
 
-    // Badge sidebar Documents
-    const navDocsEl = document.getElementById("admin-docs-nav");
+    if (bellBadge)    { bellBadge.style.display = total>0 ? "flex":"none"; bellBadge.textContent = total||""; }
+    if (membersBadge) { membersBadge.style.display = newMembers>0 ? "flex":"none"; membersBadge.textContent = newMembers||""; }
     if (navDocsEl) {
-      const old = navDocsEl.querySelector(".s-badge");
-      if (old) old.remove();
-      if (pendingDocs > 0) {
-        const b = document.createElement("span");
-        b.className = "s-badge"; b.textContent = pendingDocs;
-        navDocsEl.appendChild(b);
-      }
+      const old = navDocsEl.querySelector(".s-badge"); if (old) old.remove();
+      if (pendingDocs > 0) { const b=document.createElement("span"); b.className="s-badge"; b.textContent=pendingDocs; navDocsEl.appendChild(b); }
     }
   } catch(_) {}
 }
@@ -1667,12 +1668,9 @@ async function renderAdmin(sec="dashboard") {
     $$("#admin-sidebar .sidebar-item").forEach(el=>el.classList.toggle("active",el.dataset.sec==="dashboard"));
   }
   if (sec==="dashboard") {
-    // Spinner pendant le chargement des vraies stats
     c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
-    const [stats, apiUsers] = await Promise.all([
-      API.admin.stats().catch(()=>null),
-      API.admin.users({ limit: 20 }).catch(()=>[]),
-    ]);
+    const { stats, users: apiUsersFull } = await fetchAdminData();
+    const apiUsers = apiUsersFull.slice(0, 20);
     const realUsers   = apiUsers.length ? apiUsers : DB.users;
     // Si l'API répond, utiliser ses données ; sinon seulement fallback sur mock
     const apiOk       = stats !== null;
@@ -2504,8 +2502,9 @@ async function submitEditUser(id, isNew=false) {
     await API.admin.updateUser(id, { fullName, role, emailVerified: true });
     closeModal();
     toast(isNew ? "Inscription validée. Le membre est maintenant actif." : "Modifications enregistrées.", "ok");
+    invalidateAdminCache();
     renderAdmin("users");
-    if (isNew) updateAdminBadges();
+    if (isNew) updateAdminBadges(true);
   } catch(e) {
     toast(e.message || "Erreur lors de la modification.", "err");
     if (btn) { btn.disabled=false; btn.innerHTML=`<i class="ti ti-${isNew?"user-check":"check"}"></i>${isNew?"Valider l'inscription":"Enregistrer"}`; }
@@ -2546,7 +2545,7 @@ async function approveDoc(id, title) {
     const st = $(`#status-${id}`);
     if (st) st.innerHTML = statusHtml("published");
     toast(`"${title}…" publié avec succès !`, "ok");
-    updateAdminBadges();
+    invalidateAdminCache(); updateAdminBadges(true);
     setTimeout(() => renderAdmin("docs"), 1000);
   } catch(e) {
     if (row) row.style.opacity = "1";
@@ -2560,7 +2559,7 @@ async function rejectDoc(id) {
     const st = $(`#status-${id}`);
     if (st) st.innerHTML = statusHtml("deleted");
     toast("Document rejeté.", "err");
-    updateAdminBadges();
+    invalidateAdminCache(); updateAdminBadges(true);
     setTimeout(() => renderAdmin("docs"), 800);
   } catch(e) {
     toast(e.message || "Erreur lors du rejet.", "err");
