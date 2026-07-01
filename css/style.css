@@ -461,7 +461,7 @@ select.form-control { cursor: pointer; }
    PAGINATION
 ═══════════════════════════════════════════════ */
 .pagination { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 18px; }
-.pag-btn { width: 36px; height: 36px; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--white); color: var(--text-sec); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--t); font-family: var(--font); font-weight: 500; }
+.pag-btn { height: 36px; padding: 0 14px; border-radius: var(--r-md); border: 1px solid var(--border); background: var(--white); color: var(--text-sec); font-size: 13px; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: var(--t); font-family: var(--font); font-weight: 500; white-space: nowrap; }
 .pag-btn:hover { background: var(--blue-light); color: var(--blue); border-color: var(--blue); }
 .pag-btn.active { background: var(--blue); color: white; border-color: var(--blue); font-weight: 700; }
 
