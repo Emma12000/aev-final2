@@ -11,7 +11,7 @@ const DB = {
     { id:"projet",        name:"Projets et programmes",     icon:"ti-briefcase",          color:"#166534", bg:"#F0FDF4", conf:"interne",       tags:["Santé","Nutrition","Programme"] },
     { id:"partenariat",   name:"Partenariats",              icon:"ti-affiliate",          color:"#0F766E", bg:"#F0FDFA", conf:"interne",       tags:["ONG","Accord","Collaboration"] },
     { id:"communication", name:"Communication",             icon:"ti-speakerphone",       color:"#BE185D", bg:"#FDF2F8", conf:"public",        tags:["Plaquette","Presse","Visuel"] },
-    { id:"rh",            name:"Ressources humaines",       icon:"ti-users",              color:"#B45309", bg:"#FFFBEB", conf:"confidentiel",  tags:["Personnel","Contrats","Évaluation"] },
+    { id:"rh",            name:"Bénévoles",                 icon:"ti-users",              color:"#B45309", bg:"#FFFBEB", conf:"confidentiel",  tags:["Bénévoles","Contrats","Évaluation"] },
     { id:"divers",        name:"Pièces diverses",           icon:"ti-folder",             color:"#475569", bg:"#F8FAFC", conf:"interne",       tags:["Temporaire","Divers"] },
   ],
   docs: [
@@ -42,8 +42,8 @@ const DB = {
     // Communication institutionnelle
     { id:18, title:"Plaquette institutionnelle AEV 2026",                  type:"Communication",   cat:"communication",fmt:"PDF",size:"4,2 Mo",pages:8, date:"2026-03-01", dateStr:"1 mars 2026",   author:"Admin AEV",     access:"Public",       dl:312, views:1040, tags:["Plaquette","2026","Identité"],  status:"published", desc:"Plaquette de présentation officielle de l'Association Espoir & Vie 2026 destinée aux partenaires et bailleurs de fonds." },
     { id:19, title:"Communiqué de presse — Forum Santé juin 2026",         type:"Communication",   cat:"communication",fmt:"PDF",size:"380 Ko",pages:2, date:"2026-06-01", dateStr:"1 juin 2026",   author:"A. Ngaradoum",  access:"Public",       dl:54,  views:178,  tags:["Presse","ForumSanté","2026"],   status:"published", desc:"Communiqué de presse annonçant la participation de l'AEV au Forum National Santé de juin 2026." },
-    // Ressources humaines
-    { id:20, title:"Registre du personnel — Exercice 2026",                type:"RH",              cat:"rh",       fmt:"Excel", size:"640 Ko", pages:5,  date:"2026-01-05", dateStr:"5 jan. 2026",   author:"Admin AEV",     access:"Confidentiel", dl:2,   views:8,    tags:["Personnel","2026","Registre"],  status:"published", desc:"Registre officiel du personnel salarié et bénévole de l'association pour l'exercice 2026." },
+    // Bénévoles
+    { id:20, title:"Registre du personnel — Exercice 2026",                type:"Bénévoles",       cat:"rh",       fmt:"Excel", size:"640 Ko", pages:5,  date:"2026-01-05", dateStr:"5 jan. 2026",   author:"Admin AEV",     access:"Confidentiel", dl:2,   views:8,    tags:["Personnel","2026","Registre"],  status:"published", desc:"Registre officiel du personnel salarié et bénévole de l'association pour l'exercice 2026." },
     // Pièces diverses
     { id:21, title:"Supports de formation — Atelier Gouvernance 2025",     type:"Divers",          cat:"divers",   fmt:"PDF",   size:"2,1 Mo", pages:40, date:"2025-11-18", dateStr:"18 nov. 2025",  author:"S. Mahamat",    access:"Membres",      dl:23,  views:74,   tags:["Formation","Gouvernance","2025"],status:"published", desc:"Supports pédagogiques utilisés lors de l'atelier de renforcement de la gouvernance organisationnelle de novembre 2025." },
   ],
@@ -147,7 +147,7 @@ function tagHtml(type) {
   const map = {
     Administration:"tag-purple", Finance:"tag-orange",  Contrat:"tag-blue",
     Courrier:"tag-cyan",         Rapport:"tag-red",     Projet:"tag-green",
-    Partenariat:"tag-teal",      Communication:"tag-pink", RH:"tag-yellow",
+    Partenariat:"tag-teal",      Communication:"tag-pink", Bénévoles:"tag-yellow",
     Divers:"tag-gray",
   };
   return `<span class="tag ${map[type]||"tag-gray"}">${type}</span>`;
