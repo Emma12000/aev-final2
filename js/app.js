@@ -159,6 +159,17 @@ function statusHtml(s) {
 }
 function fmtDate(d) { return d ? new Date(d).toLocaleDateString("fr-FR",{day:"numeric",month:"long",year:"numeric"}) : ""; }
 
+// AFFICHER / MASQUER MOT DE PASSE
+function togglePwd(inputId, btn) {
+  const input = document.getElementById(inputId);
+  const icon  = btn.querySelector("i");
+  if (!input) return;
+  const show = input.type === "password";
+  input.type      = show ? "text" : "password";
+  icon.className  = `ti ${show ? "ti-eye-off" : "ti-eye"}`;
+  btn.title       = show ? "Masquer" : "Afficher";
+}
+
 // TOAST
 function toast(msg, type="ok") {
   const c = $("#toast-wrap");
@@ -1272,9 +1283,9 @@ async function renderMember(sec="dashboard") {
         <div class="card card-body">
           <div class="card-title mb-12">Changer le mot de passe</div>
           <div class="flex-col gap-10">
-            <div class="form-group"><label class="form-label">Mot de passe actuel</label><input type="password" id="pwd-old" class="form-control" placeholder="••••••••"></div>
-            <div class="form-group"><label class="form-label">Nouveau mot de passe</label><input type="password" id="pwd-new" class="form-control" placeholder="Minimum 8 caractères"></div>
-            <div class="form-group"><label class="form-label">Confirmer</label><input type="password" id="pwd-confirm" class="form-control" placeholder="Répétez le nouveau mot de passe"></div>
+            <div class="form-group"><label class="form-label">Mot de passe actuel</label><div class="input-icon input-pwd"><i class="ti ti-lock"></i><input type="password" id="pwd-old" class="form-control" placeholder="••••••••"><button type="button" class="pwd-eye" onclick="togglePwd('pwd-old',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
+            <div class="form-group"><label class="form-label">Nouveau mot de passe</label><div class="input-icon input-pwd"><i class="ti ti-lock"></i><input type="password" id="pwd-new" class="form-control" placeholder="Minimum 8 caractères"><button type="button" class="pwd-eye" onclick="togglePwd('pwd-new',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
+            <div class="form-group"><label class="form-label">Confirmer</label><div class="input-icon input-pwd"><i class="ti ti-lock"></i><input type="password" id="pwd-confirm" class="form-control" placeholder="Répétez le nouveau mot de passe"><button type="button" class="pwd-eye" onclick="togglePwd('pwd-confirm',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
             <button class="btn btn-outline btn-sm" style="align-self:flex-start" onclick="doChangePassword()"><i class="ti ti-lock"></i>Mettre à jour</button>
           </div>
         </div>

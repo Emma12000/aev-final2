@@ -216,6 +216,15 @@ select.form-control { cursor: pointer; }
 .input-icon { position: relative; }
 .input-icon i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--blue); font-size: 16px; }
 .input-icon .form-control { padding-left: 40px; }
+.input-pwd .form-control { padding-right: 40px; }
+.pwd-eye {
+  position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
+  background: none; border: none; cursor: pointer; padding: 4px;
+  color: var(--gray-400); font-size: 17px; line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  transition: color var(--t);
+}
+.pwd-eye:hover { color: var(--blue); }
 
 /* ═══════════════════════════════════════════════
    HERO
