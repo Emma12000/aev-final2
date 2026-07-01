@@ -815,7 +815,7 @@ function updateNavbarUser() {
     const isAdmin = ["admin","superviseur"].includes(APP.user.role);
     btnZone.innerHTML = `
       <div class="user-menu-wrap" id="user-menu-wrap" style="display:flex;align-items:center;gap:6px">
-        ${isAdmin ? `<button class="nav-bell" id="nav-bell" onclick="navigate('admin',{sec:'users'})" title="Demandes d'adhésion en attente"><i class="ti ti-bell"></i><span class="nav-bell-dot" id="bell-badge" style="display:none"></span></button>` : ""}
+        ${isAdmin ? `<button class="nav-bell" id="nav-bell" onclick="toggleBellMenu(event)" title="Notifications en attente"><i class="ti ti-bell"></i><span class="nav-bell-dot" id="bell-badge" style="display:none"></span></button>` : ""}
         <div class="navbar-user" onclick="toggleUserMenu(event)">
           <div class="navbar-user-avatar">${APP.user.initials}</div>
           <span class="navbar-user-name">${APP.user.name.split(" ")[0]}</span>
@@ -842,14 +842,70 @@ function updateNavbarUser() {
   }
 }
 
+function toggleBellMenu(e) {
+  e.stopPropagation();
+  const bell = document.getElementById("nav-bell");
+  const existing = document.getElementById("bell-dropdown");
+  if (existing) { existing.remove(); return; }
+
+  const bellBadge   = document.getElementById("bell-badge");
+  const totalCount  = parseInt(bellBadge?.textContent || "0");
+  const membersCount = parseInt(document.getElementById("admin-members-badge")?.textContent || "0");
+  const docsCount   = totalCount - membersCount;
+
+  const menu = document.createElement("div");
+  menu.id = "bell-dropdown";
+  menu.style.cssText = "position:absolute;top:calc(100% + 8px);right:0;background:var(--card);border:1px solid var(--border-lt);border-radius:12px;box-shadow:0 8px 24px rgba(0,0,0,.12);min-width:240px;z-index:2000;overflow:hidden";
+  menu.innerHTML = `
+    <div style="padding:10px 14px;border-bottom:1px solid var(--border-lt);font-size:12px;font-weight:700;color:var(--text-sec);text-transform:uppercase;letter-spacing:.05em">Notifications</div>
+    ${docsCount > 0 ? `
+    <div class="bell-notif-item" onclick="closeBellMenu();navigate('admin',{sec:'docs'})">
+      <div class="bell-notif-icon" style="background:var(--blue-light);color:var(--blue)"><i class="ti ti-files"></i></div>
+      <div><div style="font-size:13px;font-weight:600;color:var(--text)">${docsCount} document${docsCount>1?"s":""} en attente</div><div style="font-size:11px;color:var(--text-sec)">À approuver ou rejeter</div></div>
+    </div>` : ""}
+    ${membersCount > 0 ? `
+    <div class="bell-notif-item" onclick="closeBellMenu();navigate('admin',{sec:'users'})">
+      <div class="bell-notif-icon" style="background:#FEF3C7;color:#B45309"><i class="ti ti-user-plus"></i></div>
+      <div><div style="font-size:13px;font-weight:600;color:var(--text)">${membersCount} nouvelle${membersCount>1?"s":""} inscription${membersCount>1?"s":""}</div><div style="font-size:11px;color:var(--text-sec)">En attente de validation</div></div>
+    </div>` : ""}
+    ${totalCount === 0 ? `<div style="padding:16px 14px;font-size:13px;color:var(--text-sec);text-align:center"><i class="ti ti-checks" style="font-size:20px;display:block;margin-bottom:6px;color:var(--green)"></i>Tout est à jour</div>` : ""}`;
+
+  const wrap = bell.closest(".user-menu-wrap") || bell.parentElement;
+  wrap.style.position = "relative";
+  wrap.appendChild(menu);
+  setTimeout(() => document.addEventListener("click", closeBellMenu, { once: true }), 0);
+}
+function closeBellMenu() { document.getElementById("bell-dropdown")?.remove(); }
+
 async function updateAdminBadges() {
   try {
-    const users = await API.admin.users({ limit: 100 });
-    const count = users.filter(u => u.status === "new").length;
+    const [users, stats] = await Promise.all([
+      API.admin.users({ limit: 100 }),
+      API.admin.stats(),
+    ]);
+    const newMembers  = users.filter(u => u.status === "new").length;
+    const pendingDocs = stats?.documents?.byStatus?.find(s => s.status === "ARCHIVED")?.count ?? 0;
+    const total       = newMembers + pendingDocs;
+
+    // Cloche navbar
     const bellBadge = document.getElementById("bell-badge");
-    const sidebarBadge = document.getElementById("admin-members-badge");
-    if (bellBadge) { bellBadge.style.display = count > 0 ? "flex" : "none"; bellBadge.textContent = count || ""; }
-    if (sidebarBadge) { sidebarBadge.style.display = count > 0 ? "flex" : "none"; sidebarBadge.textContent = count || ""; }
+    if (bellBadge) { bellBadge.style.display = total > 0 ? "flex" : "none"; bellBadge.textContent = total || ""; }
+
+    // Badge sidebar Membres
+    const membersBadge = document.getElementById("admin-members-badge");
+    if (membersBadge) { membersBadge.style.display = newMembers > 0 ? "flex" : "none"; membersBadge.textContent = newMembers || ""; }
+
+    // Badge sidebar Documents
+    const navDocsEl = document.getElementById("admin-docs-nav");
+    if (navDocsEl) {
+      const old = navDocsEl.querySelector(".s-badge");
+      if (old) old.remove();
+      if (pendingDocs > 0) {
+        const b = document.createElement("span");
+        b.className = "s-badge"; b.textContent = pendingDocs;
+        navDocsEl.appendChild(b);
+      }
+    }
   } catch(_) {}
 }
 
@@ -1623,7 +1679,7 @@ async function renderAdmin(sec="dashboard") {
     const totalDocs   = apiOk ? (stats.documents?.total ?? 0) : DB.docs.filter(d=>d.status==="published").length;
     const totalUsers  = apiOk ? (stats.users?.total ?? 0) : DB.users.length;
     const recentUps   = apiOk ? (stats.documents?.recentUploads ?? 0) : 0;
-    const pendingDocs = apiOk ? (stats.documents?.byStatus?.find(s=>s.status==="PENDING")?.count ?? 0) : DB.docs.filter(d=>d.status==="pending").length;
+    const pendingDocs = apiOk ? (stats.documents?.byStatus?.find(s=>s.status==="ARCHIVED")?.count ?? 0) : DB.docs.filter(d=>d.status==="pending").length;
     // Mettre à jour le badge sidebar avec la vraie valeur
     const navDocsAfter = $("#admin-docs-nav");
     if (navDocsAfter) {
@@ -2490,6 +2546,7 @@ async function approveDoc(id, title) {
     const st = $(`#status-${id}`);
     if (st) st.innerHTML = statusHtml("published");
     toast(`"${title}…" publié avec succès !`, "ok");
+    updateAdminBadges();
     setTimeout(() => renderAdmin("docs"), 1000);
   } catch(e) {
     if (row) row.style.opacity = "1";
@@ -2503,6 +2560,7 @@ async function rejectDoc(id) {
     const st = $(`#status-${id}`);
     if (st) st.innerHTML = statusHtml("deleted");
     toast("Document rejeté.", "err");
+    updateAdminBadges();
     setTimeout(() => renderAdmin("docs"), 800);
   } catch(e) {
     toast(e.message || "Erreur lors du rejet.", "err");
