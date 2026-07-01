@@ -26,6 +26,11 @@
       <div class="navbar-tagline">Solidarité - Humanité - Dignité</div>
     </div>
   </a>
+  <!-- Boutons navigation retour / avance -->
+  <div class="nav-history-btns">
+    <button id="nav-back" class="nav-history-btn" onclick="goBack()" title="Page précédente" disabled><i class="ti ti-arrow-left"></i></button>
+    <button id="nav-forward" class="nav-history-btn" onclick="goForward()" title="Page suivante" disabled><i class="ti ti-arrow-right"></i></button>
+  </div>
   <div class="navbar-links" id="navbar-links-desktop">
     <button class="nav-link" data-p="home"      onclick="navigate('home')">Accueil</button>
     <button class="nav-link" data-p="catalogue" onclick="navigate('catalogue')">Catalogue</button>
@@ -289,9 +294,9 @@
       <div class="flex-b mb-16">
         <span id="search-count" style="font-size:13px;color:var(--text-sec);font-weight:500"></span>
         <div class="flex-c gap-6">
-          <button class="pag-btn active">Pertinence</button>
-          <button class="pag-btn" onclick="toast('Tri par date appliqué','info')">Date ↓</button>
-          <button class="pag-btn" onclick="toast('Tri A→Z appliqué','info')">A → Z</button>
+          <button class="pag-btn active" id="sort-pertinence" onclick="setSearchSort('pertinence')">Pertinence</button>
+          <button class="pag-btn" id="sort-date" onclick="setSearchSort('date')">Date ↓</button>
+          <button class="pag-btn" id="sort-az" onclick="setSearchSort('az')">A → Z</button>
         </div>
       </div>
       <div id="search-results" class="flex-col gap-10"></div>

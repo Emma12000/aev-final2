@@ -571,6 +571,29 @@ select.form-control { cursor: pointer; }
 .empty p { font-size:13px; color:var(--text-sec); }
 
 /* ═══════════════════════════════════════════════
+   BOUTONS NAVIGATION RETOUR / AVANCE
+═══════════════════════════════════════════════ */
+.nav-history-btns { display: flex; align-items: center; gap: 4px; margin-right: 6px; }
+.nav-history-btn {
+  width: 32px; height: 32px;
+  border-radius: var(--r-md);
+  background: rgba(255,255,255,.08);
+  border: 1px solid rgba(255,255,255,.14);
+  color: rgba(255,255,255,.65);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--t);
+  flex-shrink: 0;
+}
+.nav-history-btn:hover:not(:disabled) {
+  background: rgba(255,255,255,.18);
+  color: white;
+  border-color: rgba(255,255,255,.25);
+}
+.nav-history-btn:disabled { opacity: .28; cursor: not-allowed; }
+
+/* ═══════════════════════════════════════════════
    HAMBURGER & DRAWER MOBILE
 ═══════════════════════════════════════════════ */
 .nav-burger {
@@ -658,6 +681,7 @@ select.form-control { cursor: pointer; }
   #navbar-links-desktop #navbar-user-zone { display: flex; }
   .nav-burger { display: flex; }
   .navbar-links { gap: 8px; }
+  .nav-history-btns { display: none; }
   .user-dropdown { right: 0; min-width: 230px; }
 
   /* Hero */

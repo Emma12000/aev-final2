@@ -128,6 +128,10 @@ const APP = {
   authTab:     "login",
   searchQ:     "",
   catFilter:   "",
+  navHistory:  [],
+  navFuture:   [],
+  searchSort:  "pertinence",
+  _pageData:   {},
 };
 
 // UTILITAIRES
@@ -175,7 +179,7 @@ function openModal(html, title="") {
 function closeModal() { $("#modal-overlay").classList.remove("open"); }
 
 // NAVIGATION
-function navigate(page, data={}) {
+function navigate(page, data={}, _fromHistory=false) {
   // Guard : pages protégées inaccessibles sans connexion
   if ((page==="member" || page==="admin") && !APP.user) {
     page = "auth";
@@ -185,6 +189,12 @@ function navigate(page, data={}) {
   if (page==="admin" && APP.user && !["admin","superviseur"].includes(APP.user.role)) {
     page = "member";
   }
+  // Historique de navigation
+  if (!_fromHistory && APP.page && APP.page !== page) {
+    APP.navHistory.push({ page: APP.page, data: APP._pageData });
+    APP.navFuture = [];
+  }
+  APP._pageData = data;
   $$(".page").forEach(p => p.classList.remove("active"));
   const el = $(`#page-${page}`);
   if (!el) return;
@@ -205,6 +215,28 @@ function navigate(page, data={}) {
     about:      () => renderAbout(),
   };
   if (renders[page]) renders[page]();
+  updateNavButtons();
+}
+
+function goBack() {
+  if (!APP.navHistory.length) return;
+  APP.navFuture.push({ page: APP.page, data: APP._pageData });
+  const prev = APP.navHistory.pop();
+  navigate(prev.page, prev.data || {}, true);
+}
+
+function goForward() {
+  if (!APP.navFuture.length) return;
+  APP.navHistory.push({ page: APP.page, data: APP._pageData });
+  const next = APP.navFuture.pop();
+  navigate(next.page, next.data || {}, true);
+}
+
+function updateNavButtons() {
+  const backBtn = $('#nav-back');
+  const fwdBtn  = $('#nav-forward');
+  if (backBtn) backBtn.disabled = APP.navHistory.length === 0;
+  if (fwdBtn)  fwdBtn.disabled  = APP.navFuture.length  === 0;
 }
 
 //  PAGE : ACCUEIL
@@ -272,6 +304,10 @@ async function renderCatalogue(cat="") {
 function renderSearch(q="") {
   APP.searchQ = q;
   $("#search-q").value = q;
+  // Synchroniser le bouton de tri actif
+  $$('.pag-btn').forEach(b => b.classList.remove('active'));
+  const sortBtnId = { pertinence:'sort-pertinence', date:'sort-date', az:'sort-az' }[APP.searchSort];
+  if (sortBtnId) { const b = $(`#${sortBtnId}`); if (b) b.classList.add('active'); }
   applySearch();
 }
 
@@ -294,6 +330,13 @@ async function applySearch() {
   let res = docs;
   if (fmts.length)  res = res.filter(d => fmts.includes(d.fmt));
   if (access)       res = res.filter(d => d.access === access);
+
+  // Tri
+  if (APP.searchSort === 'date') {
+    res = [...res].sort((a,b) => new Date(b.createdAt||b.date||0) - new Date(a.createdAt||a.date||0));
+  } else if (APP.searchSort === 'az') {
+    res = [...res].sort((a,b) => a.title.localeCompare(b.title, 'fr', {sensitivity:'base'}));
+  }
 
   if (countEl) countEl.textContent = `${res.length} résultat${res.length!==1?"s":""}`;
   if (results) results.innerHTML = res.length
@@ -322,6 +365,14 @@ function debouncedSearch() {
 
 function resetFilters() {
   $$(".f-type,.f-fmt,.f-period,.f-access").forEach(el=>el.checked=false);
+  applySearch();
+}
+
+function setSearchSort(sort) {
+  APP.searchSort = sort;
+  $$('.pag-btn').forEach(b => b.classList.remove('active'));
+  const sortBtnId = { pertinence:'sort-pertinence', date:'sort-date', az:'sort-az' }[sort];
+  if (sortBtnId) { const b = $(`#${sortBtnId}`); if (b) b.classList.add('active'); }
   applySearch();
 }
 
