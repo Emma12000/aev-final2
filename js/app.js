@@ -1108,11 +1108,17 @@ async function renderMember(sec="dashboard") {
   if (sec==="dashboard") {
     // Charger données réelles depuis l'API
     const userId = APP.user?.id;
-    const [{ items: myDocs }, myFavs] = await Promise.all([
-      userId ? API.documents.adminList({ uploadedById: userId, limit: 5 }).catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
+    // Deux requêtes séparées : docs actifs + docs en attente (backend filtre status=ACTIVE par défaut)
+    const [activeRes, pendingRes, myFavs] = await Promise.all([
+      userId ? API.documents.adminList({ uploadedById: userId, status: "ACTIVE",   limit: 50 }).catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
+      userId ? API.documents.adminList({ uploadedById: userId, status: "ARCHIVED", limit: 50 }).catch(() => ({ items: [] })) : Promise.resolve({ items: [] }),
       userId ? API.favorites.list().catch(() => []) : Promise.resolve([]),
     ]);
-    const pending = myDocs.filter(d=>d.status==="pending").length;
+    const activeDocs  = activeRes.items  || [];
+    const pendingDocs = pendingRes.items || [];
+    const myDocs      = [...activeDocs, ...pendingDocs]; // tous les docs de l'utilisateur
+    const pending     = pendingDocs.length;
+    const totalDl     = myDocs.reduce((s, d) => s + (d.dl || 0), 0);
     const verifyBanner = APP.user && !APP.user.emailVerified ? `
       <div style="background:#FEF3C7;border:1px solid #F59E0B;border-radius:8px;padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:16px">
         <i class="ti ti-mail-exclamation" style="font-size:20px;color:#D97706;flex-shrink:0"></i>
@@ -1131,10 +1137,10 @@ async function renderMember(sec="dashboard") {
         ${verifyBanner}
         <div class="stats-grid">
           ${[
-            ["ti-files","si-blue", myDocs.length, "Mes documents", myDocs.length ? `${pending} en attente` : "Aucun document"],
-            ["ti-clock","si-red",  pending,         "En attente",    "À valider par l'admin"],
-            ["ti-star","si-blue",  myFavs.length,   "Favoris",       "Sauvegardés"],
-            ["ti-download","si-blue","—",            "Téléchargements","Total cumulé"],
+            ["ti-files",    "si-blue", myDocs.length,  "Mes documents",     pending ? `${pending} en attente` : "Tous publiés"],
+            ["ti-clock",    "si-red",  pending,          "En attente",        "À valider par l'admin"],
+            ["ti-star",     "si-blue", myFavs.length,   "Favoris",           "Documents sauvegardés"],
+            ["ti-download", "si-blue", totalDl || "—",  "Téléchargements",   "Total sur mes documents"],
           ].map(([ic,cls,val,lbl,trend])=>`
             <div class="stat-card">
               <div class="stat-icon ${cls}"><i class="ti ${ic}"></i></div>
@@ -1143,7 +1149,7 @@ async function renderMember(sec="dashboard") {
         </div>
         <div class="card">
           <div class="card-header"><span class="card-title"><i class="ti ti-files" style="color:var(--blue);margin-right:6px"></i>Mes derniers documents</span><button class="btn btn-outline btn-sm" onclick="renderMember('docs')">Tout voir →</button></div>
-          ${myDocs.length ? myDocs.map(d=>`
+          ${myDocs.length ? myDocs.slice(0,5).map(d=>`
             <div class="doc-row" onclick="navigate('doc',{id:'${d.id}'})">
               ${docIconHtml(d.fmt)}
               <div style="flex:1;min-width:0"><div class="doc-name">${d.title}</div><div class="doc-meta">${d.dateStr} · ${d.fmt} · ${d.size}</div></div>
