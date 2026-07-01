@@ -393,6 +393,10 @@ async function renderDoc(id) {
   const related = relatedRaw.filter(x => x.id !== id).slice(0, 3);
   const fmtIcon = { PDF:"ti-file-type-pdf", Word:"ti-file-type-doc", Excel:"ti-file-spreadsheet" }[d.fmt]||"ti-file";
 
+  const favIds = APP.user
+    ? await API.favorites.list().then(fs => fs.map(f => f.id)).catch(() => [])
+    : [];
+
   $("#doc-content").innerHTML = `
     <!-- HERO -->
     <div style="background:linear-gradient(135deg,var(--blue-deep),var(--blue-darker));padding:24px 36px 30px">
@@ -422,8 +426,8 @@ async function renderDoc(id) {
           </div>
         </div>
         <div class="flex-c gap-8">
-          <button class="btn btn-ghost btn-sm" onclick="shareDoc('${d.id}')"><i class="ti ti-share"></i>Partager</button>
-          <button class="btn btn-ghost btn-sm" id="fav-btn-${d.id}" onclick="toggleFav('${d.id}')"><i class="ti ti-star"></i>Favori</button>
+          <button class="btn btn-ghost btn-sm" onclick="openShareModal('${d.id}','${d.title.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')"><i class="ti ti-share"></i>Partager</button>
+          <button class="btn btn-ghost btn-sm" id="fav-btn-${d.id}" onclick="toggleFav('${d.id}')"><i class="ti ${favIds.includes(d.id)?"ti-star-filled":"ti-star"}" style="${favIds.includes(d.id)?"color:var(--blue)":""}"></i>Favori</button>
         </div>
       </div>
     </div>
@@ -2667,15 +2671,51 @@ function _fallbackCopy(text) {
   }
   document.body.removeChild(ta);
 }
-function toggleFav(id) {
-  const btn = $(`#fav-btn-${id}`);
-  if (btn) {
-    const isFav = btn.querySelector("i").classList.contains("ti-star-filled");
-    btn.querySelector("i").className = `ti ${isFav?"ti-star":"ti-star-filled"}`;
-    btn.querySelector("i").style.color = isFav ? "" : "var(--blue)";
-    toast(isFav ? "Retiré des favoris" : "Ajouté aux favoris !", isFav?"info":"ok");
-  } else {
-    toast("Ajouté aux favoris !","ok");
+function openShareModal(id, title) {
+  const safe = (title||"").replace(/'/g,"\\'").replace(/"/g,"&quot;");
+  openModal(`
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:8px">
+      <div class="share-opt" onclick="shareDoc('${id}','facebook','${safe}');closeModal()">
+        <i class="ti ti-brand-facebook" style="color:#1877F2"></i><span>Facebook</span>
+      </div>
+      <div class="share-opt" onclick="shareDoc('${id}','whatsapp','${safe}');closeModal()">
+        <i class="ti ti-brand-whatsapp" style="color:#25D366"></i><span>WhatsApp</span>
+      </div>
+      <div class="share-opt" onclick="shareDoc('${id}','email','${safe}');closeModal()">
+        <i class="ti ti-mail" style="color:var(--blue)"></i><span>E-mail</span>
+      </div>
+      <div class="share-opt" onclick="shareDoc('${id}','link','');closeModal()">
+        <i class="ti ti-link" style="color:var(--gray-600)"></i><span>Copier lien</span>
+      </div>
+    </div>`, "Partager ce document");
+}
+
+async function toggleFav(id) {
+  if (!APP.user) {
+    toast("Connectez-vous pour ajouter aux favoris.", "err");
+    navigate("auth");
+    return;
+  }
+  const btn  = $(`#fav-btn-${id}`);
+  const icon = btn?.querySelector("i");
+  const isFav = icon?.classList.contains("ti-star-filled");
+  // Mise à jour optimiste
+  if (icon) { icon.className = `ti ${isFav?"ti-star":"ti-star-filled"}`; icon.style.color = isFav?"":"var(--blue)"; }
+  if (btn)  { btn.style.opacity = ".6"; btn.disabled = true; }
+  try {
+    if (isFav) {
+      await API.favorites.remove(id);
+      toast("Retiré des favoris", "info");
+    } else {
+      await API.favorites.add(id);
+      toast("Ajouté aux favoris !", "ok");
+    }
+  } catch(e) {
+    // Rollback si erreur
+    if (icon) { icon.className = `ti ${isFav?"ti-star-filled":"ti-star"}`; icon.style.color = isFav?"var(--blue)":""; }
+    toast(e.message || "Erreur favoris.", "err");
+  } finally {
+    if (btn) { btn.style.opacity = ""; btn.disabled = false; }
   }
 }
 

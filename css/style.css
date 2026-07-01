@@ -493,6 +493,17 @@ select.form-control { cursor: pointer; }
 /* ═══════════════════════════════════════════════
    MODAL
 ═══════════════════════════════════════════════ */
+/* Grille de partage dans la modale */
+.share-opt {
+  display: flex; flex-direction: column; align-items: center; gap: 8px;
+  padding: 14px 8px; border-radius: var(--r-lg); cursor: pointer;
+  background: var(--gray-50); border: 1px solid var(--border-lt);
+  transition: var(--t);
+}
+.share-opt:hover { background: var(--blue-light); border-color: var(--blue); }
+.share-opt i { font-size: 26px; }
+.share-opt span { font-size: 11px; font-weight: 600; color: var(--text-sec); }
+
 .modal-overlay { position:fixed; inset:0; background:rgba(8,52,72,.6); display:none; align-items:center; justify-content:center; z-index:2000; backdrop-filter:blur(5px); }
 .modal-overlay.open { display:flex; }
 .modal-box { background:var(--white); border-radius:var(--r-2xl); padding:30px; max-width:520px; width:92%; box-shadow:var(--shadow-xl); animation:modalIn .25s var(--ease); }
