@@ -214,17 +214,20 @@ body { font-family: var(--font); background: var(--gray-50); color: var(--text);
 textarea.form-control { height: auto; padding: 12px 14px; resize: vertical; line-height: 1.6; }
 select.form-control { cursor: pointer; }
 .input-icon { position: relative; }
-.input-icon i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--blue); font-size: 16px; }
+.input-icon > i { position: absolute; left: 13px; top: 50%; transform: translateY(-50%); color: var(--blue); font-size: 16px; pointer-events: none; }
 .input-icon .form-control { padding-left: 40px; }
-.input-pwd .form-control { padding-right: 40px; }
+.input-pwd .form-control { padding-right: 42px; }
 .pwd-eye {
   position: absolute; right: 10px; top: 50%; transform: translateY(-50%);
-  background: none; border: none; cursor: pointer; padding: 4px;
-  color: var(--gray-400); font-size: 17px; line-height: 1;
+  background: none; border: none; cursor: pointer; padding: 6px;
+  color: var(--gray-400); font-size: 18px; line-height: 1;
   display: flex; align-items: center; justify-content: center;
-  transition: color var(--t);
+  border-radius: var(--r-sm);
+  transition: color var(--t), background var(--t);
+  z-index: 2;
 }
-.pwd-eye:hover { color: var(--blue); }
+.pwd-eye:hover { color: var(--blue); background: var(--blue-light); }
+.pwd-eye i { position: static; transform: none; color: inherit; font-size: inherit; }
 
 /* ═══════════════════════════════════════════════
    HERO
