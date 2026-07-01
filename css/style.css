@@ -43,6 +43,12 @@
 html { scroll-behavior: smooth; font-size: 15px; }
 body { font-family: var(--font); background: var(--gray-50); color: var(--text); -webkit-font-smoothing: antialiased; min-height: 100vh; }
 
+/* Polyfill ti-star-filled : absent de Tabler Icons 3.0.0 */
+.ti.ti-star-filled::before {
+  content: "★";
+  font-family: system-ui, -apple-system, Arial, sans-serif !important;
+}
+
 /* ═══ PAGE SYSTEM ═══ */
 .page { display: none; min-height: 100vh; }
 .page.active { display: block; }

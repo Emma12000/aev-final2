@@ -1163,7 +1163,7 @@ async function renderMember(sec="dashboard") {
                 <div class="card-body flex-c gap-10">
                   ${docIconHtml(d.fmt,"36px","42px")}
                   <div style="min-width:0;flex:1"><div class="doc-name" style="font-size:13px">${d.title.length>35?d.title.substring(0,35)+"…":d.title}</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div>
-                  <i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer;flex-shrink:0" onclick="event.stopPropagation();toggleFav('${d.id}')"></i>
+                  <i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer;flex-shrink:0" onclick="event.stopPropagation();toggleFav('${d.id}',this)"></i>
                 </div>
               </div>`).join("")
             || `<div style="color:var(--text-sec);font-size:13px;padding:8px 0">Aucun favori pour l'instant.</div>`}
@@ -1229,7 +1229,7 @@ async function renderMember(sec="dashboard") {
             <div class="card card-hover" style="cursor:pointer" onclick="navigate('doc',{id:'${d.id}'})">
               <div class="card-body">
                 <div class="flex-c gap-10 mb-12">${docIconHtml(d.fmt,"36px","42px")}<div><div style="font-size:13px;font-weight:700;color:var(--text)">${d.title.length>35?d.title.substring(0,35)+"…":d.title}</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div></div>
-                <div class="flex-b">${tagHtml(d.type)}<i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer" onclick="event.stopPropagation();toggleFav('${d.id}')"></i></div>
+                <div class="flex-b">${tagHtml(d.type)}<i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer" onclick="event.stopPropagation();toggleFav('${d.id}',this)"></i></div>
               </div>
             </div>`).join("")}
         </div>` : `<div style="text-align:center;padding:60px 20px;color:var(--text-sec)">
@@ -2690,29 +2690,33 @@ function openShareModal(id, title) {
     </div>`, "Partager ce document");
 }
 
-async function toggleFav(id) {
+async function toggleFav(id, triggerEl) {
   if (!APP.user) {
     toast("Connectez-vous pour ajouter aux favoris.", "err");
     navigate("auth");
     return;
   }
+  // Trouver l'icône : depuis fiche doc (#fav-btn-xxx) ou depuis liste favoris (this passé en param)
   const btn  = $(`#fav-btn-${id}`);
-  const icon = btn?.querySelector("i");
+  const icon = btn?.querySelector("i") || (triggerEl?.tagName === "I" ? triggerEl : triggerEl?.querySelector("i"));
   const isFav = icon?.classList.contains("ti-star-filled");
   // Mise à jour optimiste
-  if (icon) { icon.className = `ti ${isFav?"ti-star":"ti-star-filled"}`; icon.style.color = isFav?"":"var(--blue)"; }
+  if (icon) { icon.className = `ti ${isFav ? "ti-star" : "ti-star-filled"}`; icon.style.color = isFav ? "" : "var(--blue)"; }
   if (btn)  { btn.style.opacity = ".6"; btn.disabled = true; }
   try {
     if (isFav) {
       await API.favorites.remove(id);
       toast("Retiré des favoris", "info");
+      // Retirer la carte de la liste favoris si on est dans cet onglet
+      const card = triggerEl?.closest(".card");
+      if (card && APP.memberSec === "favorites") card.style.opacity = "0", setTimeout(() => card.remove(), 300);
     } else {
       await API.favorites.add(id);
       toast("Ajouté aux favoris !", "ok");
     }
   } catch(e) {
-    // Rollback si erreur
-    if (icon) { icon.className = `ti ${isFav?"ti-star-filled":"ti-star"}`; icon.style.color = isFav?"var(--blue)":""; }
+    // Rollback
+    if (icon) { icon.className = `ti ${isFav ? "ti-star-filled" : "ti-star"}`; icon.style.color = isFav ? "var(--blue)" : ""; }
     toast(e.message || "Erreur favoris.", "err");
   } finally {
     if (btn) { btn.style.opacity = ""; btn.disabled = false; }
