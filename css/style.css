@@ -822,6 +822,28 @@ select.form-control { cursor: pointer; }
     justify-content: center;
   }
 
+  /* Bannière AEV : boutons empilés pleine largeur */
+  .banner-btns {
+    flex-direction: column;
+    width: 100%;
+  }
+  .banner-btns .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* Barre de recherche hero : bouton icône uniquement */
+  .hero-search-lbl { display: none; }
+  .hero-search button {
+    width: 56px;
+    padding: 0;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .hero-search button i { margin-right: 0 !important; }
+
   /* Section header flex : empiler sur mobile */
   .flex-b { flex-wrap: wrap; gap: 8px; }
 

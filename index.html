@@ -80,7 +80,7 @@
         <div class="hero-search">
           <div class="hero-search-icon"><i class="ti ti-search"></i></div>
           <input type="text" id="home-q" placeholder="Rechercher un document, une date, un auteur…" onkeydown="if(event.key==='Enter')homeSearch()" aria-label="Rechercher un document">
-          <button onclick="homeSearch()"><i class="ti ti-search" style="margin-right:6px"></i>Rechercher</button>
+          <button onclick="homeSearch()"><i class="ti ti-search" style="margin-right:6px"></i><span class="hero-search-lbl">Rechercher</span></button>
         </div>
       </div>
       <div class="hero-chips">
@@ -184,7 +184,7 @@
           <div style="font-size:12px;color:rgba(255,255,255,.5);margin-top:4px">Solidarité · Humanité · Dignité — N'Djaména, Tchad</div>
         </div>
       </div>
-      <div class="flex-c gap-10">
+      <div class="flex-c gap-10 banner-btns">
         <button class="btn btn-white" onclick="navigate('about')"><i class="ti ti-info-circle"></i>En savoir plus</button>
         <button class="btn btn-red" onclick="navigate('auth')"><i class="ti ti-user-plus"></i>Rejoindre l'association</button>
       </div>
