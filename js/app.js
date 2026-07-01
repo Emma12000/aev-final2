@@ -814,13 +814,15 @@ function updateNavbarUser() {
   if (APP.user) {
     const isAdmin = ["admin","superviseur"].includes(APP.user.role);
     btnZone.innerHTML = `
-      <div class="user-menu-wrap" id="user-menu-wrap">
+      <div class="user-menu-wrap" id="user-menu-wrap" style="display:flex;align-items:center;gap:6px">
+        ${isAdmin ? `<button class="nav-bell" id="nav-bell" onclick="navigate('admin',{sec:'users'})" title="Demandes d'adhésion en attente"><i class="ti ti-bell"></i><span class="nav-bell-dot" id="bell-badge" style="display:none"></span></button>` : ""}
         <div class="navbar-user" onclick="toggleUserMenu(event)">
           <div class="navbar-user-avatar">${APP.user.initials}</div>
           <span class="navbar-user-name">${APP.user.name.split(" ")[0]}</span>
           <i class="ti ti-chevron-down" style="font-size:12px;color:rgba(255,255,255,.5)"></i>
         </div>
       </div>`;
+    if (isAdmin) updateAdminBadges();
     // Mettre à jour le drawer mobile aussi
     const drawerUser = document.getElementById("nav-drawer-user");
     if (drawerUser) {
@@ -838,6 +840,17 @@ function updateNavbarUser() {
     const drawerUser = document.getElementById("nav-drawer-user");
     if (drawerUser) drawerUser.innerHTML = `<button class="btn-nav-login w-full" onclick="navigate('auth');closeMobileNav()"><i class="ti ti-login" style="margin-right:6px"></i>Connexion</button>`;
   }
+}
+
+async function updateAdminBadges() {
+  try {
+    const users = await API.admin.users({ limit: 100 });
+    const count = users.filter(u => u.status === "new").length;
+    const bellBadge = document.getElementById("bell-badge");
+    const sidebarBadge = document.getElementById("admin-members-badge");
+    if (bellBadge) { bellBadge.style.display = count > 0 ? "flex" : "none"; bellBadge.textContent = count || ""; }
+    if (sidebarBadge) { sidebarBadge.style.display = count > 0 ? "flex" : "none"; sidebarBadge.textContent = count || ""; }
+  } catch(_) {}
 }
 
 function toggleUserMenu(e) {
@@ -2436,6 +2449,7 @@ async function submitEditUser(id, isNew=false) {
     closeModal();
     toast(isNew ? "Inscription validée. Le membre est maintenant actif." : "Modifications enregistrées.", "ok");
     renderAdmin("users");
+    if (isNew) updateAdminBadges();
   } catch(e) {
     toast(e.message || "Erreur lors de la modification.", "err");
     if (btn) { btn.disabled=false; btn.innerHTML=`<i class="ti ti-${isNew?"user-check":"check"}"></i>${isNew?"Valider l'inscription":"Enregistrer"}`; }
