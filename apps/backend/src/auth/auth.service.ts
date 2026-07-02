@@ -33,14 +33,13 @@ export class AuthService {
   async login(dto: LoginDto, ip?: string, ua?: string) {
     const user = await this.prisma.user.findUnique({ where: { email: dto.email.toLowerCase() } });
 
-    // Toujours exécuter bcrypt même si l'utilisateur n'existe pas — évite l'énumération d'emails par timing
-    const DUMMY_HASH = '$2b$12$invalidhashusedfortimingnormalization.......';
-    const hashToCompare = user?.passwordHash || DUMMY_HASH;
-    const passwordValid = user?.isActive
-      ? await bcrypt.compare(dto.password, hashToCompare)
-      : (await bcrypt.compare(dto.password, DUMMY_HASH), false);
+    // Toujours exécuter bcrypt (timing constant) — évite l'énumération d'emails par mesure de durée
+    const TIMING_HASH = '$2b$12$LCzJK7kJEXMJiKmIvlOVBuI2p.bqNDqJAq.2x0lkXQsmyXyIqRVFq';
+    const hashToCompare = (user?.isActive && user.passwordHash) ? user.passwordHash : TIMING_HASH;
+    const bcryptResult = await bcrypt.compare(dto.password, hashToCompare);
+    const passwordValid = !!(user?.isActive && user.passwordHash && bcryptResult);
 
-    if (!user || !user.isActive || !passwordValid) {
+    if (!passwordValid) {
       if (user) {
         await this.activity.log({ userId: user.id, action: 'LOGIN_FAILED', resourceType: 'auth', ipAddress: ip, userAgent: ua });
       }
