@@ -156,7 +156,11 @@ export class AuthService {
     const payload = { sub: userId, role };
 
     const privateKey = this.config.get<string>('jwt.privateKey');
-    const secret = this.config.get<string>('jwt.secret') ?? 'dev-secret-change-me';
+    const secret = this.config.get<string>('jwt.secret') || '';
+
+    if (!privateKey && !secret) {
+      throw new Error('Configuration JWT manquante : définir JWT_PRIVATE_KEY (RS256) ou JWT_SECRET (HS256) dans les variables d\'environnement.');
+    }
 
     const signOptions = privateKey
       ? { algorithm: 'RS256' as const, privateKey }

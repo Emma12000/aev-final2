@@ -12,8 +12,11 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
     private readonly prisma: PrismaService,
   ) {
     const publicKey = config.get<string>('jwt.publicKey');
-    // Fallback to symmetric secret when no RSA key is provided (dev without keygen)
-    const secretOrKey = publicKey || config.get<string>('jwt.secret') || 'dev-secret-change-me';
+    const secret = config.get<string>('jwt.secret') || '';
+    const secretOrKey = publicKey || secret;
+    if (!secretOrKey) {
+      throw new Error('Configuration JWT manquante : définir JWT_PUBLIC_KEY (RS256) ou JWT_SECRET (HS256).');
+    }
     const algorithms: ('RS256' | 'HS256')[] = publicKey ? ['RS256'] : ['HS256'];
 
     super({
