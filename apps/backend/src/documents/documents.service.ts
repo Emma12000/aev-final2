@@ -146,10 +146,26 @@ export class DocumentsService {
 
   // ─── Upload ───────────────────────────────────────────────────────────────
 
+  private async verifyMagicBytes(file: Express.Multer.File): Promise<void> {
+    const { fileTypeFromBuffer } = await import('file-type');
+    const detected = await fileTypeFromBuffer(file.buffer);
+    if (!detected) {
+      throw new BadRequestException('Impossible de vérifier le contenu du fichier.');
+    }
+    // Les anciens formats Office (DOC/XLS/PPT) partagent le magic OLE2 → file-type renvoie x-cfb
+    const ole2Types = ['application/msword', 'application/vnd.ms-excel', 'application/vnd.ms-powerpoint'];
+    if (detected.mime === file.mimetype) return;
+    if (detected.mime === 'application/x-cfb' && ole2Types.includes(file.mimetype)) return;
+    throw new BadRequestException(
+      `Contenu invalide : type réel "${detected.mime}" ≠ type déclaré "${file.mimetype}".`,
+    );
+  }
+
   async upload(file: Express.Multer.File, dto: CreateDocumentDto, actor: JwtPayload) {
     if (!this.allowedMimeTypes.includes(file.mimetype)) {
       throw new BadRequestException(`Type de fichier non autorisé : ${file.mimetype}`);
     }
+    await this.verifyMagicBytes(file);
 
     const cat = await this.prisma.documentCategory.findUnique({ where: { id: dto.categoryId } });
     if (!cat) throw new NotFoundException('Catégorie introuvable.');
