@@ -510,9 +510,7 @@ select.form-control { cursor: pointer; }
 /* ═══════════════════════════════════════════════
    DOC PREVIEW
 ═══════════════════════════════════════════════ */
-.doc-preview-wrap { background: #ECEFF1; border-radius: var(--r-xl); padding: 28px; display: flex; justify-content: center; align-items: center; min-height: 340px; }
-.pdf-page-sim { background: var(--white); border-radius: 4px; box-shadow: 0 6px 24px rgba(0,0,0,.14); padding: 36px; width: 100%; max-width: 400px; display: flex; flex-direction: column; gap: 14px; }
-.pdf-skel { height: 8px; background: var(--blue-light); border-radius: 4px; }
+.doc-preview-wrap { background: #ECEFF1; border-radius: var(--r-xl); padding: 28px; display: flex; justify-content: center; align-items: center; min-height: 340px; overflow: hidden; }
 
 /* ═══════════════════════════════════════════════
    MODAL
@@ -889,8 +887,7 @@ select.form-control { cursor: pointer; }
   .doc-body-wrap { flex-direction: column !important; }
   .doc-body-wrap > div[style*="flex:1"] { padding: 14px !important; }
   .doc-sidebar { width: 100% !important; border-left: none !important; border-top: 1px solid var(--border-lt) !important; flex-direction: row !important; flex-wrap: wrap !important; }
-  .doc-preview-wrap { padding: 12px !important; min-height: 180px !important; }
-  .pdf-page-sim { padding: 16px !important; }
+  .doc-preview-wrap { padding: 12px; min-height: 180px; }
 
   /* Stats bar accueil */
   .stats-bar-val { font-size: 18px; }

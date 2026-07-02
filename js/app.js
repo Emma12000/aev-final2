@@ -472,37 +472,12 @@ async function renderDoc(id) {
         <div class="card">
           <div class="card-header">
             <span class="card-title"><i class="ti ti-eye" style="color:var(--blue);margin-right:6px"></i>Aperçu du document</span>
-            <div class="flex-c gap-8">
-              <div class="flex-c gap-6" style="background:var(--blue-light);padding:5px 14px;border-radius:var(--r-xl);font-size:12px;font-weight:600;color:var(--blue-dark)">
-                <i class="ti ti-chevron-left" style="cursor:pointer" onclick="toast('Page précédente','info')"></i>
-                Page 1 / ${d.pages}
-                <i class="ti ti-chevron-right" style="cursor:pointer" onclick="toast('Page suivante','info')"></i>
-              </div>
-              <button class="btn btn-outline btn-sm" onclick="openDocFullscreen('${d.id}')"><i class="ti ti-maximize"></i>Plein écran</button>
-            </div>
+            <button class="btn btn-outline btn-sm" onclick="openDocFullscreen('${d.id}')"><i class="ti ti-maximize"></i>Plein écran</button>
           </div>
-          <div class="doc-preview-wrap">
-            <div class="pdf-page-sim">
-              <div style="display:flex;align-items:center;gap:12px;border-bottom:3px solid var(--blue);padding-bottom:16px">
-                <div style="width:44px;height:44px;border-radius:50%;overflow:hidden;border:2px solid var(--blue);background:white;flex-shrink:0"><img src="assets/logo-aev.png" style="width:100%;height:100%;object-fit:cover" alt="AEV"></div>
-                <div>
-                  <div style="font-size:11px;font-weight:800;color:var(--blue-deep);letter-spacing:.04em">ASSOCIATION ESPOIR & VIE</div>
-                  <div style="font-size:9px;color:var(--red);font-style:italic;font-weight:600">Solidarité - Humanité - Dignité</div>
-                </div>
-                <div style="margin-left:auto;text-align:right">
-                  <div style="font-size:9px;color:var(--text-sec)">espoiretvie.td</div>
-                  <div style="font-size:9px;color:var(--text-sec)">N'Djaména, Tchad</div>
-                </div>
-              </div>
-              <div style="text-align:center;padding:12px 0">
-                <div style="font-size:9px;color:var(--blue);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">${d.type}</div>
-                <div style="font-size:17px;font-weight:800;color:var(--blue-deep);line-height:1.3;font-family:var(--font-display)">${esc(d.title.length>50?d.title.substring(0,48)+"…":d.title)}</div>
-              </div>
-              <div class="grid-2 gap-8" style="margin:4px 0">
-                <div style="background:var(--blue-light);border-radius:6px;padding:8px;text-align:center"><div style="font-size:14px;font-weight:800;color:var(--blue)">${d.dl}</div><div style="font-size:8px;color:var(--blue-dark);text-transform:uppercase;letter-spacing:.06em">Téléch.</div></div>
-                <div style="background:var(--red-light);border-radius:6px;padding:8px;text-align:center"><div style="font-size:14px;font-weight:800;color:var(--red)">${d.pages}</div><div style="font-size:8px;color:var(--red-dark);text-transform:uppercase;letter-spacing:.06em">Pages</div></div>
-              </div>
-              ${[100,88,95,72,84,90].map(w=>`<div class="pdf-skel" style="width:${w}%"></div>`).join("")}
+          <div class="doc-preview-wrap" id="inline-preview-${d.id}">
+            <div style="display:flex;flex-direction:column;align-items:center;gap:10px">
+              <i class="ti ti-loader-2" style="font-size:32px;color:var(--blue);animation:spin 1s linear infinite"></i>
+              <span style="font-size:13px;color:var(--text-sec)">Chargement de l'aperçu…</span>
             </div>
           </div>
         </div>
@@ -593,6 +568,30 @@ async function renderDoc(id) {
       </div>
     </div>
   `;
+  loadInlinePreview(d.id, d.fmt);
+}
+
+async function loadInlinePreview(id, fmt) {
+  const el = document.getElementById(`inline-preview-${id}`);
+  if (!el) return;
+  try {
+    if (fmt === "PDF") {
+      const res = await API.documents.download(id);
+      if (!res?.url) throw new Error();
+      el.style.cssText = "padding:0;display:block;overflow:hidden;border-radius:var(--r-xl);min-height:420px;background:#525659";
+      el.innerHTML = `<iframe src="${res.url}" style="width:100%;height:480px;border:none;display:block" title="Aperçu PDF"></iframe>`;
+    } else if (fmt === "Word" || fmt === "Excel") {
+      const preview = await API.documents.previewUrl(id);
+      if (!preview?.url) throw new Error();
+      const msUrl = `https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(preview.url)}`;
+      el.style.cssText = "padding:0;display:block;overflow:hidden;border-radius:var(--r-xl);min-height:420px";
+      el.innerHTML = `<iframe src="${msUrl}" style="width:100%;height:480px;border:none;display:block" title="Aperçu ${fmt}"></iframe>`;
+    } else {
+      el.innerHTML = `<div style="text-align:center"><i class="ti ti-file" style="font-size:48px;color:var(--blue);margin-bottom:16px;display:block"></i><div style="font-size:13px;color:var(--text-sec);margin-bottom:20px">Aperçu non disponible pour ce format</div><button class="btn btn-outline btn-sm" onclick="openDocFullscreen('${id}')"><i class="ti ti-maximize"></i>Essayer en plein écran</button></div>`;
+    }
+  } catch(_) {
+    el.innerHTML = `<div style="text-align:center"><i class="ti ti-eye-off" style="font-size:32px;display:block;margin-bottom:10px;opacity:.4;color:var(--text-sec)"></i><div style="font-size:13px;color:var(--text-sec)">Aperçu non disponible</div><button class="btn btn-outline btn-sm mt-12" onclick="openDocFullscreen('${id}')"><i class="ti ti-maximize"></i>Essayer en plein écran</button></div>`;
+  }
 }
 
 //  AUTH
@@ -2631,7 +2630,11 @@ async function confirmAdminDel(id) {
     await API.documents.delete(id);
     toast("Document supprimé.", "err");
     closeModal();
-    renderAdmin("docs");
+    if (["admin","superviseur"].includes(APP.user?.role)) {
+      renderAdmin("docs");
+    } else {
+      renderMember("docs");
+    }
   } catch(e) {
     toast(e.message || "Erreur lors de la suppression.", "err");
   }
