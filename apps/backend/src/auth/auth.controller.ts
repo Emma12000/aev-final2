@@ -30,7 +30,7 @@ export class AuthController {
       secure: true,
       sameSite: 'none',
       path: REFRESH_COOKIE_PATH,
-      maxAge: 7 * 24 * 60 * 60 * 1000,
+      maxAge: 30 * 24 * 60 * 60 * 1000,
     });
   }
 

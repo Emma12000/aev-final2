@@ -2918,5 +2918,9 @@ document.addEventListener("DOMContentLoaded", async () => {
   }
 
   renderHome();
-  navigate("home");
+  if (APP.user) {
+    navigate(["admin","superviseur"].includes(APP.user.role) ? "admin" : "member");
+  } else {
+    navigate("home");
+  }
 });
