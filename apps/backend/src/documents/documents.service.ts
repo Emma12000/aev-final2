@@ -259,7 +259,39 @@ export class DocumentsService {
         docTitle:   doc.title,
       }).catch(() => null);
     }
+    if (doc) this.notifyMembersOnApproval(doc).catch(() => null);
     return result;
+  }
+
+  private async notifyMembersOnApproval(doc: { id: string; title: string; categoryId: string; uploadedById: string; confidentiality: Confidentiality }) {
+    if (!doc) return;
+    const rolesToNotify: Role[] =
+      doc.confidentiality === Confidentiality.PUBLIC
+        ? [Role.ADMINISTRATEUR, Role.SUPERVISEUR, Role.AGENT, Role.LECTEUR, Role.CONSULTANT]
+        : doc.confidentiality === Confidentiality.INTERNE
+        ? [Role.ADMINISTRATEUR, Role.SUPERVISEUR, Role.AGENT]
+        : [Role.ADMINISTRATEUR, Role.SUPERVISEUR];
+
+    const [users, category] = await Promise.all([
+      this.prisma.user.findMany({
+        where: { id: { not: doc.uploadedById }, role: { in: rolesToNotify }, email: { not: null } },
+        select: { email: true, fullName: true },
+      }),
+      this.prisma.documentCategory.findUnique({ where: { id: doc.categoryId }, select: { name: true } }),
+    ]);
+
+    const categoryName = category?.name ?? 'Archives';
+    for (const user of users) {
+      if (user.email) {
+        this.mail.notifyMembersNewDocument({
+          to:         user.email,
+          memberName: user.fullName,
+          docTitle:   doc.title,
+          category:   categoryName,
+          docId:      doc.id,
+        }).catch(() => null);
+      }
+    }
   }
 
   async reject(id: string, actor: JwtPayload) {
