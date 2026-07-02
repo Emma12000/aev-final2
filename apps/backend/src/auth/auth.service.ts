@@ -55,10 +55,20 @@ export class AuthService {
     await this.storeRefreshToken(user.id, tokens.refreshToken);
     await this.activity.log({ userId: user.id, action: 'LOGIN', resourceType: 'auth', ipAddress: ip, userAgent: ua });
 
+    // Nettoyage non-bloquant des tokens expirés/révoqués (> 30 jours)
+    this.purgeOldTokens().catch(() => null);
+
     return {
       ...tokens,
       user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role },
     };
+  }
+
+  private async purgeOldTokens(): Promise<void> {
+    const cutoff = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+    await this.prisma.refreshToken.deleteMany({
+      where: { OR: [{ expiresAt: { lt: cutoff } }, { revokedAt: { lt: cutoff } }] },
+    });
   }
 
   // ─── Register ─────────────────────────────────────────────────────────────
