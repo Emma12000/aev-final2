@@ -151,6 +151,11 @@ function invalidateAdminCache() { _AC.ts = 0; }
 const $  = (sel, ctx=document) => ctx.querySelector(sel);
 const $$ = (sel, ctx=document) => [...ctx.querySelectorAll(sel)];
 
+function esc(str) {
+  if (str == null) return "";
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
+}
+
 function docIconHtml(fmt, sz="40px", h="46px") {
   const map = { PDF:["ti-file-type-pdf","di-pdf"], Word:["ti-file-type-doc","di-doc"], Excel:["ti-file-spreadsheet","di-xls"] };
   const [ic, cls] = map[fmt] || ["ti-file","di-pdf"];
@@ -274,7 +279,7 @@ async function renderHome() {
     <div class="doc-row" onclick="navigate('doc',{id:'${d.id}'})">
       ${docIconHtml(d.fmt)}
       <div style="flex:1;min-width:0">
-        <div class="doc-name">${d.title}</div>
+        <div class="doc-name">${esc(d.title)}</div>
         <div class="doc-meta">${d.dateStr} · ${d.fmt} · ${d.size} · <i class="ti ti-download" style="font-size:11px"></i> ${d.dl}</div>
       </div>
       ${tagHtml(d.type)}
@@ -311,14 +316,14 @@ async function renderCatalogue(cat="") {
         ${docIconHtml(d.fmt,"44px","52px")}
         <div style="flex:1;min-width:0">
           <div class="flex-b gap-8">
-            <div class="doc-name" style="font-size:15px;font-weight:700">${d.title}</div>
+            <div class="doc-name" style="font-size:15px;font-weight:700">${esc(d.title)}</div>
             <div class="flex-c gap-6" style="flex-shrink:0">
               <div class="btn-icon" onclick="event.stopPropagation();memberDownloadDoc('${d.id}')"><i class="ti ti-download"></i></div>
               <div class="btn-icon" onclick="event.stopPropagation();shareDoc('${d.id}')"><i class="ti ti-share"></i></div>
             </div>
           </div>
           <div class="doc-meta mt-4">${d.dateStr} · ${d.fmt} · ${d.size}</div>
-          <div class="flex-c gap-6 mt-8 flex-wrap">${tagHtml(d.type)}${d.tags.slice(0,3).map(t=>`<span class="tag tag-gray">${t}</span>`).join("")}<span class="tag tag-pub">${d.access}</span></div>
+          <div class="flex-c gap-6 mt-8 flex-wrap">${tagHtml(d.type)}${d.tags.slice(0,3).map(t=>`<span class="tag tag-gray">${esc(t)}</span>`).join("")}<span class="tag tag-pub">${d.access}</span></div>
         </div>
       </div>`).join("")
     : `<div class="empty"><i class="ti ti-folder-open"></i><h3>Aucun document</h3><p>Aucun document dans cette catégorie pour le moment.</p></div>`;
@@ -369,14 +374,14 @@ async function applySearch() {
         ${docIconHtml(d.fmt,"44px","52px")}
         <div style="flex:1;min-width:0">
           <div class="flex-b gap-8">
-            <div class="doc-name" style="font-size:14px;font-weight:700">${d.title}</div>
+            <div class="doc-name" style="font-size:14px;font-weight:700">${esc(d.title)}</div>
             <div class="flex-c gap-6" style="flex-shrink:0">
               <div class="btn-icon" onclick="event.stopPropagation();memberDownloadDoc('${d.id}')"><i class="ti ti-download"></i></div>
               <div class="btn-icon" onclick="event.stopPropagation();shareDoc('${d.id}')"><i class="ti ti-share"></i></div>
             </div>
           </div>
           <div class="doc-meta mt-4">${d.dateStr} · ${d.fmt} · ${d.size}</div>
-          <div class="flex-c gap-6 mt-8 flex-wrap">${tagHtml(d.type)}${d.tags.slice(0,4).map(t=>`<span class="tag tag-gray">${t}</span>`).join("")}</div>
+          <div class="flex-c gap-6 mt-8 flex-wrap">${tagHtml(d.type)}${d.tags.slice(0,4).map(t=>`<span class="tag tag-gray">${esc(t)}</span>`).join("")}</div>
         </div>
       </div>`).join("")
     : `<div class="empty"><i class="ti ti-search"></i><h3>Aucun résultat</h3><p>Essayez avec d'autres mots-clés ou réinitialisez les filtres.</p></div>`;
@@ -433,7 +438,7 @@ async function renderDoc(id) {
         <i class="ti ti-chevron-right"></i>
         <span onclick="navigate('catalogue',{cat:'${d.cat}'})">${d.type}s</span>
         <i class="ti ti-chevron-right"></i>
-        <span style="color:rgba(255,255,255,.8)">${d.title.length>38?d.title.substring(0,38)+"…":d.title}</span>
+        <span style="color:rgba(255,255,255,.8)">${esc(d.title.length>38?d.title.substring(0,38)+"…":d.title)}</span>
       </div>
       <div class="flex-b gap-16" style="flex-wrap:wrap">
         <div style="flex:1;min-width:0">
@@ -441,7 +446,7 @@ async function renderDoc(id) {
             ${tagHtml(d.type)}
             <span class="tag" style="background:rgba(255,255,255,.1);color:rgba(255,255,255,.7)">${d.access}</span>
           </div>
-          <h1 style="font-family:var(--font-display);font-size:22px;font-weight:700;color:white;line-height:1.3;margin-bottom:12px">${d.title}</h1>
+          <h1 style="font-family:var(--font-display);font-size:22px;font-weight:700;color:white;line-height:1.3;margin-bottom:12px">${esc(d.title)}</h1>
           <div class="flex-c gap-16 flex-wrap" style="font-size:12px;color:rgba(255,255,255,.55)">
             <span><i class="ti ti-calendar"></i> ${d.dateStr}</span>
             <span><i class="ti ti-file"></i> ${d.fmt} · ${d.size} · ${d.pages} pages</span>
@@ -491,7 +496,7 @@ async function renderDoc(id) {
               </div>
               <div style="text-align:center;padding:12px 0">
                 <div style="font-size:9px;color:var(--blue);font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:6px">${d.type}</div>
-                <div style="font-size:17px;font-weight:800;color:var(--blue-deep);line-height:1.3;font-family:var(--font-display)">${d.title.length>50?d.title.substring(0,48)+"…":d.title}</div>
+                <div style="font-size:17px;font-weight:800;color:var(--blue-deep);line-height:1.3;font-family:var(--font-display)">${esc(d.title.length>50?d.title.substring(0,48)+"…":d.title)}</div>
               </div>
               <div class="grid-2 gap-8" style="margin:4px 0">
                 <div style="background:var(--blue-light);border-radius:6px;padding:8px;text-align:center"><div style="font-size:14px;font-weight:800;color:var(--blue)">${d.dl}</div><div style="font-size:8px;color:var(--blue-dark);text-transform:uppercase;letter-spacing:.06em">Téléch.</div></div>
@@ -505,9 +510,9 @@ async function renderDoc(id) {
         <!-- DESCRIPTION -->
         <div class="card card-body">
           <div class="card-title mb-10">Description</div>
-          <p style="font-size:14px;color:var(--text-sec);line-height:1.8">${d.desc}</p>
+          <p style="font-size:14px;color:var(--text-sec);line-height:1.8">${esc(d.desc)}</p>
           <div class="flex-c gap-6 mt-14 flex-wrap">
-            ${d.tags.map(t=>`<span class="tag tag-blue">${t}</span>`).join("")}
+            ${d.tags.map(t=>`<span class="tag tag-blue">${esc(t)}</span>`).join("")}
             ${tagHtml(d.type)}
           </div>
         </div>
@@ -1235,7 +1240,7 @@ async function renderMember(sec="dashboard") {
           ${myDocs.length ? myDocs.slice(0,5).map(d=>`
             <div class="doc-row" onclick="navigate('doc',{id:'${d.id}'})">
               ${docIconHtml(d.fmt)}
-              <div style="flex:1;min-width:0"><div class="doc-name">${d.title}</div><div class="doc-meta">${d.dateStr} · ${d.fmt} · ${d.size}</div></div>
+              <div style="flex:1;min-width:0"><div class="doc-name">${esc(d.title)}</div><div class="doc-meta">${d.dateStr} · ${d.fmt} · ${d.size}</div></div>
               ${statusHtml(d.status)}
               <div class="doc-actions gap-6">
                 <div class="btn-icon" onclick="event.stopPropagation();memberDownloadDoc('${d.id}')"><i class="ti ti-download"></i></div>
@@ -1251,7 +1256,7 @@ async function renderMember(sec="dashboard") {
               <div class="card card-hover" style="cursor:pointer" onclick="navigate('doc',{id:'${d.id}'})">
                 <div class="card-body flex-c gap-10">
                   ${docIconHtml(d.fmt,"36px","42px")}
-                  <div style="min-width:0;flex:1"><div class="doc-name" style="font-size:13px">${d.title.length>35?d.title.substring(0,35)+"…":d.title}</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div>
+                  <div style="min-width:0;flex:1"><div class="doc-name" style="font-size:13px">${esc(d.title.length>35?d.title.substring(0,35)+"…":d.title)}</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div>
                   <i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer;flex-shrink:0" onclick="event.stopPropagation();toggleFav('${d.id}',this)"></i>
                 </div>
               </div>`).join("")
@@ -1280,7 +1285,7 @@ async function renderMember(sec="dashboard") {
             <tbody>
               ${myDocs.length ? myDocs.map(d => `
                 <tr id="member-row-${d.id}">
-                  <td><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${d.title}">${d.title}</span></div></td>
+                  <td><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="font-weight:600;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:block" title="${esc(d.title)}">${esc(d.title)}</span></div></td>
                   <td>${tagHtml(d.type)}</td>
                   <td class="text-sec text-sm">${d.fmt}</td>
                   <td class="text-sec text-sm">${d.dateStr}</td>
@@ -1317,7 +1322,7 @@ async function renderMember(sec="dashboard") {
           ${favs.map(d=>`
             <div class="card card-hover" style="cursor:pointer" onclick="navigate('doc',{id:'${d.id}'})">
               <div class="card-body">
-                <div class="flex-c gap-10 mb-12">${docIconHtml(d.fmt,"36px","42px")}<div><div style="font-size:13px;font-weight:700;color:var(--text)">${d.title.length>35?d.title.substring(0,35)+"…":d.title}</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div></div>
+                <div class="flex-c gap-10 mb-12">${docIconHtml(d.fmt,"36px","42px")}<div><div style="font-size:13px;font-weight:700;color:var(--text)">${esc(d.title.length>35?d.title.substring(0,35)+"…":d.title)}</div><div class="doc-meta">${d.fmt} · ${d.size}</div></div></div>
                 <div class="flex-b">${tagHtml(d.type)}<i class="ti ti-star-filled" style="color:var(--blue);font-size:17px;cursor:pointer" onclick="event.stopPropagation();toggleFav('${d.id}',this)"></i></div>
               </div>
             </div>`).join("")}
@@ -1342,12 +1347,12 @@ async function renderMember(sec="dashboard") {
         <div class="card card-body mb-14">
           <div class="flex-c gap-16 mb-20">
             <div style="width:68px;height:68px;border-radius:50%;background:${u.role==="admin"?"var(--red)":"var(--blue)"};display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:white;flex-shrink:0">${u.initials||"?"}</div>
-            <div><div style="font-size:18px;font-weight:700;color:var(--text)">${u.name||"Utilisateur"}</div><div class="doc-meta">${roleLbl} · ${u.email||""}</div><span class="tag ${roleCls} mt-4" style="display:inline-block">${roleLbl}</span></div>
+            <div><div style="font-size:18px;font-weight:700;color:var(--text)">${esc(u.name||"Utilisateur")}</div><div class="doc-meta">${roleLbl} · ${esc(u.email||"")}</div><span class="tag ${roleCls} mt-4" style="display:inline-block">${roleLbl}</span></div>
           </div>
           <div class="grid-2 gap-12">
             <div class="form-group"><label class="form-label">Prénom</label><input id="profile-prenom" class="form-control" value="${prenom}"></div>
             <div class="form-group"><label class="form-label">Nom</label><input id="profile-nom" class="form-control" value="${nom}"></div>
-            <div class="form-group"><label class="form-label">Email</label><input class="form-control" type="email" value="${u.email||""}" disabled style="opacity:.6"></div>
+            <div class="form-group"><label class="form-label">Email</label><input class="form-control" type="email" value="${esc(u.email||"")}" disabled style="opacity:.6"></div>
             <div class="form-group"><label class="form-label">Rôle</label><input class="form-control" value="${roleLbl}" disabled style="opacity:.6"></div>
           </div>
           <button class="btn btn-primary btn-sm mt-16" onclick="doSaveProfile()"><i class="ti ti-device-floppy"></i>Enregistrer les modifications</button>
@@ -1772,7 +1777,7 @@ async function renderAdmin(sec="dashboard") {
           <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px;padding:16px">
             ${realUsers.map(u=>`
               <div class="card card-hover card-body" style="padding:14px;cursor:pointer" onclick="renderAdmin('users')">
-                <div class="flex-c gap-8 mb-8"><div class="u-avatar" style="background:${u.role==="admin"?"var(--red)":"var(--blue)"}">${u.initials}</div><div style="min-width:0;overflow:hidden"><div style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${u.name}</div><div style="font-size:10px;color:var(--text-sec)">${u.roleLabel}</div></div></div>
+                <div class="flex-c gap-8 mb-8"><div class="u-avatar" style="background:${u.role==="admin"?"var(--red)":"var(--blue)"}">${u.initials}</div><div style="min-width:0;overflow:hidden"><div style="font-size:12px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(u.name)}</div><div style="font-size:10px;color:var(--text-sec)">${u.roleLabel}</div></div></div>
                 <span class="status ${u.status==="new"?"s-pending":"s-published"}" style="font-size:10px">${u.status==="new"?"Nouveau":"Actif"}</span>
               </div>`).join("")}
           </div>
@@ -1791,7 +1796,7 @@ async function renderAdmin(sec="dashboard") {
 
     const renderDocsTable = (docs) => docs.map(d => `
       <tr id="admin-row-${d.id}">
-        <td style="max-width:240px"><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:13px" title="${d.title}">${d.title}</span></div></td>
+        <td style="max-width:240px"><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:13px" title="${esc(d.title)}">${esc(d.title)}</span></div></td>
         <td>${tagHtml(d.type)}</td>
         <td class="text-sec text-sm">${d.fmt}</td>
         <td class="text-sec text-sm">${d.author}</td>
@@ -1858,9 +1863,9 @@ async function renderAdmin(sec="dashboard") {
               <tr id="user-row-${u.id}" ${u.status==="new"?'style="background:var(--amber-light,#FFFBEB)"':""}>
                 <td><div class="flex-c gap-10">
                   <div class="u-avatar" style="background:${u.role==="admin"?"var(--red)":u.role==="superviseur"?"#F97316":"var(--blue)"}">${u.initials}</div>
-                  <div style="font-size:13px;font-weight:700">${u.name}</div>
+                  <div style="font-size:13px;font-weight:700">${esc(u.name)}</div>
                 </div></td>
-                <td class="text-sec text-sm">${u.email}</td>
+                <td class="text-sec text-sm">${esc(u.email)}</td>
                 <td><span class="tag ${roleClsMap[u.role]||"tag-gray"}">${u.roleLabel}</span></td>
                 <td class="text-sec text-sm">${u.joined}</td>
                 <td><span class="status ${u.status==="new"?"s-pending":u.status==="active"?"s-published":"s-draft"}">${u.status==="new"?"Nouveau":u.status==="active"?"Actif":"Inactif"}</span></td>
@@ -1973,7 +1978,7 @@ async function renderAdmin(sec="dashboard") {
                     <i class="ti ${cat.icon}"></i>
                   </div>
                   <div>
-                    <div style="font-weight:700;font-size:14px;color:var(--text)">${cat.name}</div>
+                    <div style="font-weight:700;font-size:14px;color:var(--text)">${esc(cat.name)}</div>
                     <div style="font-size:11px;color:var(--text-sec);margin-top:2px;font-family:monospace">/${cat.id}</div>
                   </div>
                 </div>
@@ -2045,8 +2050,8 @@ async function renderAdmin(sec="dashboard") {
                 <div class="flex-c gap-12">
                   <div class="u-avatar" style="width:40px;height:40px;font-size:14px;background:${u.role==="consultant"?"#0E7490":"var(--gray-400)"}">${u.initials}</div>
                   <div>
-                    <div style="font-size:14px;font-weight:700;color:var(--text)">${u.name}</div>
-                    <div style="font-size:12px;color:var(--text-sec);margin-top:2px">${u.email}</div>
+                    <div style="font-size:14px;font-weight:700;color:var(--text)">${esc(u.name)}</div>
+                    <div style="font-size:12px;color:var(--text-sec);margin-top:2px">${esc(u.email)}</div>
                   </div>
                   <span class="tag ${roleCls[u.role]||"tag-gray"}" style="margin-left:4px">${u.roleLabel}</span>
                 </div>
@@ -2125,7 +2130,7 @@ async function renderAdmin(sec="dashboard") {
             ${[...DB.docs].sort((a,b)=>b.dl-a.dl).slice(0,5).map((d,i)=>`
               <div class="flex-c gap-10" style="padding:8px 0;border-bottom:1px solid var(--border-lt);cursor:pointer" onclick="navigate('doc',{id:'${d.id}'})">
                 <div style="width:22px;height:22px;border-radius:50%;background:${i===0?"var(--blue)":i===1?"var(--blue-light)":"var(--gray-100)"};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${i===0?"white":"var(--blue)"};flex-shrink:0">${i+1}</div>
-                <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${d.title.length>40?d.title.substring(0,40)+"…":d.title}</div></div>
+                <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.title.length>40?d.title.substring(0,40)+"…":d.title)}</div></div>
                 <span style="font-size:12px;font-weight:700;color:var(--blue)">${d.dl}</span>
               </div>`).join("")}
           </div>
@@ -2253,7 +2258,7 @@ async function openAccessForm(userId) {
         <label class="form-label">Utilisateur <span class="req">*</span></label>
         <select id="acc-user" class="form-control">
           <option value="">Choisir un utilisateur…</option>
-          ${restricted.map(u=>`<option value="${u.id}" ${u.id===userId?"selected":""}>${u.name} (${u.roleLabel})</option>`).join("")}
+          ${restricted.map(u=>`<option value="${u.id}" ${u.id===userId?"selected":""}>${esc(u.name)} (${u.roleLabel})</option>`).join("")}
         </select>
       </div>
       <div class="form-group">
@@ -2266,7 +2271,7 @@ async function openAccessForm(userId) {
       <div class="form-group">
         <label class="form-label">Ressource <span class="req">*</span></label>
         <select id="acc-resource" class="form-control">
-          ${apiCats.map(cat=>`<option value="${cat.apiId}">${cat.name}</option>`).join("")}
+          ${apiCats.map(cat=>`<option value="${cat.apiId}">${esc(cat.name)}</option>`).join("")}
         </select>
       </div>
       <div class="flex-c gap-10 mt-8">
@@ -2281,7 +2286,7 @@ async function accessTypeChange() {
   const sel  = document.getElementById("acc-resource");
   if (type==="categorie") {
     const cats = DB._apiCatsCache || DB.cats.filter(c=>c.apiId);
-    sel.innerHTML = cats.map(cat=>`<option value="${cat.apiId}">${cat.name}</option>`).join("");
+    sel.innerHTML = cats.map(cat=>`<option value="${cat.apiId}">${esc(cat.name)}</option>`).join("");
     return;
   }
   sel.innerHTML = `<option>Chargement…</option>`;
@@ -2289,7 +2294,7 @@ async function accessTypeChange() {
     DB._accessDocsCache = await API.documents.list({ status:"ACTIVE", limit:200 }).catch(()=>[]);
   }
   sel.innerHTML = DB._accessDocsCache
-    .map(d=>`<option value="${d.id}">${d.title.length>55?d.title.substring(0,55)+"…":d.title}</option>`).join("");
+    .map(d=>`<option value="${d.id}">${esc(d.title.length>55?d.title.substring(0,55)+"…":d.title)}</option>`).join("");
 }
 
 async function grantAccess() {
@@ -2370,24 +2375,31 @@ function openCatForm(id) {
       </div>
     </div>`, cat ? `Modifier : ${cat.name}` : "Nouvelle catégorie");
 }
-function saveCat(id) {
+async function saveCat(id) {
   const name = document.getElementById("cf-name").value.trim();
   const slug = (document.getElementById("cf-id").value||"").trim();
   const icon = document.getElementById("cf-icon").value.trim() || "ti-folder";
-  const conf = document.getElementById("cf-conf").value;
+  const conf = document.getElementById("cf-conf").value.toUpperCase();
   if (!name) { toast("Le nom est requis.", "err"); return; }
-  if (id) {
-    const cat = DB.cats.find(c=>c.id===id);
-    if (cat) { cat.name=name; cat.icon=icon; cat.conf=conf; }
-    toast(`Catégorie "${name}" modifiée.`, "ok");
-  } else {
-    if (!slug) { toast("L'identifiant est requis.", "err"); return; }
-    if (DB.cats.find(c=>c.id===slug)) { toast("Cet identifiant existe déjà.", "err"); return; }
-    DB.cats.push({ id:slug, name, icon, color:"#475569", bg:"#F8FAFC", conf, tags:[] });
-    toast(`Catégorie "${name}" créée !`, "ok");
+  try {
+    if (id) {
+      const cat = DB.cats.find(c=>c.id===id||c.apiId===id);
+      const apiId = cat?.apiId || id;
+      await API.categories.update(apiId, { name, icon, defaultConfidentiality: conf });
+      if (cat) { cat.name=name; cat.icon=icon; cat.conf=conf.toLowerCase(); }
+      toast(`Catégorie "${name}" modifiée.`, "ok");
+    } else {
+      if (!slug) { toast("L'identifiant est requis.", "err"); return; }
+      const res = await API.categories.create({ name, slug, icon, defaultConfidentiality: conf });
+      const newCat = res?.data || res;
+      if (newCat?.id) DB.cats.push(mapCat(newCat));
+      toast(`Catégorie "${name}" créée !`, "ok");
+    }
+    closeModal();
+    renderAdmin("cats");
+  } catch (e) {
+    toast(e?.message || "Erreur lors de la sauvegarde.", "err");
   }
-  closeModal();
-  renderAdmin("cats");
 }
 function deleteCat(id) {
   const cat = DB.cats.find(c=>c.id===id);
@@ -2396,7 +2408,7 @@ function deleteCat(id) {
   if (count>0) {
     openModal(`
       <p style="font-size:14px;color:var(--text-sec);line-height:1.7">
-        La catégorie <strong>${cat.name}</strong> contient <strong>${count} document${count>1?"s":""}</strong>.<br>
+        La catégorie <strong>${esc(cat.name)}</strong> contient <strong>${count} document${count>1?"s":""}</strong>.<br>
         Déplacez ou supprimez ces documents avant de supprimer la catégorie.
       </p>
       <button class="btn btn-outline mt-16" onclick="closeModal()">Compris</button>`,
@@ -2404,7 +2416,7 @@ function deleteCat(id) {
   } else {
     openModal(`
       <p style="font-size:14px;color:var(--text-sec);line-height:1.7">
-        Supprimer <strong>${cat.name}</strong> ? Cette action est irréversible.
+        Supprimer <strong>${esc(cat.name)}</strong> ? Cette action est irréversible.
       </p>
       <div class="flex-c gap-10 mt-20">
         <button class="btn btn-danger" onclick="confirmDelCat('${id}')"><i class="ti ti-trash"></i>Supprimer</button>
@@ -2413,9 +2425,19 @@ function deleteCat(id) {
       "Supprimer cette catégorie ?");
   }
 }
-function confirmDelCat(id) {
-  const i = DB.cats.findIndex(c=>c.id===id);
-  if (i>-1) { DB.cats.splice(i,1); toast("Catégorie supprimée.","err"); closeModal(); renderAdmin("cats"); }
+async function confirmDelCat(id) {
+  const cat = DB.cats.find(c=>c.id===id||c.apiId===id);
+  const apiId = cat?.apiId || id;
+  try {
+    await API.categories.delete(apiId);
+    const i = DB.cats.findIndex(c=>c.id===id||c.apiId===id);
+    if (i>-1) DB.cats.splice(i,1);
+    toast("Catégorie supprimée.", "info");
+    closeModal();
+    renderAdmin("cats");
+  } catch (e) {
+    toast(e?.message || "Impossible de supprimer cette catégorie.", "err");
+  }
 }
 
 // CRUD UTILISATEURS

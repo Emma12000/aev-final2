@@ -88,7 +88,7 @@ export class AuthService {
       where: { id: user.id },
       data: { emailVerifyToken: verifyHash, emailVerifyExpires: verifyExpires },
     });
-    const appUrl = this.config.get<string>('app.url') ?? 'https://aev-final2.vercel.app';
+    const appUrl = this.config.get<string>('app.url') ?? 'https://archive.espoiretvie.td';
     this.mail.sendEmailVerification({
       to: user.email,
       name: user.fullName,
@@ -275,7 +275,7 @@ export class AuthService {
       where: { id: userId },
       data: { emailVerifyToken: tokenHash, emailVerifyExpires: new Date(Date.now() + 24 * 60 * 60 * 1000) },
     });
-    const appUrl = this.config.get<string>('app.url') ?? 'https://aev-final2.vercel.app';
+    const appUrl = this.config.get<string>('app.url') ?? 'https://archive.espoiretvie.td';
     this.mail.sendEmailVerification({
       to: user.email,
       name: user.fullName,
@@ -298,7 +298,7 @@ export class AuthService {
       data: { resetPasswordToken: tokenHash, resetPasswordExpires: expires },
     });
 
-    const appUrl = this.config.get<string>('app.url') ?? 'https://aev-final2.vercel.app';
+    const appUrl = this.config.get<string>('app.url') ?? 'https://archive.espoiretvie.td';
     const resetUrl = `${appUrl}?reset=${rawToken}`;
 
     this.mail.sendPasswordResetEmail({ to: user.email, name: user.fullName, resetUrl }).catch(() => null);

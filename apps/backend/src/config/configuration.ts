@@ -21,7 +21,7 @@ export default () => ({
   },
 
   app: {
-    url: process.env.APP_URL ?? 'https://aev-final2.vercel.app',
+    url: process.env.APP_URL ?? 'https://archive.espoiretvie.td',
   },
 
   google: {

@@ -58,7 +58,7 @@ async function apiFetch(path, opts = {}) {
 function mapUser(u) {
   if (!u) return null;
   const parts    = (u.fullName || "").trim().split(/\s+/);
-  const initials = parts.map(p => p[0] || "").join("").toUpperCase().slice(0, 2) || "??";
+  const initials = parts.map(p => p[0] || "").join("").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 2) || "??";
   const roleMap  = { ADMINISTRATEUR: "admin", SUPERVISEUR: "superviseur", AGENT: "member", LECTEUR: "lecteur", CONSULTANT: "consultant" };
   const roleLbl  = { ADMINISTRATEUR: "Administrateur", SUPERVISEUR: "Superviseur", AGENT: "Agent", LECTEUR: "Lecteur", CONSULTANT: "Consultant" };
   return {
@@ -279,6 +279,9 @@ const API = {
         return [];
       }
     },
+    create(dto) { return apiFetch("/categories", { method: "POST", body: JSON.stringify(dto) }); },
+    update(id, dto) { return apiFetch("/categories/" + id, { method: "PATCH", body: JSON.stringify(dto) }); },
+    delete(id) { return apiFetch("/categories/" + id, { method: "DELETE" }); },
   },
 
   documents: {
