@@ -125,6 +125,7 @@ export class DocumentsService {
   async getDownloadUrl(id: string, actor: JwtPayload) {
     const doc = await this.findOne(id, actor);
     const url = await this.storage.getSignedUrl(doc.fileKey);
+    await this.prisma.document.update({ where: { id }, data: { downloadCount: { increment: 1 } } });
     if (actor) {
       await this.activity.log({ userId: actor.sub, action: 'DOCUMENT_DOWNLOAD', resourceType: 'document', resourceId: id });
     }
@@ -139,6 +140,7 @@ export class DocumentsService {
     if (!doc) throw new NotFoundException('Document introuvable.');
     await this.assertAccess(doc, actor);
     const url = await this.storage.getSignedUrl(doc.fileKey, 3600);
+    await this.prisma.document.update({ where: { id }, data: { viewCount: { increment: 1 } } });
     return { url, fileName: doc.fileName, mimeType: doc.fileMimeType };
   }
 
