@@ -48,6 +48,7 @@ describe('AuthService', () => {
         findUnique: jest.fn(),
         update: jest.fn(),
         updateMany: jest.fn(),
+        deleteMany: jest.fn().mockResolvedValue({}),
       },
     };
     jwt = { signAsync: jest.fn().mockResolvedValue('mock-token') };
@@ -57,12 +58,17 @@ describe('AuthService', () => {
       sendPasswordResetEmail: jest.fn().mockResolvedValue(undefined),
     };
 
+    const mockConfig = (key: string) => {
+      if (key === 'jwt.secret') return 'test-jwt-secret';
+      return null;
+    };
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [
         AuthService,
         { provide: PrismaService, useValue: prisma },
         { provide: JwtService, useValue: jwt },
-        { provide: ConfigService, useValue: { get: jest.fn().mockReturnValue(null) } },
+        { provide: ConfigService, useValue: { get: jest.fn().mockImplementation(mockConfig) } },
         { provide: ActivityService, useValue: { log: jest.fn() } },
         { provide: MailService, useValue: mail },
       ],
