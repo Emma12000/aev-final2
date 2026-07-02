@@ -11,6 +11,7 @@ import { RegisterDto } from './dto/register.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { GoogleAuthDto } from './dto/google-auth.dto';
+import { FacebookAuthDto } from './dto/facebook-auth.dto';
 import { Public } from './decorators/public.decorator';
 import { CurrentUser, JwtPayload } from './decorators/current-user.decorator';
 
@@ -79,6 +80,17 @@ export class AuthController {
   @ApiOperation({ summary: 'Connexion / inscription via Google OAuth' })
   async googleAuth(@Body() dto: GoogleAuthDto, @Res({ passthrough: true }) res: Response) {
     const { refreshToken, ...rest } = await this.auth.googleAuth(dto.idToken);
+    this.setRefreshCookie(res, refreshToken);
+    return rest;
+  }
+
+  @Public()
+  @UseGuards(ThrottlerGuard)
+  @Post('facebook')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Connexion / inscription via Facebook OAuth' })
+  async facebookAuth(@Body() dto: FacebookAuthDto, @Res({ passthrough: true }) res: Response) {
+    const { refreshToken, ...rest } = await this.auth.facebookAuth(dto.accessToken);
     this.setRefreshCookie(res, refreshToken);
     return rest;
   }

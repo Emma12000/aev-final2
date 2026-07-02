@@ -219,6 +219,19 @@ const API = {
       return data.data;
     },
 
+    async facebookLogin(accessToken) {
+      const res = await fetch(API_BASE + "/auth/facebook", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ accessToken }),
+        credentials: "include",
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Erreur Facebook.");
+      TokenStore.set(data.data.accessToken);
+      return data.data;
+    },
+
     async verifyEmail(token) {
       const res = await fetch(API_BASE + "/auth/verify-email?token=" + encodeURIComponent(token));
       const data = await res.json();

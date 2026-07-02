@@ -267,6 +267,66 @@ export class AuthService {
     };
   }
 
+  // ─── Facebook OAuth ───────────────────────────────────────────────────────
+
+  async facebookAuth(accessToken: string) {
+    const appId = this.config.get<string>('facebook.appId');
+    const appSecret = this.config.get<string>('facebook.appSecret');
+
+    if (!appId || !appSecret) {
+      throw new BadRequestException('Facebook OAuth non configuré.');
+    }
+
+    // Vérifier que le token est valide et émis pour notre application
+    const debugRes = await fetch(
+      `https://graph.facebook.com/debug_token?input_token=${encodeURIComponent(accessToken)}&access_token=${appId}|${appSecret}`,
+    );
+    const debugData: any = await debugRes.json();
+
+    if (!debugData?.data?.is_valid || String(debugData?.data?.app_id) !== String(appId)) {
+      throw new UnauthorizedException('Token Facebook invalide.');
+    }
+
+    // Récupérer les infos utilisateur
+    const meRes = await fetch(
+      `https://graph.facebook.com/me?fields=id,name,email&access_token=${encodeURIComponent(accessToken)}`,
+    );
+    const me: any = await meRes.json();
+
+    if (me.error) throw new UnauthorizedException('Impossible de récupérer le profil Facebook.');
+    if (!me.email) throw new BadRequestException("L'adresse email est requise. Veuillez autoriser l'accès à votre email dans les permissions Facebook.");
+
+    const email = me.email.toLowerCase();
+    let user = await this.prisma.user.findUnique({ where: { email } });
+
+    if (!user) {
+      user = await this.prisma.user.create({
+        data: {
+          email,
+          fullName: me.name || email,
+          passwordHash: '',
+          role: Role.LECTEUR,
+          emailVerified: true,
+        },
+      });
+      this.mail.notifyAdminNewMember({ memberName: user.fullName, memberEmail: user.email, role: user.role }).catch(() => null);
+      await this.activity.log({ userId: user.id, action: 'USER_CREATE', resourceType: 'user', resourceId: user.id });
+    }
+
+    if (!user.isActive) throw new UnauthorizedException('Compte désactivé.');
+
+    await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
+
+    const tokens = await this.generateTokens(user.id, user.role);
+    await this.storeRefreshToken(user.id, tokens.refreshToken);
+    await this.activity.log({ userId: user.id, action: 'LOGIN', resourceType: 'auth' });
+
+    return {
+      ...tokens,
+      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, emailVerified: true },
+    };
+  }
+
   // ─── Vérification email ───────────────────────────────────────────────────
 
   async verifyEmail(token: string) {

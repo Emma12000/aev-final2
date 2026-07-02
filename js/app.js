@@ -681,6 +681,26 @@ function doGoogleLogin() {
   });
 }
 
+function doFacebookLogin() {
+  if (!window.FB) { toast("Chargement de Facebook en cours…", "info"); return; }
+  if (!window.FB_APP_ID) { toast("Facebook OAuth non configuré.", "err"); return; }
+  FB.login(async function(response) {
+    if (!response.authResponse) {
+      if (response.status !== 'not_authorized') toast("Connexion Facebook annulée.", "info");
+      return;
+    }
+    try {
+      const data = await API.auth.facebookLogin(response.authResponse.accessToken);
+      APP.user = mapUser(data.user);
+      updateNavbarUser();
+      toast(`Bienvenue, ${APP.user.name.split(" ")[0]} !`, "ok");
+      navigate(["admin","superviseur"].includes(APP.user.role) ? "admin" : "member");
+    } catch(e) {
+      toast(e.message || "Connexion Facebook impossible.", "err");
+    }
+  }, { scope: 'email,public_profile' });
+}
+
 async function doSaveProfile() {
   const prenom = document.getElementById("profile-prenom")?.value.trim();
   const nom    = document.getElementById("profile-nom")?.value.trim();

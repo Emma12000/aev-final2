@@ -29,6 +29,11 @@ export default () => ({
     clientId: process.env.GOOGLE_CLIENT_ID ?? '',
   },
 
+  facebook: {
+    appId: process.env.FACEBOOK_APP_ID ?? '',
+    appSecret: process.env.FACEBOOK_APP_SECRET ?? '',
+  },
+
   email: {
     resendApiKey: process.env.RESEND_API_KEY ?? '',
     from: process.env.EMAIL_FROM ?? 'no-reply@espoiretvie.td',
