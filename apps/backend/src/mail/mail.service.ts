@@ -9,10 +9,13 @@ export class MailService {
   private readonly adminEmail: string;
   private readonly logger = new Logger(MailService.name);
 
+  private readonly appUrl: string;
+
   constructor(private config: ConfigService) {
     const apiKey = config.get<string>('email.resendApiKey');
     this.from    = config.get<string>('email.from') ?? 'no-reply@espoiretvie.td';
     this.adminEmail = config.get<string>('email.adminEmail') ?? 'admin@espoiretvie.td';
+    this.appUrl  = config.get<string>('app.url') ?? 'https://archive.espoiretvie.td';
     this.resend  = apiKey ? new Resend(apiKey) : null;
   }
 
@@ -39,7 +42,7 @@ export class MailService {
               <tr><td style="padding:8px 0;color:#6b7280">Catégorie</td><td style="padding:8px 0;color:#374151">${opts.category}</td></tr>
               <tr><td style="padding:8px 0;color:#6b7280">Déposé par</td><td style="padding:8px 0;color:#374151">${opts.uploaderName} (${opts.uploaderEmail})</td></tr>
             </table>
-            <a href="https://aev-final2.vercel.app" style="display:inline-block;margin-top:24px;padding:12px 24px;background:#1E3A5F;color:white;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600">
+            <a href="${this.appUrl}" style="display:inline-block;margin-top:24px;padding:12px 24px;background:#1E3A5F;color:white;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600">
               Valider le document →
             </a>
           </div>
@@ -70,7 +73,7 @@ export class MailService {
               <tr><td style="padding:8px 0;color:#6b7280">Email</td><td style="padding:8px 0;color:#374151">${opts.memberEmail}</td></tr>
               <tr><td style="padding:8px 0;color:#6b7280">Rôle</td><td style="padding:8px 0;color:#374151">${opts.role}</td></tr>
             </table>
-            <a href="https://aev-final2.vercel.app" style="display:inline-block;margin-top:24px;padding:12px 24px;background:#1E3A5F;color:white;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600">
+            <a href="${this.appUrl}" style="display:inline-block;margin-top:24px;padding:12px 24px;background:#1E3A5F;color:white;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600">
               Gérer les membres →
             </a>
           </div>
@@ -98,7 +101,7 @@ export class MailService {
             <p style="color:#374151;font-size:14px;line-height:1.6">
               Votre document <strong>${opts.docTitle}</strong> a été <span style="color:#166534;font-weight:700">approuvé et publié</span> sur la plateforme d'archives de l'association.
             </p>
-            <a href="https://aev-final2.vercel.app" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#166534;color:white;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600">
+            <a href="${this.appUrl}" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#166534;color:white;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600">
               Voir mon document →
             </a>
           </div>
@@ -126,7 +129,7 @@ export class MailService {
             <p style="color:#374151;font-size:14px;line-height:1.6">
               Votre document <strong>${opts.docTitle}</strong> n'a pas été retenu pour la publication. Vous pouvez le modifier et le soumettre à nouveau depuis votre espace membre.
             </p>
-            <a href="https://aev-final2.vercel.app" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#991B1B;color:white;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600">
+            <a href="${this.appUrl}" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#991B1B;color:white;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600">
               Mon espace membre →
             </a>
           </div>

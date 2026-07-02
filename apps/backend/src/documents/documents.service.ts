@@ -249,7 +249,7 @@ export class DocumentsService {
       where: { id },
       include: { uploadedBy: { select: { fullName: true, email: true } } },
     });
-    const result = await this.update(id, { status: DocumentStatus.ARCHIVED }, actor);
+    const result = await this.update(id, { status: DocumentStatus.DELETED }, actor);
     if (doc?.uploadedBy?.email) {
       this.mail.notifyMemberDocRejected({
         to:         doc.uploadedBy.email,

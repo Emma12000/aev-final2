@@ -41,8 +41,8 @@ export class DocumentsController {
     return this.docs.getPreviewUrl(id, actor);
   }
 
+  @Public()
   @Get(':id/download')
-  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Obtenir un lien signé pour télécharger le fichier' })
   download(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() actor: JwtPayload) {
     return this.docs.getDownloadUrl(id, actor);

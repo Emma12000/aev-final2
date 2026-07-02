@@ -166,7 +166,7 @@ function tagHtml(type) {
   return `<span class="tag ${map[type]||"tag-gray"}">${type}</span>`;
 }
 function statusHtml(s) {
-  const map = { published:["s-published","✓ Publié"], pending:["s-pending","⏳ En attente"], rejected:["s-rejected","✗ Rejeté"] };
+  const map = { published:["s-published","✓ Publié"], pending:["s-pending","⏳ En attente"], rejected:["s-rejected","✗ Rejeté"], deleted:["s-rejected","✗ Rejeté"] };
   const [cls, label] = map[s] || ["s-pending","Inconnu"];
   return `<span class="status ${cls}">${label}</span>`;
 }
@@ -1724,9 +1724,15 @@ async function renderAdmin(sec="dashboard") {
           <div class="card">
             <div class="card-header">
               <span class="card-title">Documents en attente ${pendingDocs?`<span class="tag tag-red" style="margin-left:8px">${pendingDocs} à valider</span>`:""}</span>
-              <button class="btn btn-outline btn-sm" onclick="renderAdmin('docs')">Tout voir →</button>
+              <button class="btn btn-outline btn-sm" onclick="renderAdmin('docs');APP._docsFilter={status:'ARCHIVED',q:'',page:1}">Tout voir →</button>
             </div>
-            <div class="empty"><i class="ti ti-circle-check"></i><h3>Tout est à jour !</h3><p>Aucun document en attente de validation.</p></div>
+            ${pendingDocs > 0
+              ? `<div style="padding:20px 24px;display:flex;align-items:center;gap:14px;border-bottom:1px solid var(--border-lt)">
+                  <div style="width:44px;height:44px;background:var(--red-light);border-radius:var(--r-xl);display:flex;align-items:center;justify-content:center;color:var(--red);font-size:22px;flex-shrink:0"><i class="ti ti-clock"></i></div>
+                  <div style="flex:1"><div style="font-size:14px;font-weight:700;color:var(--text)">${pendingDocs} document${pendingDocs>1?"s":""} en attente de validation</div><div style="font-size:12px;color:var(--text-sec);margin-top:3px">Approuvez ou rejetez depuis la section Documents.</div></div>
+                  <button class="btn btn-primary btn-sm" onclick="renderAdmin('docs');APP._docsFilter={status:'ARCHIVED',q:'',page:1}"><i class="ti ti-arrow-right"></i>Traiter</button>
+                </div>`
+              : `<div class="empty"><i class="ti ti-circle-check"></i><h3>Tout est à jour !</h3><p>Aucun document en attente de validation.</p></div>`}
           </div>
           <!-- DROITE -->
           <div class="flex-col gap-14">
@@ -1833,7 +1839,7 @@ async function renderAdmin(sec="dashboard") {
 
   if (sec==="users") {
     c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
-    const users = await API.admin.users({ limit: 100 }).catch(() => []);
+    const { users } = await fetchAdminData();
     const newUsers = users.filter(u => u.status === "new");
     const roleClsMap = { admin:"tag-red", superviseur:"tag-orange", member:"tag-blue", consultant:"tag-cyan", lecteur:"tag-gray" };
     const sortedUsers = [...users].sort((a,b) => (a.status==="new"?0:1)-(b.status==="new"?0:1));
@@ -2323,7 +2329,7 @@ async function confirmRevokeAccess(id, type) {
   try {
     if (type==="categorie") await API.access.revokeCategory(id);
     else                    await API.access.revokeDocument(id);
-    toast("Accès révoqué.", "err");
+    toast("Accès révoqué.", "info");
     closeModal();
     renderAdmin("access");
   } catch(e) {
@@ -2530,6 +2536,7 @@ async function confirmToggleUser(id, isCurrentlyActive) {
     await API.admin.updateUser(id, { isActive: !isCurrentlyActive });
     closeModal();
     toast(isCurrentlyActive ? "Compte désactivé." : "Compte réactivé.", isCurrentlyActive ? "err" : "ok");
+    invalidateAdminCache();
     renderAdmin("users");
   } catch(e) {
     toast(e.message || "Erreur.", "err");
