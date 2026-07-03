@@ -2127,34 +2127,33 @@ async function renderAdmin(sec="dashboard") {
 
   if (sec==="stats") {
     c.innerHTML = `
-      <div class="topbar"><div><div class="topbar-title">Statistiques & Analyses</div><div class="topbar-sub">Vue d'ensemble de la plateforme</div></div><button class="btn btn-outline btn-sm" onclick="toast('Export CSV généré','ok')"><i class="ti ti-download"></i>Exporter</button></div>
+      <div class="topbar">
+        <div><div class="topbar-title">Statistiques & Analyses</div><div class="topbar-sub">Vue d'ensemble de la plateforme</div></div>
+        <button class="btn btn-outline btn-sm" onclick="exportStatsCSV()"><i class="ti ti-download"></i>Exporter CSV</button>
+      </div>
       <div class="page-inner">
-        <div class="stats-grid">
-          ${[["ti-files","si-blue","1 284","Documents total"],["ti-download","si-blue","12 480","Téléchargements"],["ti-eye","si-blue","48 200","Vues totales"],["ti-users","si-blue","84","Membres"]].map(([ic,cls,v,l])=>`
+        <div class="stats-grid" id="stats-cards">
+          ${[["ti-files","si-blue","…","Documents"],["ti-clock","si-red","…","En attente"],["ti-users","si-blue","…","Membres"],["ti-folders","si-blue","…","Catégories"]].map(([ic,cls,v,l])=>`
             <div class="stat-card"><div class="stat-icon ${cls}"><i class="ti ${ic}"></i></div><div><div class="stat-val">${v}</div><div class="stat-label">${l}</div></div></div>`).join("")}
         </div>
         <div class="grid-2 gap-16">
           <div class="card card-body">
-            <div class="card-title mb-16">Téléchargements mensuels</div>
-            <div style="display:flex;align-items:flex-end;gap:6px;height:150px">
-              ${[48,72,55,90,65,95,78,88,62,74,82,100].map((h,i)=>`
-                <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
-                  <div style="width:100%;background:${h>85?"var(--blue)":"var(--blue-light)"};border-radius:4px 4px 0 0;height:${h*1.2}px;cursor:pointer;transition:var(--t)" title="${h} téléchargements en ${'JFMAMJJASOND'[i]}" onmouseover="this.style.background='var(--blue)'" onmouseout="this.style.background='${h>85?"var(--blue)":"var(--blue-light)"}'"></div>
-                  <span style="font-size:9px;color:var(--text-sec)">${'JFMAMJJASOND'[i]}</span>
-                </div>`).join("")}
+            <div class="card-title mb-16">Documents par catégorie</div>
+            <div id="stats-cat-chart" style="display:flex;align-items:flex-end;gap:6px;height:150px">
+              <span style="font-size:12px;color:var(--text-sec);margin:auto">Chargement…</span>
             </div>
           </div>
           <div class="card card-body">
-            <div class="card-title mb-16">Top documents</div>
-            ${[...DB.docs].sort((a,b)=>b.dl-a.dl).slice(0,5).map((d,i)=>`
-              <div class="flex-c gap-10" style="padding:8px 0;border-bottom:1px solid var(--border-lt);cursor:pointer" onclick="navigate('doc',{id:'${d.id}'})">
-                <div style="width:22px;height:22px;border-radius:50%;background:${i===0?"var(--blue)":i===1?"var(--blue-light)":"var(--gray-100)"};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${i===0?"white":"var(--blue)"};flex-shrink:0">${i+1}</div>
-                <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.title.length>40?d.title.substring(0,40)+"…":d.title)}</div></div>
-                <span style="font-size:12px;font-weight:700;color:var(--blue)">${d.dl}</span>
-              </div>`).join("")}
+            <div class="card-title mb-16">Top 5 — plus téléchargés</div>
+            <div id="stats-top-docs"><span style="font-size:12px;color:var(--text-sec)">Chargement…</span></div>
           </div>
         </div>
+        <div class="card card-body">
+          <div class="card-title mb-16">Répartition par statut</div>
+          <div id="stats-status" style="display:flex;gap:24px;flex-wrap:wrap"></div>
+        </div>
       </div>`;
+    loadAdminStats();
   }
 
   if (sec==="settings") {
@@ -2238,6 +2237,111 @@ function logsFilter() {
   });
   const cnt = document.getElementById("log-count");
   if (cnt) cnt.textContent = `${visible} résultat${visible!==1?"s":""}`;
+}
+
+async function loadAdminStats() {
+  const [stats, docs] = await Promise.all([
+    API.admin.stats(),
+    API.documents.list({ limit: 100 }),
+  ]);
+  if (!stats) { toast("Impossible de charger les statistiques.", "err"); return; }
+
+  APP._statsData = { stats, docs };
+
+  // Cartes chiffres clés
+  const pending = stats.documents?.byStatus?.find(s => s.status === "ARCHIVED")?.count ?? 0;
+  const cards = document.getElementById("stats-cards");
+  if (cards) {
+    const vals = [
+      ["ti-files",   "si-blue", stats.documents?.total   ?? 0, "Documents"],
+      ["ti-clock",   "si-red",  pending,                        "En attente"],
+      ["ti-users",   "si-blue", stats.users?.total       ?? 0, "Membres"],
+      ["ti-folders", "si-blue", stats.categories?.total  ?? 0, "Catégories"],
+    ];
+    cards.innerHTML = vals.map(([ic, cls, v, l]) => `
+      <div class="stat-card">
+        <div class="stat-icon ${cls}"><i class="ti ${ic}"></i></div>
+        <div><div class="stat-val">${v}</div><div class="stat-label">${l}</div></div>
+      </div>`).join("");
+  }
+
+  // Graphique documents par catégorie
+  const catChart = document.getElementById("stats-cat-chart");
+  if (catChart && stats.documents?.byCategory?.length) {
+    const cats = [...stats.documents.byCategory].sort((a, b) => b.count - a.count).slice(0, 8);
+    const max = Math.max(...cats.map(c => c.count), 1);
+    catChart.innerHTML = cats.map(c => `
+      <div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px">
+        <span style="font-size:9px;font-weight:700;color:var(--blue)">${c.count}</span>
+        <div style="width:100%;background:var(--blue);border-radius:4px 4px 0 0;height:${Math.max(8, Math.round(c.count / max * 130))}px;transition:var(--t)" title="${esc(c.category?.name ?? '')} : ${c.count}"></div>
+        <span style="font-size:8px;color:var(--text-sec);text-align:center;line-height:1.2;max-width:40px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(c.category?.name ?? '—')}</span>
+      </div>`).join("");
+  } else if (catChart) {
+    catChart.innerHTML = `<span style="font-size:12px;color:var(--text-sec);margin:auto">Aucune donnée</span>`;
+  }
+
+  // Top 5 documents les plus téléchargés
+  const topEl = document.getElementById("stats-top-docs");
+  if (topEl) {
+    const top = [...(docs || [])].filter(d => d.status === "published").sort((a, b) => b.dl - a.dl).slice(0, 5);
+    if (top.length) {
+      topEl.innerHTML = top.map((d, i) => `
+        <div class="flex-c gap-10" style="padding:8px 0;border-bottom:1px solid var(--border-lt);cursor:pointer" onclick="navigate('doc',{id:'${esc(String(d.id))}'})">
+          <div style="width:22px;height:22px;border-radius:50%;background:${i===0?"var(--blue)":i===1?"var(--blue-light)":"var(--gray-100)"};display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:${i===0?"white":"var(--blue)"};flex-shrink:0">${i+1}</div>
+          <div style="flex:1;min-width:0"><div style="font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(d.title.length > 42 ? d.title.substring(0, 42) + "…" : d.title)}</div></div>
+          <span style="font-size:12px;font-weight:700;color:var(--blue)">${d.dl} <i class="ti ti-download" style="font-size:10px"></i></span>
+        </div>`).join("");
+    } else {
+      topEl.innerHTML = `<span style="font-size:12px;color:var(--text-sec)">Aucun document publié.</span>`;
+    }
+  }
+
+  // Répartition par statut
+  const statusEl = document.getElementById("stats-status");
+  if (statusEl && stats.documents?.byStatus?.length) {
+    const labelMap = { ACTIVE: "Publiés", ARCHIVED: "En attente", DELETED: "Supprimés" };
+    const colorMap = { ACTIVE: "var(--blue)", ARCHIVED: "var(--red)", DELETED: "var(--gray-400)" };
+    statusEl.innerHTML = stats.documents.byStatus.map(s => `
+      <div style="display:flex;align-items:center;gap:10px;padding:10px 16px;background:var(--gray-50);border-radius:var(--r-lg);border:1px solid var(--border)">
+        <div style="width:12px;height:12px;border-radius:50%;background:${colorMap[s.status]||"var(--blue)"}"></div>
+        <span style="font-size:13px;font-weight:600;color:var(--text)">${labelMap[s.status]||s.status}</span>
+        <span style="font-size:20px;font-weight:800;color:var(--text);margin-left:auto">${s.count}</span>
+      </div>`).join("");
+  }
+}
+
+function exportStatsCSV() {
+  const data = APP._statsData;
+  if (!data) { toast("Chargement en cours, réessayez dans un instant.", "err"); return; }
+  const { stats, docs } = data;
+  const date = new Date().toISOString().slice(0, 10);
+  const lines = [
+    "=== STATISTIQUES AEV — " + date + " ===",
+    "",
+    "CHIFFRES CLÉS",
+    "Indicateur,Valeur",
+    `Documents total,${stats.documents?.total ?? 0}`,
+    `En attente,${stats.documents?.byStatus?.find(s=>s.status==="ARCHIVED")?.count ?? 0}`,
+    `Membres,${stats.users?.total ?? 0}`,
+    `Membres actifs,${stats.users?.active ?? 0}`,
+    `Catégories,${stats.categories?.total ?? 0}`,
+    "",
+    "DOCUMENTS PAR CATÉGORIE",
+    "Catégorie,Nombre",
+    ...(stats.documents?.byCategory || []).sort((a,b)=>b.count-a.count).map(c=>`"${c.category?.name ?? '—'}",${c.count}`),
+    "",
+    "TOP DOCUMENTS (par téléchargements)",
+    "Titre,Téléchargements,Vues,Format,Catégorie",
+    ...[...(docs||[])].filter(d=>d.status==="published").sort((a,b)=>b.dl-a.dl).slice(0,20)
+      .map(d=>`"${d.title.replace(/"/g,'""')}",${d.dl},${d.views},"${d.fmt}","${d.type}"`),
+  ];
+  const csv = lines.join("\n");
+  const blob = new Blob(["﻿" + csv], { type: "text/csv;charset=utf-8;" });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement("a");
+  a.href = url; a.download = `stats-aev-${date}.csv`;
+  a.click(); URL.revokeObjectURL(url);
+  toast("Export CSV téléchargé.", "ok");
 }
 
 function exportLogsCSV() {
