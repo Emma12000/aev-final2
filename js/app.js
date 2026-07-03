@@ -2983,11 +2983,31 @@ async function toggleFav(id, triggerEl) {
   }
 }
 
+async function loadHomeCatCounts() {
+  const cats = DB.cats.filter(c => c.apiId);
+  if (!cats.length) return;
+  await Promise.all(cats.map(async (cat) => {
+    const el = document.getElementById(`cc-${cat.id}`);
+    if (!el) return;
+    try {
+      const res  = await fetch(`${API_BASE}/documents?categoryId=${cat.apiId}&status=ACTIVE&limit=1`, { credentials: "include" });
+      const data = await res.json();
+      const total = data?.data?.total ?? 0;
+      el.textContent = `${total} document${total !== 1 ? "s" : ""}`;
+    } catch (_) {
+      el.textContent = "— documents";
+    }
+  }));
+}
+
 //  INIT
 document.addEventListener("DOMContentLoaded", async () => {
   // Charger les catégories réelles depuis l'API
   const apiCats = await API.categories.list();
   if (apiCats.length) DB.cats = apiCats;
+
+  // Mettre à jour les compteurs "Parcourir par catégorie" avec les vrais totaux
+  loadHomeCatCounts();
 
   // Restaurer la session via le cookie httpOnly (refresh silencieux au démarrage)
   await silentRefresh();
