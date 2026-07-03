@@ -740,11 +740,9 @@ select.form-control { cursor: pointer; }
   .page-inner { padding: 20px 14px 14px; }
   .topbar {
     flex-wrap: wrap;
-    gap: 16px;
+    gap: 12px;
     padding: 12px 14px;
-    position: sticky;
-    top: 56px;
-    z-index: 10;
+    position: static;
   }
   .topbar > .btn { width: 100%; justify-content: center; }
   .topbar-title { font-size: 16px; }
