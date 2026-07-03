@@ -727,7 +727,8 @@ select.form-control { cursor: pointer; }
   .hero-chip { font-size: 11px; padding: 5px 12px; }
 
   /* Grilles */
-  .stats-grid,.cat-grid,.grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; }
+  .cat-grid,.grid-2,.grid-3,.grid-4 { grid-template-columns: 1fr; }
+  .stats-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .stats-bar { grid-template-columns: repeat(2, 1fr); }
 
   /* Auth */
@@ -791,17 +792,24 @@ select.form-control { cursor: pointer; }
   /* Cards et boutons */
   .btn-lg { padding: 12px 18px; font-size: 14px; }
   .card-body { padding: 16px; }
-  .stat-card { padding: 14px; }
   .doc-row { padding: 12px 14px; }
   .modal-box { margin: 12px; padding: 0; }
+
+  /* Cartes stat 2×2 : layout vertical centré */
+  .stat-card {
+    padding: 14px 10px;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 6px;
+  }
+  .stat-val { font-size: 24px; }
+  .stat-label { font-size: 11px; }
+  .stat-trend { font-size: 10px; margin-top: 2px; }
 
   /* Stepper upload */
   .stepper { gap: 4px; }
   .step-lbl { display: none; }
-
-  /* Grille stats admin */
-  .stats-grid { gap: 10px; }
-  .stat-val { font-size: 22px; }
 }
 
 /* ═══════════════════════════════════════════════

@@ -1,4 +1,4 @@
-const CACHE = 'aev-v1';
+const CACHE = 'aev-v2';
 const STATIC = [
   '/',
   '/index.html',
@@ -25,7 +25,7 @@ self.addEventListener('activate', (e) => {
   self.clients.claim();
 });
 
-// Fetch : cache-first pour les assets, réseau pour l'API
+// Fetch : stale-while-revalidate pour les assets, réseau pour l'API
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
 
@@ -38,23 +38,29 @@ self.addEventListener('fetch', (e) => {
     url.hostname.includes('officeapps.live.com')
   ) return;
 
+  // Requêtes non-GET : réseau direct
+  if (e.request.method !== 'GET') return;
+
   e.respondWith(
-    caches.match(e.request).then((cached) => {
-      if (cached) return cached;
-      return fetch(e.request)
-        .then((res) => {
-          if (res.ok && e.request.method === 'GET') {
-            const clone = res.clone();
-            caches.open(CACHE).then((c) => c.put(e.request, clone));
-          }
+    caches.open(CACHE).then((cache) => {
+      return cache.match(e.request).then((cached) => {
+        // Toujours rafraîchir en arrière-plan
+        const networkFetch = fetch(e.request).then((res) => {
+          if (res.ok) cache.put(e.request, res.clone());
           return res;
-        })
-        .catch(() => {
+        }).catch(() => null);
+
+        // Servir le cache immédiatement si disponible, sinon attendre le réseau
+        if (cached) {
+          e.waitUntil(networkFetch);
+          return cached;
+        }
+        return networkFetch.then((res) => {
+          if (res) return res;
           // Hors-ligne : renvoyer index.html pour la navigation
-          if (e.request.mode === 'navigate') {
-            return caches.match('/index.html');
-          }
+          if (e.request.mode === 'navigate') return cache.match('/index.html');
         });
+      });
     })
   );
 });
