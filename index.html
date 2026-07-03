@@ -563,6 +563,31 @@
 <!-- TOAST -->
 <div class="toast-wrap" id="toast-wrap" aria-live="polite"></div>
 
+<!-- CHATBOT IA AEV -->
+<button id="chat-bubble" aria-label="Ouvrir l'assistant AEV" onclick="toggleChat()">
+  <i class="ti ti-message-chatbot"></i>
+</button>
+<div id="chat-panel">
+  <div class="chat-head">
+    <div class="chat-head-avatar"><i class="ti ti-robot"></i></div>
+    <div class="chat-head-info">
+      <div class="chat-head-name">Assistant AEV</div>
+      <div class="chat-head-sub">Questions & résumés de documents</div>
+    </div>
+    <button class="chat-close" onclick="toggleChat()" aria-label="Fermer"><i class="ti ti-x"></i></button>
+  </div>
+  <div id="chat-messages"></div>
+  <div class="chat-quick" id="chat-quick">
+    <button class="chat-quick-btn" onclick="chatQuick('Qu\'est-ce que l\'Association Espoir &amp; Vie ?')">C'est quoi AEV ?</button>
+    <button class="chat-quick-btn" onclick="chatQuick('Quels sont les programmes de l\'association ?')">Nos programmes</button>
+    <button class="chat-quick-btn" onclick="chatQuick('Comment déposer un document ?')">Déposer un doc</button>
+  </div>
+  <div class="chat-foot">
+    <input id="chat-input" type="text" placeholder="Posez votre question…" onkeydown="if(event.key==='Enter')chatSend()">
+    <button id="chat-send" onclick="chatSend()"><i class="ti ti-send"></i></button>
+  </div>
+</div>
+
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
 <script>

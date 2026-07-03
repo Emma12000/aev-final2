@@ -456,6 +456,7 @@ async function renderDoc(id) {
           </div>
         </div>
         <div class="flex-c gap-8">
+          <button class="btn btn-ghost btn-sm" onclick="chatSummarizeDoc('${d.id}','${d.title.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')"><i class="ti ti-sparkles"></i>Résumer</button>
           <button class="btn btn-ghost btn-sm" onclick="openShareModal('${d.id}','${d.title.replace(/'/g,"\\'").replace(/"/g,"&quot;")}')"><i class="ti ti-share"></i>Partager</button>
           <button class="btn btn-ghost btn-sm" id="fav-btn-${d.id}" onclick="toggleFav('${d.id}')"><i class="ti ${favIds.includes(d.id)?"ti-star-filled":"ti-star"}" style="${favIds.includes(d.id)?"color:var(--blue)":""}"></i>Favori</button>
         </div>
@@ -2983,6 +2984,112 @@ async function toggleFav(id, triggerEl) {
   }
 }
 
+// ═══════════════════════════════════════════
+//  CHATBOT IA AEV
+// ═══════════════════════════════════════════
+const CHAT = {
+  open: false,
+  history: [],   // [{ role, content }]
+  docId: null,
+};
+
+function toggleChat() {
+  CHAT.open = !CHAT.open;
+  const panel  = document.getElementById("chat-panel");
+  const bubble = document.getElementById("chat-bubble");
+  if (!panel || !bubble) return;
+  panel.style.display  = CHAT.open ? "flex" : "none";
+  bubble.style.display = "flex";
+  const badge = bubble.querySelector(".chat-badge");
+  if (badge) badge.remove();
+  if (CHAT.open) {
+    if (!CHAT.history.length) chatWelcome();
+    document.getElementById("chat-input")?.focus();
+  }
+}
+
+function chatWelcome() {
+  chatAppendMsg("assistant", "Bonjour ! Je suis l'assistant de l'Association Espoir & Vie. Je peux répondre à vos questions sur l'association et résumer vos documents. Comment puis-je vous aider ?");
+}
+
+function chatAppendMsg(role, content) {
+  const list = document.getElementById("chat-messages");
+  if (!list) return;
+  const isUser = role === "user";
+  const el = document.createElement("div");
+  el.className = `chat-msg ${role}`;
+  el.innerHTML = `
+    <div class="chat-msg-avatar"><i class="ti ${isUser ? "ti-user" : "ti-robot"}"></i></div>
+    <div class="chat-msg-bubble">${esc(content).replace(/\n/g, "<br>")}</div>`;
+  list.appendChild(el);
+  list.scrollTop = list.scrollHeight;
+  CHAT.history.push({ role, content });
+  // Masquer les suggestions rapides après le premier message utilisateur
+  if (isUser) {
+    const q = document.getElementById("chat-quick");
+    if (q) q.style.display = "none";
+  }
+}
+
+function chatShowTyping() {
+  const list = document.getElementById("chat-messages");
+  if (!list) return null;
+  const el = document.createElement("div");
+  el.className = "chat-msg assistant";
+  el.id = "chat-typing";
+  el.innerHTML = `<div class="chat-msg-avatar"><i class="ti ti-robot"></i></div><div class="chat-msg-bubble chat-typing"><span></span><span></span><span></span></div>`;
+  list.appendChild(el);
+  list.scrollTop = list.scrollHeight;
+  return el;
+}
+
+async function chatSend() {
+  if (!APP.user) { toast("Connectez-vous pour utiliser le chatbot.", "err"); return; }
+  const input = document.getElementById("chat-input");
+  const btn   = document.getElementById("chat-send");
+  const text  = input?.value.trim();
+  if (!text) return;
+  input.value = "";
+  input.disabled = true;
+  btn.disabled   = true;
+
+  chatAppendMsg("user", text);
+  const typing = chatShowTyping();
+
+  try {
+    const reply = await API.chat.send(CHAT.history.slice(-10), CHAT.docId || undefined);
+    typing?.remove();
+    chatAppendMsg("assistant", reply || "Désolé, je n'ai pas pu répondre.");
+  } catch (_) {
+    typing?.remove();
+    chatAppendMsg("assistant", "Une erreur s'est produite. Réessayez dans un instant.");
+  } finally {
+    input.disabled = false;
+    btn.disabled   = false;
+    input.focus();
+  }
+}
+
+async function chatQuick(question) {
+  const input = document.getElementById("chat-input");
+  if (input) { input.value = question; }
+  await chatSend();
+}
+
+function chatSummarizeDoc(docId, docTitle) {
+  CHAT.docId = docId;
+  if (!CHAT.open) toggleChat();
+  const question = `Peux-tu me faire un résumé du document : "${docTitle}" ?`;
+  const input = document.getElementById("chat-input");
+  if (input) { input.value = question; }
+  chatSend();
+}
+
+function initChatBubble() {
+  const bubble = document.getElementById("chat-bubble");
+  if (bubble) bubble.style.display = "flex";
+}
+
 async function loadHomeCatCounts() {
   const cats = DB.cats.filter(c => c.apiId);
   if (!cats.length) return;
@@ -3009,6 +3116,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (me) {
     APP.user = mapUser(me);
     updateNavbarUser();
+    initChatBubble();
   }
 
   // Initialiser Google Sign-In

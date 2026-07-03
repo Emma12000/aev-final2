@@ -522,6 +522,19 @@ const API = {
     },
   },
 
+  chat: {
+    async send(messages, documentId) {
+      try {
+        const body = { messages };
+        if (documentId) body.documentId = documentId;
+        const res = await apiFetch("/chat", { method: "POST", body: JSON.stringify(body) });
+        return res?.data?.reply ?? null;
+      } catch (e) {
+        return e?.message || "Erreur de connexion au chatbot.";
+      }
+    },
+  },
+
   favorites: {
     async list() {
       try {
