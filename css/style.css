@@ -736,15 +736,16 @@ select.form-control { cursor: pointer; }
 
   /* Sections */
   .section { padding: 16px; }
-  .page-inner { padding: 14px; }
+  .page-inner { padding: 20px 14px 14px; }
   .topbar {
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 16px;
     padding: 12px 14px;
     position: sticky;
     top: 56px;
     z-index: 10;
   }
+  .topbar > .btn { width: 100%; justify-content: center; }
   .topbar-title { font-size: 16px; }
   .topbar-sub { font-size: 11px; }
 
