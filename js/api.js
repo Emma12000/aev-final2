@@ -320,6 +320,23 @@ const API = {
       }
     },
 
+    async count(params = {}) {
+      try {
+        const q    = new URLSearchParams({ ...params, limit: 1 }).toString();
+        const path = "/documents?" + q;
+        if (TokenStore._access) {
+          const res = await apiFetch(path);
+          return res?.data?.total ?? 0;
+        } else {
+          const res  = await fetch(API_BASE + path, { credentials: "include" });
+          const data = await res.json();
+          return data?.data?.total ?? 0;
+        }
+      } catch (_) {
+        return 0;
+      }
+    },
+
     async get(id) {
       try {
         const res  = await apiFetch("/documents/" + id);

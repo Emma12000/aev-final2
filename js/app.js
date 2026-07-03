@@ -2989,14 +2989,8 @@ async function loadHomeCatCounts() {
   await Promise.all(cats.map(async (cat) => {
     const el = document.getElementById(`cc-${cat.id}`);
     if (!el) return;
-    try {
-      const res  = await fetch(`${API_BASE}/documents?categoryId=${cat.apiId}&status=ACTIVE&limit=1`, { credentials: "include" });
-      const data = await res.json();
-      const total = data?.data?.total ?? 0;
-      el.textContent = `${total} document${total !== 1 ? "s" : ""}`;
-    } catch (_) {
-      el.textContent = "— documents";
-    }
+    const total = await API.documents.count({ categoryId: cat.apiId, status: "ACTIVE" });
+    el.textContent = `${total} document${total !== 1 ? "s" : ""}`;
   }));
 }
 
