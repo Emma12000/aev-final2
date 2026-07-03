@@ -1,0 +1,27 @@
+{
+  "name": "Portail Archives — Espoir & Vie",
+  "short_name": "AEV Archives",
+  "description": "Portail officiel des archives documentaires de l'Association Espoir & Vie",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "theme_color": "#083448",
+  "background_color": "#FFFFFF",
+  "lang": "fr",
+  "icons": [
+    {
+      "src": "assets/logo-aev.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/logo-aev.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["productivity", "utilities"]
+}

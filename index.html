@@ -9,6 +9,12 @@
 <meta property="og:title" content="Association Espoir & Vie — Portail des Archives">
 <meta property="og:description" content="Portail officiel des archives documentaires — espoiretvie.td">
 <meta property="og:type" content="website">
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#083448">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="AEV Archives">
+<link rel="apple-touch-icon" href="assets/logo-aev.png">
 <link rel="stylesheet" href="css/style.css">
 <link rel="stylesheet" href="assets/tabler-icons.min.css">
 <link rel="icon" href="assets/logo-aev.png" type="image/png">
@@ -559,5 +565,12 @@
 
 <script src="js/api.js"></script>
 <script src="js/app.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {});
+    });
+  }
+</script>
 </body>
 </html>
