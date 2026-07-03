@@ -1978,17 +1978,23 @@ async function renderAdmin(sec="dashboard") {
   }
 
   if (sec==="cats") {
+    c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+    const stats = await API.admin.stats();
+    const countMap = {};
+    (stats?.documents?.byCategory || []).forEach(b => { countMap[b.category.id] = b.count; });
+    APP._catCountMap = countMap;
+    const totalDocs = stats?.documents?.total ?? 0;
     const confCls  = { public:"tag-green", interne:"tag-blue", confidentiel:"tag-red" };
     const confLbl  = { public:"PUBLIC",    interne:"INTERNE",  confidentiel:"CONFIDENTIEL" };
     c.innerHTML = `
       <div class="topbar">
-        <div><div class="topbar-title">Catégories documentaires</div><div class="topbar-sub">${DB.cats.length} familles · ${DB.docs.length} documents archivés</div></div>
+        <div><div class="topbar-title">Catégories documentaires</div><div class="topbar-sub">${DB.cats.length} famille${DB.cats.length!==1?"s":""} · ${totalDocs} document${totalDocs!==1?"s":""} archivés</div></div>
         <button class="btn btn-primary btn-sm" onclick="openCatForm()"><i class="ti ti-folder-plus"></i>Nouvelle catégorie</button>
       </div>
       <div class="page-inner">
         <div class="grid-2 gap-14">
           ${DB.cats.map(cat=>{
-            const docCount = DB.docs.filter(d=>d.cat===cat.id).length;
+            const docCount = countMap[cat.apiId] ?? 0;
             return `
             <div class="card card-body" id="cat-card-${cat.id}">
               <div class="flex-b mb-10">
@@ -2527,7 +2533,7 @@ async function saveCat(id) {
 function deleteCat(id) {
   const cat = DB.cats.find(c=>c.id===id);
   if (!cat) return;
-  const count = DB.docs.filter(d=>d.cat===id).length;
+  const count = (APP._catCountMap && cat.apiId) ? (APP._catCountMap[cat.apiId] ?? 0) : 0;
   if (count>0) {
     openModal(`
       <p style="font-size:14px;color:var(--text-sec);line-height:1.7">
