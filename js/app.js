@@ -1584,6 +1584,19 @@ async function renderMember(sec="dashboard") {
             <button class="btn btn-outline btn-sm" style="align-self:flex-start" onclick="doChangePassword()"><i class="ti ti-lock"></i>Mettre à jour</button>
           </div>
         </div>
+        <div class="card card-body">
+          <div class="card-title mb-16">Préférences</div>
+          <div class="flex-c gap-12" style="justify-content:space-between;align-items:center">
+            <div>
+              <div style="font-size:14px;font-weight:600;color:var(--text)">Mode sombre</div>
+              <div style="font-size:12px;color:var(--text-sec);margin-top:2px">Basculer entre le thème clair et sombre</div>
+            </div>
+            <button onclick="toggleTheme()" title="Mode sombre / clair"
+              style="width:44px;height:44px;border-radius:var(--r-lg);border:2px solid var(--border);background:var(--bg-card);color:var(--text-sec);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:20px;flex-shrink:0;transition:all .2s">
+              <i class="${localStorage.getItem('aev-theme')==='dark'?'ti ti-sun':'ti ti-moon'}" id="dark-toggle-icon"></i>
+            </button>
+          </div>
+        </div>
       </div>`;
   }
 
