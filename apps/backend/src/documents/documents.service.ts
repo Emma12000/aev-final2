@@ -96,7 +96,7 @@ export class DocumentsService {
         orderBy: { createdAt: 'desc' },
         include: {
           category: { select: { id: true, name: true, slug: true } },
-          uploadedBy: { select: { id: true, fullName: true } },
+          uploadedBy: { select: { id: true, fullName: true, photoUrl: true } },
         },
       }),
       this.prisma.document.count({ where }),
@@ -110,7 +110,7 @@ export class DocumentsService {
       where: { id, status: { not: DocumentStatus.DELETED } },
       include: {
         category: { select: { id: true, name: true, slug: true } },
-        uploadedBy: { select: { id: true, fullName: true } },
+        uploadedBy: { select: { id: true, fullName: true, photoUrl: true } },
       },
     });
     if (!doc) throw new NotFoundException('Document introuvable.');
@@ -186,7 +186,7 @@ export class DocumentsService {
       },
       include: {
         category: { select: { id: true, name: true } },
-        uploadedBy: { select: { id: true, fullName: true } },
+        uploadedBy: { select: { id: true, fullName: true, photoUrl: true } },
       },
     });
 

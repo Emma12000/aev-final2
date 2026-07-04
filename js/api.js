@@ -108,6 +108,7 @@ function mapDoc(d) {
     date,
     dateStr,
     author:  d.uploadedBy?.fullName || "Admin AEV",
+    authorPhoto: d.uploadedBy?.photoUrl || null,
     access:  accMap[d.confidentiality] || "Public",
     dl:      d.downloadCount    || 0,
     views:   d.viewCount        || 0,

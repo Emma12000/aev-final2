@@ -479,7 +479,7 @@ async function renderDoc(id) {
             <span><i class="ti ti-file"></i> ${d.fmt} · ${d.size} · ${d.pages} pages</span>
             <span><i class="ti ti-download"></i> ${d.dl} téléchargements</span>
             <span><i class="ti ti-eye"></i> ${d.views} vues</span>
-            <span><i class="ti ti-user"></i> ${d.author}</span>
+            <span style="display:flex;align-items:center;gap:6px">${d.authorPhoto ? `<img src="${d.authorPhoto}" style="width:20px;height:20px;border-radius:50%;object-fit:cover;border:1px solid rgba(255,255,255,.3)">` : `<i class="ti ti-user"></i>`} ${esc(d.author)}</span>
           </div>
         </div>
         <div class="flex-c gap-8">
@@ -569,7 +569,9 @@ async function renderDoc(id) {
           <div class="card-title mb-10">Informations</div>
           ${[
             ["ti-folder","Catégorie",d.type],
-            ["ti-user","Déposé par",d.author],
+            ["ti-user","Déposé par", d.authorPhoto
+              ? `<span style="display:flex;align-items:center;gap:8px"><img src="${d.authorPhoto}" style="width:28px;height:28px;border-radius:50%;object-fit:cover;border:2px solid var(--border)">${esc(d.author)}</span>`
+              : esc(d.author)],
             ["ti-calendar","Date",d.dateStr],
             ["ti-lock-open","Accès",d.access],
             ["ti-file","Format",d.fmt+" · "+d.size],
@@ -2030,7 +2032,7 @@ async function renderAdmin(sec="dashboard") {
         <td style="max-width:240px"><div class="td-doc">${docIconHtml(d.fmt,"30px","36px")}<span style="overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600;font-size:13px" title="${esc(d.title)}">${esc(d.title)}</span></div></td>
         <td>${tagHtml(d.type)}</td>
         <td class="text-sec text-sm">${d.fmt}</td>
-        <td class="text-sec text-sm">${d.author}</td>
+        <td class="text-sec text-sm"><div style="display:flex;align-items:center;gap:6px">${d.authorPhoto?`<img src="${d.authorPhoto}" style="width:24px;height:24px;border-radius:50%;object-fit:cover;flex-shrink:0">`:""}<span>${esc(d.author)}</span></div></td>
         <td><span class="tag ${d.access==="Public"?"tag-pub":"tag-gray"}">${d.access}</span></td>
         <td class="text-sec text-sm">${d.dateStr}</td>
         <td id="status-${d.id}">${statusHtml(d.status)}</td>
