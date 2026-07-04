@@ -1304,7 +1304,7 @@ function renderAbout() {
             {id:"odan",        ini:"OD", nom:"Odan Debsikreo",              poste:"Conseiller",                       bg:"#1D4ED8"},
           ].map(m => {
             const photo = localStorage.getItem("bureau_photo_" + m.id);
-            const isAdmin = APP.user && (APP.user.role === "ADMINISTRATEUR" || APP.user.role === "SUPERVISEUR");
+            const isAdmin = APP.user && ["admin","superviseur"].includes(APP.user.role);
             const avatarInner = photo
               ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="${esc(m.nom)}">`
               : `<span style="font-size:20px;font-weight:800;color:white">${m.ini}</span>`;
