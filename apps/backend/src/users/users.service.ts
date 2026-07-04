@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, ConflictException } from '@nestjs/common';
+import { Injectable, NotFoundException, ConflictException, BadRequestException } from '@nestjs/common';
 import { Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
@@ -8,7 +8,7 @@ import { UpdateUserDto } from './dto/update-user.dto';
 
 const SELECT_USER = {
   id: true, email: true, fullName: true, role: true,
-  isActive: true, emailVerified: true, createdAt: true, lastLoginAt: true,
+  isActive: true, emailVerified: true, createdAt: true, lastLoginAt: true, photoUrl: true,
 } as const;
 
 @Injectable()
@@ -60,6 +60,20 @@ export class UsersService {
     // Soft delete : désactiver plutôt que supprimer
     await this.prisma.user.update({ where: { id }, data: { isActive: false } });
     await this.activity.log({ userId: actorId, action: 'USER_DELETE', resourceType: 'user', resourceId: id });
+  }
+
+  async updatePhoto(userId: string, photoUrl: string) {
+    if (!photoUrl.startsWith('data:image/')) {
+      throw new BadRequestException('Format de photo invalide.');
+    }
+    const sizeKB = Math.round(Buffer.byteLength(photoUrl, 'utf8') / 1024);
+    if (sizeKB > 250) throw new BadRequestException('Photo trop volumineuse (max 250 Ko).');
+    const user = await this.prisma.user.update({
+      where: { id: userId },
+      data: { photoUrl },
+      select: { id: true, photoUrl: true },
+    });
+    return user;
   }
 
   async stats() {

@@ -9,13 +9,20 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser, JwtPayload } from '../auth/decorators/current-user.decorator';
-
 @ApiTags('Users')
 @ApiBearerAuth('access-token')
 @Roles(Role.ADMINISTRATEUR)
 @Controller('users')
 export class UsersController {
   constructor(private readonly users: UsersService) {}
+
+  @Patch('me/photo')
+  @Roles(Role.LECTEUR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Mettre à jour sa photo de profil' })
+  updatePhoto(@CurrentUser() user: JwtPayload, @Body() body: { photoUrl: string }) {
+    return this.users.updatePhoto(user.sub, body.photoUrl);
+  }
 
   @Get()
   @ApiOperation({ summary: 'Liste des utilisateurs (admin)' })

@@ -206,7 +206,7 @@ export class AuthService {
     const user = await this.prisma.user.update({
       where: { id: userId },
       data: { fullName: fullName.trim() },
-      select: { id: true, email: true, fullName: true, role: true, emailVerified: true },
+      select: { id: true, email: true, fullName: true, role: true, emailVerified: true, photoUrl: true },
     });
     return user;
   }
@@ -214,7 +214,7 @@ export class AuthService {
   async getProfile(userId: string) {
     const user = await this.prisma.user.findUniqueOrThrow({
       where: { id: userId },
-      select: { id: true, email: true, fullName: true, role: true, createdAt: true, lastLoginAt: true, emailVerified: true },
+      select: { id: true, email: true, fullName: true, role: true, createdAt: true, lastLoginAt: true, emailVerified: true, photoUrl: true },
     });
     return user;
   }

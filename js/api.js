@@ -68,6 +68,7 @@ function mapUser(u) {
     role:      roleMap[u.role] || "lecteur",
     roleLabel: roleLbl[u.role] || "Lecteur",
     email:     u.email,
+    photoUrl:  u.photoUrl || null,
     docs:      0,
     status:        u.isActive === false ? "inactive" : (u.emailVerified === false ? "new" : "active"),
     emailVerified: u.emailVerified === true,
@@ -243,6 +244,14 @@ const API = {
       const res = await apiFetch("/auth/profile", {
         method: "PATCH",
         body: JSON.stringify({ fullName }),
+      });
+      return res?.data || null;
+    },
+
+    async updatePhoto(photoUrl) {
+      const res = await apiFetch("/users/me/photo", {
+        method: "PATCH",
+        body: JSON.stringify({ photoUrl }),
       });
       return res?.data || null;
     },

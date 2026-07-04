@@ -156,6 +156,17 @@ function esc(str) {
   return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 
+function avatarHtml(photoUrl, name, role, size=36) {
+  const colorMap = { ADMINISTRATEUR:"var(--red)", SUPERVISEUR:"#F97316", AGENT:"var(--blue)", CONSULTANT:"var(--teal,#0d9488)", LECTEUR:"var(--text-sec)" };
+  const bg = colorMap[role] || "var(--blue)";
+  const ini = (name||"?").split(" ").map(w=>w[0]||"").join("").substring(0,2).toUpperCase();
+  const fs = Math.round(size * 0.38);
+  if (photoUrl) {
+    return `<img src="${photoUrl}" style="width:${size}px;height:${size}px;border-radius:50%;object-fit:cover;flex-shrink:0;border:2px solid var(--border)" alt="${esc(name)}">`;
+  }
+  return `<div class="u-avatar" style="width:${size}px;height:${size}px;font-size:${fs}px;flex-shrink:0;background:${bg}">${ini}</div>`;
+}
+
 function docIconHtml(fmt, sz="40px", h="46px") {
   const map = { PDF:["ti-file-type-pdf","di-pdf"], Word:["ti-file-type-doc","di-doc"], Excel:["ti-file-spreadsheet","di-xls"] };
   const [ic, cls] = map[fmt] || ["ti-file","di-pdf"];
@@ -701,6 +712,47 @@ function doFacebookLogin() {
   }, { scope: 'email,public_profile' });
 }
 
+async function handlePhotoUpload(input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) { toast("Seules les images sont acceptées.", "err"); return; }
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    const img = new Image();
+    img.onload = async () => {
+      // resize to max 200×200
+      const size = 200;
+      const canvas = document.createElement("canvas");
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      const scale = Math.max(size / img.width, size / img.height);
+      const w = img.width * scale, h = img.height * scale;
+      ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+      const photoUrl = canvas.toDataURL("image/jpeg", 0.82);
+
+      const sizeKB = Math.round(photoUrl.length * 0.75 / 1024);
+      if (sizeKB > 250) { toast("Image trop volumineuse après compression.", "err"); return; }
+
+      try {
+        await API.auth.updatePhoto(photoUrl);
+        APP.user.photoUrl = photoUrl;
+        // update avatar in profile page
+        const wrap = document.getElementById("profile-avatar-wrap");
+        if (wrap) wrap.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover" alt="Photo de profil">`;
+        // update navbar avatar
+        updateNavbarUser();
+        toast("Photo de profil mise à jour.", "ok");
+      } catch(e) {
+        toast(e.message || "Erreur lors de la mise à jour.", "err");
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = "";
+}
+
 async function doSaveProfile() {
   const prenom = document.getElementById("profile-prenom")?.value.trim();
   const nom    = document.getElementById("profile-nom")?.value.trim();
@@ -855,7 +907,9 @@ function updateNavbarUser() {
       <div class="user-menu-wrap" id="user-menu-wrap" style="display:flex;align-items:center;gap:6px">
         ${isAdmin ? `<button class="nav-bell" id="nav-bell" onclick="toggleBellMenu(event)" title="Notifications en attente"><i class="ti ti-bell"></i><span class="nav-bell-dot" id="bell-badge" style="display:none"></span></button>` : ""}
         <div class="navbar-user" onclick="toggleUserMenu(event)">
-          <div class="navbar-user-avatar">${APP.user.initials}</div>
+          ${APP.user.photoUrl
+            ? `<img src="${APP.user.photoUrl}" class="navbar-user-avatar" style="object-fit:cover;border-radius:50%;padding:0" alt="${esc(APP.user.name)}">`
+            : `<div class="navbar-user-avatar">${APP.user.initials}</div>`}
           <span class="navbar-user-name">${APP.user.name.split(" ")[0]}</span>
           <i class="ti ti-chevron-down" style="font-size:12px;color:rgba(255,255,255,.5)"></i>
         </div>
@@ -867,7 +921,9 @@ function updateNavbarUser() {
       const roleLbl = { admin:"Administrateur", superviseur:"Superviseur", member:"Agent", consultant:"Consultant", lecteur:"Lecteur" }[APP.user.role] || "Membre";
       drawerUser.innerHTML = `
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
-          <div class="navbar-user-avatar">${APP.user.initials}</div>
+          ${APP.user.photoUrl
+            ? `<img src="${APP.user.photoUrl}" class="navbar-user-avatar" style="object-fit:cover;border-radius:50%;padding:0" alt="${esc(APP.user.name)}">`
+            : `<div class="navbar-user-avatar">${APP.user.initials}</div>`}
           <div><div style="font-size:13px;font-weight:700;color:white">${APP.user.name.split(" ")[0]}</div><div style="font-size:11px;color:rgba(255,255,255,.5)">${roleLbl}</div></div>
         </div>
         ${isAdmin ? `<button class="nav-drawer-link" style="padding:10px 0" onclick="navigate('admin');closeMobileNav()"><i class="ti ti-settings"></i>Espace Admin</button>` : `<button class="nav-drawer-link" style="padding:10px 0" onclick="navigate('member');closeMobileNav()"><i class="ti ti-layout-dashboard"></i>Espace Membre</button>`}
@@ -1366,7 +1422,19 @@ async function renderMember(sec="dashboard") {
       <div class="page-inner" style="max-width:580px">
         <div class="card card-body mb-14">
           <div class="flex-c gap-16 mb-20">
-            <div style="width:68px;height:68px;border-radius:50%;background:${u.role==="admin"?"var(--red)":"var(--blue)"};display:flex;align-items:center;justify-content:center;font-size:24px;font-weight:800;color:white;flex-shrink:0">${u.initials||"?"}</div>
+            <div style="position:relative;flex-shrink:0">
+              <div id="profile-avatar-wrap" style="width:72px;height:72px;border-radius:50%;overflow:hidden;border:3px solid var(--border)">
+                ${u.photoUrl
+                  ? `<img id="profile-photo-img" src="${u.photoUrl}" style="width:100%;height:100%;object-fit:cover" alt="${esc(u.name)}">`
+                  : `<div style="width:72px;height:72px;background:${u.role==="admin"?"var(--red)":"var(--blue)"};display:flex;align-items:center;justify-content:center;font-size:26px;font-weight:800;color:white">${u.initials||"?"}</div>`
+                }
+              </div>
+              <button onclick="document.getElementById('photo-file-input').click()" title="Changer la photo"
+                style="position:absolute;bottom:-4px;right:-4px;width:26px;height:26px;border-radius:50%;background:var(--blue);border:2px solid var(--bg);color:white;display:flex;align-items:center;justify-content:center;cursor:pointer;padding:0">
+                <i class="ti ti-camera" style="font-size:13px"></i>
+              </button>
+              <input type="file" id="photo-file-input" accept="image/*" style="display:none" onchange="handlePhotoUpload(this)">
+            </div>
             <div><div style="font-size:18px;font-weight:700;color:var(--text)">${esc(u.name||"Utilisateur")}</div><div class="doc-meta">${roleLbl} · ${esc(u.email||"")}</div><span class="tag ${roleCls} mt-4" style="display:inline-block">${roleLbl}</span></div>
           </div>
           <div class="grid-2 gap-12">
@@ -2015,7 +2083,7 @@ async function renderAdmin(sec="dashboard") {
       <div class="card card-body" style="padding:18px 20px;position:relative;border:1px solid var(--border);">
         ${u.isOnline ? `<span style="position:absolute;top:14px;right:14px;background:#22c55e;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.5px">● EN LIGNE</span>` : ""}
         <div class="flex-c gap-12" style="margin-bottom:14px">
-          <div class="u-avatar" style="width:46px;height:46px;font-size:16px;flex-shrink:0;background:${avatarColor(u.role)}">${initials(u.fullName)}</div>
+          ${avatarHtml(u.photoUrl, u.fullName, u.role, 46)}
           <div style="min-width:0">
             <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.fullName)}</div>
             <div style="font-size:11px;color:var(--text-sec);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.email)}</div>

@@ -57,7 +57,7 @@ export class ActivityService {
   async getUsersStats() {
     const [users, logs] = await Promise.all([
       this.prisma.user.findMany({
-        select: { id: true, fullName: true, email: true, role: true, isActive: true, lastLoginAt: true, createdAt: true },
+        select: { id: true, fullName: true, email: true, role: true, isActive: true, lastLoginAt: true, createdAt: true, photoUrl: true },
         orderBy: { fullName: 'asc' },
       }),
       this.prisma.activityLog.findMany({
@@ -119,6 +119,7 @@ export class ActivityService {
         email: user.email,
         role: user.role,
         isActive: user.isActive,
+        photoUrl: user.photoUrl ?? null,
         isOnline,
         lastActivity,
         stats: { views, downloads, uploads, timeOnPlatformMs: Math.round(totalMs) },
