@@ -60,7 +60,7 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role },
+      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, photoUrl: user.photoUrl ?? null },
     };
   }
 
@@ -115,7 +115,7 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, emailVerified: false },
+      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, emailVerified: false, photoUrl: null },
     };
   }
 
