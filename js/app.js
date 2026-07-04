@@ -787,9 +787,17 @@ function handleBureauPhotoUpload(id, input) {
       const photoUrl = canvas.toDataURL("image/jpeg", 0.82);
       try {
         await API.settings.updateBureauPhoto(id, photoUrl);
-        // mise à jour immédiate de l'avatar dans le DOM sans recharger toute la page
+        // mise à jour immédiate de l'avatar bureau dans le DOM
         const wrap = document.getElementById("bureau-avatar-" + id);
         if (wrap) wrap.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="">`;
+        // si le backend a synchronisé le photoUrl du compte utilisateur courant, on met à jour la navbar
+        try {
+          const me = await API.auth.me();
+          if (me && me.photoUrl) {
+            APP.user.photoUrl = me.photoUrl;
+            updateNavbarUser();
+          }
+        } catch (_) {}
         toast("Photo mise à jour.", "ok");
       } catch (err) {
         toast(err.message || "Erreur lors de la mise à jour.", "err");
