@@ -156,6 +156,22 @@ function esc(str) {
   return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#39;");
 }
 
+function initTheme() {
+  const saved = localStorage.getItem("aev-theme") || "light";
+  document.documentElement.setAttribute("data-theme", saved);
+  const icon = document.getElementById("dark-toggle-icon");
+  if (icon) icon.className = saved === "dark" ? "ti ti-sun" : "ti ti-moon";
+}
+
+function toggleTheme() {
+  const current = document.documentElement.getAttribute("data-theme") || "light";
+  const next = current === "dark" ? "light" : "dark";
+  document.documentElement.setAttribute("data-theme", next);
+  localStorage.setItem("aev-theme", next);
+  const icon = document.getElementById("dark-toggle-icon");
+  if (icon) icon.className = next === "dark" ? "ti ti-sun" : "ti ti-moon";
+}
+
 function avatarHtml(photoUrl, name, role, size=36) {
   const colorMap = { ADMINISTRATEUR:"var(--red)", SUPERVISEUR:"#F97316", AGENT:"var(--blue)", CONSULTANT:"var(--teal,#0d9488)", LECTEUR:"var(--text-sec)" };
   const bg = colorMap[role] || "var(--blue)";
@@ -3259,6 +3275,8 @@ async function loadHomeCatCounts() {
 
 //  INIT
 document.addEventListener("DOMContentLoaded", async () => {
+  initTheme();
+
   // Charger les catégories réelles depuis l'API
   const apiCats = await API.categories.list();
   if (apiCats.length) DB.cats = apiCats;

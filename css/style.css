@@ -39,6 +39,82 @@
   --t:     .2s var(--ease);
 }
 
+/* ═══════════════════════════════════════════════
+   MODE SOMBRE
+═══════════════════════════════════════════════ */
+html[data-theme="dark"] {
+  --white:       #112233;
+  --gray-50:     #0C1A26;
+  --gray-100:    #112233;
+  --gray-200:    #1A3348;
+  --gray-400:    #6B9AAD;
+  --gray-600:    #8BBCCC;
+  --gray-800:    #C8DDE8;
+  --text:        #D8EEF6;
+  --text-sec:    #7AAABB;
+  --border:      #1E3D52;
+  --border-lt:   #17303F;
+  --blue-light:  #0A2030;
+  --blue-mid:    #1A4A60;
+  --red-light:   #2A1015;
+  --shadow-sm:   0 1px 3px rgba(0,0,0,.35);
+  --shadow-md:   0 4px 16px rgba(0,0,0,.45);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,.55);
+  --shadow-xl:   0 16px 48px rgba(0,0,0,.60);
+}
+
+html[data-theme="dark"] body         { background: var(--gray-50); }
+html[data-theme="dark"] .card        { background: var(--white); border-color: var(--border); }
+html[data-theme="dark"] .topbar      { background: var(--white); border-color: var(--border); }
+html[data-theme="dark"] .form-control { background: #0C1A26; border-color: var(--border); color: var(--text); }
+html[data-theme="dark"] .form-control:focus { border-color: var(--blue); background: #0C1A26; }
+html[data-theme="dark"] .table thead th { background: #0C1A26; border-color: var(--border); }
+html[data-theme="dark"] .table td,
+html[data-theme="dark"] .table th    { border-color: var(--border); }
+html[data-theme="dark"] .table tr:hover td { background: rgba(41,171,226,.06); }
+html[data-theme="dark"] .table-wrap  { border-color: var(--border); }
+html[data-theme="dark"] .stat-card   { background: var(--white); border-color: var(--border); }
+html[data-theme="dark"] .modal-box   { background: #112233; border-color: var(--border); }
+html[data-theme="dark"] .user-dropdown { background: #112233; border-color: var(--border); }
+html[data-theme="dark"] .user-dropdown-item:hover { background: #0C1A26; }
+html[data-theme="dark"] .search-wrap { background: #112233; border-color: var(--border); }
+html[data-theme="dark"] .doc-card    { background: var(--white); border-color: var(--border); }
+html[data-theme="dark"] .auth-box    { background: #112233; }
+html[data-theme="dark"] select option { background: #112233; color: var(--text); }
+html[data-theme="dark"] .tag-gray    { background: #1A3040; color: #8BBCCC; }
+html[data-theme="dark"] .tag-blue    { background: #0A2535; color: #5BB8D8; }
+html[data-theme="dark"] .tag-green   { background: #0A2010; color: #4CAF70; }
+html[data-theme="dark"] .tag-orange  { background: #251505; color: #F8A055; }
+html[data-theme="dark"] .tag-red     { background: #250808; color: #F06070; }
+html[data-theme="dark"] .tag-cyan    { background: #081E22; color: #4ECDC4; }
+html[data-theme="dark"] .tag-pub     { background: #0A1828; color: #60A8D0; }
+html[data-theme="dark"] .tag-purple  { background: #180A28; color: #B090D8; }
+html[data-theme="dark"] #chat-panel  { background: #112233; border-color: var(--border); }
+html[data-theme="dark"] .chat-head   { background: var(--blue-deep); }
+html[data-theme="dark"] .chat-messages { background: #0C1A26; }
+html[data-theme="dark"] .chat-foot   { background: #112233; border-color: var(--border); }
+html[data-theme="dark"] .chat-msg.user .chat-msg-bubble { background: var(--blue-dark); color: white; }
+html[data-theme="dark"] .chat-msg.bot .chat-msg-bubble  { background: #1A3040; color: var(--text); }
+html[data-theme="dark"] .home-hero   { background: linear-gradient(135deg, #061520 0%, #0A2538 60%, #0C1D30 100%); }
+html[data-theme="dark"] .hero-search { background: rgba(10,25,40,.85); border-color: rgba(41,171,226,.3); }
+html[data-theme="dark"] .hero-search input { background: transparent; color: var(--text); }
+html[data-theme="dark"] .hero-search input::placeholder { color: #5A8A9A; }
+
+/* Transition douce */
+body, .card, .topbar, .form-control, .stat-card, .table td, .table th,
+.modal-box, .user-dropdown, .doc-card, .sidebar-notif-badge {
+  transition: background-color .25s ease, border-color .25s ease, color .15s ease;
+}
+
+/* Bouton toggle dark mode */
+.dark-toggle {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,.10); border: 1px solid rgba(255,255,255,.18);
+  color: white; display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: var(--t); font-size: 16px; flex-shrink: 0;
+}
+.dark-toggle:hover { background: rgba(255,255,255,.20); }
+
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html { scroll-behavior: smooth; font-size: 15px; }
 body { font-family: var(--font); background: var(--gray-50); color: var(--text); -webkit-font-smoothing: antialiased; min-height: 100vh; }
