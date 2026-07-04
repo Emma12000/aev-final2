@@ -1260,6 +1260,54 @@ function renderAbout() {
         </div>
       </div>
 
+      <!-- ÉQUIPE -->
+      <div>
+        <h2 class="section-title"><i class="ti ti-crown" style="color:var(--blue);margin-right:8px"></i>Bureau Exécutif</h2>
+        <div class="grid-3 gap-14">
+          ${[
+            ["NE","NANMADJI Emmanuel","Administrateur principal","Responsable de la gestion stratégique et de la direction générale de l'association.","var(--red)"],
+            ["AEV","Secrétaire Général","Secrétaire Général","Coordination administrative, gestion des documents officiels et procès-verbaux.","var(--blue)"],
+            ["AEV","Trésorier","Trésorier","Gestion financière, suivi budgétaire et transparence comptable de l'association.","#16A34A"],
+          ].map(([ini,nom,poste,desc,bg])=>`
+            <div class="card card-body" style="text-align:center;padding:24px 18px">
+              <div style="width:64px;height:64px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:white;margin:0 auto 14px;border:3px solid var(--border)">${ini}</div>
+              <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">${nom}</div>
+              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-bottom:10px">${poste}</div>
+              <p style="font-size:12px;color:var(--text-sec);line-height:1.7">${desc}</p>
+            </div>`).join("")}
+        </div>
+      </div>
+
+      <!-- CONTACT -->
+      <div>
+        <h2 class="section-title"><i class="ti ti-mail" style="color:var(--red);margin-right:8px"></i>Nous contacter</h2>
+        <div class="grid-2 gap-14">
+          <div class="card card-body" style="border-left:4px solid var(--blue)">
+            <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:16px;display:flex;align-items:center;gap:8px"><i class="ti ti-info-circle" style="color:var(--blue)"></i>Coordonnées officielles</div>
+            ${[
+              ["ti-map-pin","Adresse","Avenue du 1er Août — N'Djaména, République du Tchad"],
+              ["ti-mail","Email","association@espoiretvie.td"],
+              ["ti-globe","Site web","espoiretvie.td"],
+              ["ti-clock","Horaires","Lundi – Vendredi, 8h00 – 17h00"],
+            ].map(([ic,lbl,val])=>`
+              <div class="flex-c gap-12" style="padding:10px 0;border-bottom:1px solid var(--border-lt)">
+                <div style="width:36px;height:36px;border-radius:var(--r-md);background:var(--blue-light);display:flex;align-items:center;justify-content:center;font-size:17px;color:var(--blue);flex-shrink:0"><i class="ti ${ic}"></i></div>
+                <div><div style="font-size:11px;color:var(--text-sec);font-weight:600;text-transform:uppercase;letter-spacing:.05em">${lbl}</div><div style="font-size:13px;font-weight:600;color:var(--text);margin-top:2px">${val}</div></div>
+              </div>`).join("")}
+          </div>
+          <div class="card card-body" style="background:linear-gradient(135deg,var(--blue-deep),var(--blue-darker));border:none;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;gap:16px;padding:32px">
+            <div style="width:56px;height:56px;border-radius:50%;background:rgba(255,255,255,.12);display:flex;align-items:center;justify-content:center;font-size:26px;color:white"><i class="ti ti-heart-handshake"></i></div>
+            <div style="color:white">
+              <div style="font-size:18px;font-weight:700;margin-bottom:8px">Soutenir AEV</div>
+              <p style="font-size:13px;color:rgba(255,255,255,.65);line-height:1.7">Votre soutien permet à l'association de poursuivre ses missions auprès des communautés vulnérables.</p>
+            </div>
+            <button class="btn btn-white" style="font-weight:700" onclick="toast('Lien de don bientôt disponible — merci pour votre générosité !','info')">
+              <i class="ti ti-currency-dollar"></i>Faire un don
+            </button>
+          </div>
+        </div>
+      </div>
+
       <!-- CTA -->
       <div style="background:linear-gradient(135deg,var(--blue-deep),var(--blue-darker));border-radius:var(--r-2xl);padding:36px;text-align:center;box-shadow:var(--shadow-xl)">
         <h3 style="font-family:var(--font-display);font-size:22px;color:white;margin-bottom:10px">Rejoignez l'Association Espoir &amp; Vie</h3>
