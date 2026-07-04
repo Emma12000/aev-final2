@@ -520,6 +520,15 @@ const API = {
         return [];
       }
     },
+
+    async usersStats() {
+      try {
+        const res = await apiFetch("/activity/users-stats");
+        return res?.data || [];
+      } catch (_) {
+        return [];
+      }
+    },
   },
 
   chat: {

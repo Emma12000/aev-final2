@@ -25,6 +25,13 @@ export class ActivityController {
     return this.activity.findByUser(user.sub, page, Math.min(limit, 100));
   }
 
+  @Get('users-stats')
+  @Roles(Role.ADMINISTRATEUR, Role.SUPERVISEUR)
+  @ApiOperation({ summary: 'Statistiques d\'activité par utilisateur (admin/superviseur)' })
+  usersStats() {
+    return this.activity.getUsersStats();
+  }
+
   @Get()
   @Roles(Role.ADMINISTRATEUR, Role.SUPERVISEUR)
   @ApiOperation({ summary: 'Tous les logs d\'activité (admin/superviseur)' })

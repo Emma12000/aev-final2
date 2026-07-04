@@ -1978,6 +1978,94 @@ async function renderAdmin(sec="dashboard") {
       </div>`;
   }
 
+  if (sec==="user-activity") {
+    c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
+    const users = await API.activity.usersStats().catch(() => []);
+
+    const roleCls  = { ADMINISTRATEUR:"tag-red", SUPERVISEUR:"tag-orange", AGENT:"tag-blue", CONSULTANT:"tag-cyan", LECTEUR:"tag-gray" };
+    const roleLabel = { ADMINISTRATEUR:"Admin", SUPERVISEUR:"Superviseur", AGENT:"Agent", CONSULTANT:"Consultant", LECTEUR:"Lecteur" };
+
+    function fmtTime(ms) {
+      if (!ms || ms < 60000) return "< 1 min";
+      const h = Math.floor(ms / 3600000);
+      const m = Math.floor((ms % 3600000) / 60000);
+      return h > 0 ? `${h}h ${m}min` : `${m} min`;
+    }
+    function fmtRelative(iso) {
+      if (!iso) return "—";
+      const diff = Date.now() - new Date(iso).getTime();
+      if (diff < 60000)    return "à l'instant";
+      if (diff < 3600000)  return `il y a ${Math.floor(diff/60000)} min`;
+      if (diff < 86400000) return `il y a ${Math.floor(diff/3600000)} h`;
+      return new Date(iso).toLocaleDateString("fr-FR", { day:"numeric", month:"short" });
+    }
+    function initials(name) {
+      return (name||"?").split(" ").map(w=>w[0]||"").join("").substring(0,2).toUpperCase();
+    }
+    function avatarColor(role) {
+      const m = { ADMINISTRATEUR:"var(--red)", SUPERVISEUR:"#F97316", AGENT:"var(--blue)", CONSULTANT:"var(--teal,#0d9488)", LECTEUR:"var(--text-sec)" };
+      return m[role] || "var(--blue)";
+    }
+
+    const online  = users.filter(u => u.isOnline);
+    const offline = users.filter(u => !u.isOnline);
+    const sorted  = [...online, ...offline];
+
+    const cardHtml = u => `
+      <div class="card card-body" style="padding:18px 20px;position:relative;border:1px solid var(--border);">
+        ${u.isOnline ? `<span style="position:absolute;top:14px;right:14px;background:#22c55e;color:#fff;font-size:10px;font-weight:700;padding:2px 8px;border-radius:20px;letter-spacing:.5px">● EN LIGNE</span>` : ""}
+        <div class="flex-c gap-12" style="margin-bottom:14px">
+          <div class="u-avatar" style="width:46px;height:46px;font-size:16px;flex-shrink:0;background:${avatarColor(u.role)}">${initials(u.fullName)}</div>
+          <div style="min-width:0">
+            <div style="font-weight:700;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.fullName)}</div>
+            <div style="font-size:11px;color:var(--text-sec);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${esc(u.email)}</div>
+            <span class="tag ${roleCls[u.role]||"tag-gray"}" style="margin-top:4px;font-size:10px">${roleLabel[u.role]||u.role}</span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-bottom:12px">
+          <div style="text-align:center;background:var(--bg-alt,var(--surface));border-radius:8px;padding:8px 4px">
+            <div style="font-size:18px;font-weight:800;color:var(--blue)">${u.stats.views}</div>
+            <div style="font-size:10px;color:var(--text-sec);margin-top:2px">Consultations</div>
+          </div>
+          <div style="text-align:center;background:var(--bg-alt,var(--surface));border-radius:8px;padding:8px 4px">
+            <div style="font-size:18px;font-weight:800;color:var(--green,#16a34a)">${u.stats.downloads}</div>
+            <div style="font-size:10px;color:var(--text-sec);margin-top:2px">Téléch.</div>
+          </div>
+          <div style="text-align:center;background:var(--bg-alt,var(--surface));border-radius:8px;padding:8px 4px">
+            <div style="font-size:18px;font-weight:800;color:var(--amber,#d97706)">${u.stats.uploads}</div>
+            <div style="font-size:10px;color:var(--text-sec);margin-top:2px">Dépôts</div>
+          </div>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center;font-size:11px;color:var(--text-sec);border-top:1px solid var(--border);padding-top:10px">
+          <span><i class="ti ti-clock" style="margin-right:4px"></i>Temps : <strong style="color:var(--text)">${fmtTime(u.stats.timeOnPlatformMs)}</strong></span>
+          <span>Dernière activité : <strong style="color:var(--text)">${fmtRelative(u.lastActivity)}</strong></span>
+        </div>
+      </div>`;
+
+    const totalOnline   = online.length;
+    const totalViews    = users.reduce((s,u)=>s+u.stats.views,0);
+    const totalDownloads= users.reduce((s,u)=>s+u.stats.downloads,0);
+    const totalUploads  = users.reduce((s,u)=>s+u.stats.uploads,0);
+
+    c.innerHTML = `
+      <div class="topbar">
+        <div><div class="topbar-title">Activité des membres</div><div class="topbar-sub">${users.length} membre${users.length!==1?"s":""} · ${totalOnline} en ligne</div></div>
+        <button class="btn btn-outline btn-sm" onclick="renderAdmin('user-activity')"><i class="ti ti-refresh"></i>Actualiser</button>
+      </div>
+      <div class="page-inner">
+        <div class="stats-grid mb-20" style="grid-template-columns:repeat(4,1fr)">
+          <div class="stat-card"><div class="stat-val" style="color:var(--blue)">${totalOnline}</div><div class="stat-label">En ligne</div></div>
+          <div class="stat-card"><div class="stat-val">${totalViews}</div><div class="stat-label">Consultations</div></div>
+          <div class="stat-card"><div class="stat-val" style="color:var(--green,#16a34a)">${totalDownloads}</div><div class="stat-label">Téléchargements</div></div>
+          <div class="stat-card"><div class="stat-val" style="color:var(--amber,#d97706)">${totalUploads}</div><div class="stat-label">Dépôts</div></div>
+        </div>
+        ${sorted.length
+          ? `<div class="grid-3">${sorted.map(cardHtml).join("")}</div>`
+          : `<div style="text-align:center;padding:60px;color:var(--text-sec)"><i class="ti ti-users" style="font-size:40px;display:block;margin-bottom:12px;opacity:.3"></i>Aucun membre trouvé.</div>`
+        }
+      </div>`;
+  }
+
   if (sec==="cats") {
     c.innerHTML = `<div style="display:flex;align-items:center;justify-content:center;height:300px"><i class="ti ti-loader-2" style="font-size:36px;color:var(--blue);animation:spin 1s linear infinite"></i></div>`;
     const stats = await API.admin.stats();
