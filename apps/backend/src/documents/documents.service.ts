@@ -274,7 +274,7 @@ export class DocumentsService {
 
     const [users, category] = await Promise.all([
       this.prisma.user.findMany({
-        where: { id: { not: doc.uploadedById }, role: { in: rolesToNotify }, email: { not: null } },
+        where: { id: { not: doc.uploadedById }, role: { in: rolesToNotify } },
         select: { email: true, fullName: true },
       }),
       this.prisma.documentCategory.findUnique({ where: { id: doc.categoryId }, select: { name: true } }),
