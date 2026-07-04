@@ -13,6 +13,7 @@ import { AccessModule } from './access/access.module';
 import { FavoritesModule } from './favorites/favorites.module';
 import { AdminModule } from './admin/admin.module';
 import { ChatModule } from './chat/chat.module';
+import { SettingsModule } from './settings/settings.module';
 import { HealthController } from './health/health.controller';
 
 @Module({
@@ -30,6 +31,7 @@ import { HealthController } from './health/health.controller';
     FavoritesModule,
     AdminModule,
     ChatModule,
+    SettingsModule,
   ],
   controllers: [HealthController],
 })

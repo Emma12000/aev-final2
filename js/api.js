@@ -571,4 +571,20 @@ const API = {
       return apiFetch("/favorites/" + documentId, { method: "DELETE" });
     },
   },
+
+  settings: {
+    async bureauPhotos() {
+      try {
+        return await apiFetch("/settings/bureau-photos") || {};
+      } catch (_) {
+        return {};
+      }
+    },
+    async updateBureauPhoto(id, photoUrl) {
+      return apiFetch("/settings/bureau-photo/" + id, {
+        method: "PATCH",
+        body: JSON.stringify({ photoUrl }),
+      });
+    },
+  },
 };

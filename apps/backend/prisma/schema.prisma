@@ -202,6 +202,14 @@ model Favorite {
   @@map("favorites")
 }
 
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+
+  @@map("site_settings")
+}
+
 model ActivityLog {
   id           String   @id @default(uuid())
   userId       String

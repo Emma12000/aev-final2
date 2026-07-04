@@ -776,7 +776,7 @@ function handleBureauPhotoUpload(id, input) {
   const reader = new FileReader();
   reader.onload = (e) => {
     const img = new Image();
-    img.onload = () => {
+    img.onload = async () => {
       const size = 200;
       const canvas = document.createElement("canvas");
       canvas.width = size; canvas.height = size;
@@ -785,9 +785,15 @@ function handleBureauPhotoUpload(id, input) {
       const w = img.width * scale, h = img.height * scale;
       ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
       const photoUrl = canvas.toDataURL("image/jpeg", 0.82);
-      localStorage.setItem("bureau_photo_" + id, photoUrl);
-      navigate("about");
-      toast("Photo mise à jour.", "ok");
+      try {
+        await API.settings.updateBureauPhoto(id, photoUrl);
+        // mise à jour immédiate de l'avatar dans le DOM sans recharger toute la page
+        const wrap = document.getElementById("bureau-avatar-" + id);
+        if (wrap) wrap.innerHTML = `<img src="${photoUrl}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="">`;
+        toast("Photo mise à jour.", "ok");
+      } catch (err) {
+        toast(err.message || "Erreur lors de la mise à jour.", "err");
+      }
     };
     img.src = e.target.result;
   };
@@ -1077,7 +1083,7 @@ function closeUserMenu() {
 }
 
 //  PAGE : À PROPOS
-function renderAbout() {
+async function renderAbout() {
   const missions = [
     ["1","ti-speakerphone","Sensibilisation","Sensibiliser les populations sur les questions de santé et de bien-être"],
     ["2","ti-heart-handshake","Appui aux vulnérables","Apporter un appui technique et financier aux personnes et familles vulnérables"],
@@ -1290,39 +1296,43 @@ function renderAbout() {
       <div>
         <h2 class="section-title"><i class="ti ti-crown" style="color:var(--blue);margin-right:8px"></i>Bureau Exécutif</h2>
         <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px">
-          ${[
-            {id:"anne_marie",  ini:"AH", nom:"Dr Anne Marie Achta Halina", poste:"Présidente",                       bg:"var(--red)"},
-            {id:"tiandje",     ini:"TD", nom:"Tiandje Béré Didier",         poste:"Secrétaire Général",               bg:"var(--blue)"},
-            {id:"hadje",       ini:"HI", nom:"Hadje Hawa Issa Damnalet",    poste:"Secrétaire Général Adjointe",      bg:"#7C3AED"},
-            {id:"haoua",       ini:"HD", nom:"Haoua Dassidi",               poste:"Trésorière Générale",              bg:"#16A34A"},
-            {id:"fatime",      ini:"FP", nom:"Fatimé Patcha",               poste:"Trésorière Adjointe",              bg:"#D97706"},
-            {id:"damba",       ini:"DF", nom:"Dr Damba Dyssou Ferdinand",   poste:"Chargé des Relations Extérieures", bg:"#0891B2"},
-            {id:"nanmadji",    ini:"NE", nom:"Nanmadji Emmanuel",           poste:"Chargé de Communication",         bg:"#E11D48"},
-            {id:"clemence",    ini:"CM", nom:"Clémence Mbakoyo",            poste:"Responsable des Projets",          bg:"#9D174D"},
-            {id:"nkouka",      ini:"NA", nom:"Nkouka Hadja Adama",          poste:"Conseillère",                      bg:"#065F46"},
-            {id:"min_kitoko",  ini:"MK", nom:"Min Kitoko Gata Ngoulou",     poste:"Conseillère",                      bg:"#4338CA"},
-            {id:"odan",        ini:"OD", nom:"Odan Debsikreo",              poste:"Conseiller",                       bg:"#1D4ED8"},
-          ].map(m => {
-            const photo = localStorage.getItem("bureau_photo_" + m.id);
+          ${await (async () => {
+            const MEMBRES = [
+              {id:"anne_marie",  ini:"AH", nom:"Dr Anne Marie Achta Halina", poste:"Présidente",                       bg:"var(--red)"},
+              {id:"tiandje",     ini:"TD", nom:"Tiandje Béré Didier",         poste:"Secrétaire Général",               bg:"var(--blue)"},
+              {id:"hadje",       ini:"HI", nom:"Hadje Hawa Issa Damnalet",    poste:"Secrétaire Général Adjointe",      bg:"#7C3AED"},
+              {id:"haoua",       ini:"HD", nom:"Haoua Dassidi",               poste:"Trésorière Générale",              bg:"#16A34A"},
+              {id:"fatime",      ini:"FP", nom:"Fatimé Patcha",               poste:"Trésorière Adjointe",              bg:"#D97706"},
+              {id:"damba",       ini:"DF", nom:"Dr Damba Dyssou Ferdinand",   poste:"Chargé des Relations Extérieures", bg:"#0891B2"},
+              {id:"nanmadji",    ini:"NE", nom:"Nanmadji Emmanuel",           poste:"Chargé de Communication",         bg:"#E11D48"},
+              {id:"clemence",    ini:"CM", nom:"Clémence Mbakoyo",            poste:"Responsable des Projets",          bg:"#9D174D"},
+              {id:"nkouka",      ini:"NA", nom:"Nkouka Hadja Adama",          poste:"Conseillère",                      bg:"#065F46"},
+              {id:"min_kitoko",  ini:"MK", nom:"Min Kitoko Gata Ngoulou",     poste:"Conseillère",                      bg:"#4338CA"},
+              {id:"odan",        ini:"OD", nom:"Odan Debsikreo",              poste:"Conseiller",                       bg:"#1D4ED8"},
+            ];
+            const photos = await API.settings.bureauPhotos();
             const isAdmin = APP.user && ["admin","superviseur"].includes(APP.user.role);
-            const avatarInner = photo
-              ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="${esc(m.nom)}">`
-              : `<span style="font-size:20px;font-weight:800;color:white">${m.ini}</span>`;
-            const camBtn = isAdmin ? `
-              <label title="Changer la photo" style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--blue);border:2px solid var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:white">
-                <i class="ti ti-camera"></i>
-                <input type="file" accept="image/*" style="display:none" onchange="handleBureauPhotoUpload('${m.id}',this)">
-              </label>` : "";
-            return `
-            <div class="card card-body" style="text-align:center;padding:20px 14px">
-              <div style="position:relative;width:72px;height:72px;margin:0 auto 14px">
-                <div style="width:72px;height:72px;border-radius:50%;background:${m.bg};display:flex;align-items:center;justify-content:center;border:3px solid var(--border);overflow:hidden">${avatarInner}</div>
-                ${camBtn}
-              </div>
-              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3">${m.nom}</div>
-              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue)">${m.poste}</div>
-            </div>`;
-          }).join("")}
+            return MEMBRES.map(m => {
+              const photo = photos[m.id] || null;
+              const avatarInner = photo
+                ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="${esc(m.nom)}">`
+                : `<span style="font-size:20px;font-weight:800;color:white">${m.ini}</span>`;
+              const camBtn = isAdmin ? `
+                <label title="Changer la photo" style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--blue);border:2px solid var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:white">
+                  <i class="ti ti-camera"></i>
+                  <input type="file" accept="image/*" style="display:none" onchange="handleBureauPhotoUpload('${m.id}',this)">
+                </label>` : "";
+              return `
+              <div class="card card-body" style="text-align:center;padding:20px 14px">
+                <div style="position:relative;width:72px;height:72px;margin:0 auto 14px">
+                  <div id="bureau-avatar-${m.id}" style="width:72px;height:72px;border-radius:50%;background:${m.bg};display:flex;align-items:center;justify-content:center;border:3px solid var(--border);overflow:hidden">${avatarInner}</div>
+                  ${camBtn}
+                </div>
+                <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3">${m.nom}</div>
+                <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue)">${m.poste}</div>
+              </div>`;
+            }).join("");
+          })()}
         </div>
       </div>
 
