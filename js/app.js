@@ -769,6 +769,32 @@ async function handlePhotoUpload(input) {
   input.value = "";
 }
 
+function handleBureauPhotoUpload(id, input) {
+  const file = input.files?.[0];
+  if (!file) return;
+  if (!file.type.startsWith("image/")) { toast("Seules les images sont acceptées.", "err"); return; }
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const img = new Image();
+    img.onload = () => {
+      const size = 200;
+      const canvas = document.createElement("canvas");
+      canvas.width = size; canvas.height = size;
+      const ctx = canvas.getContext("2d");
+      const scale = Math.max(size / img.width, size / img.height);
+      const w = img.width * scale, h = img.height * scale;
+      ctx.drawImage(img, (size - w) / 2, (size - h) / 2, w, h);
+      const photoUrl = canvas.toDataURL("image/jpeg", 0.82);
+      localStorage.setItem("bureau_photo_" + id, photoUrl);
+      navigate("about");
+      toast("Photo mise à jour.", "ok");
+    };
+    img.src = e.target.result;
+  };
+  reader.readAsDataURL(file);
+  input.value = "";
+}
+
 async function doSaveProfile() {
   const prenom = document.getElementById("profile-prenom")?.value.trim();
   const nom    = document.getElementById("profile-nom")?.value.trim();
@@ -1263,18 +1289,40 @@ function renderAbout() {
       <!-- ÉQUIPE -->
       <div>
         <h2 class="section-title"><i class="ti ti-crown" style="color:var(--blue);margin-right:8px"></i>Bureau Exécutif</h2>
-        <div class="grid-3 gap-14">
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:14px">
           ${[
-            ["NE","NANMADJI Emmanuel","Administrateur principal","Responsable de la gestion stratégique et de la direction générale de l'association.","var(--red)"],
-            ["AEV","Secrétaire Général","Secrétaire Général","Coordination administrative, gestion des documents officiels et procès-verbaux.","var(--blue)"],
-            ["AEV","Trésorier","Trésorier","Gestion financière, suivi budgétaire et transparence comptable de l'association.","#16A34A"],
-          ].map(([ini,nom,poste,desc,bg])=>`
-            <div class="card card-body" style="text-align:center;padding:24px 18px">
-              <div style="width:64px;height:64px;border-radius:50%;background:${bg};display:flex;align-items:center;justify-content:center;font-size:20px;font-weight:800;color:white;margin:0 auto 14px;border:3px solid var(--border)">${ini}</div>
-              <div style="font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px">${nom}</div>
-              <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue);margin-bottom:10px">${poste}</div>
-              <p style="font-size:12px;color:var(--text-sec);line-height:1.7">${desc}</p>
-            </div>`).join("")}
+            {id:"anne_marie",  ini:"AH", nom:"Dr Anne Marie Achta Halina", poste:"Présidente",                       bg:"var(--red)"},
+            {id:"tiandje",     ini:"TD", nom:"Tiandje Béré Didier",         poste:"Secrétaire Général",               bg:"var(--blue)"},
+            {id:"hadje",       ini:"HI", nom:"Hadje Hawa Issa Damnalet",    poste:"Secrétaire Général Adjointe",      bg:"#7C3AED"},
+            {id:"haoua",       ini:"HD", nom:"Haoua Dassidi",               poste:"Trésorière Générale",              bg:"#16A34A"},
+            {id:"fatime",      ini:"FP", nom:"Fatimé Patcha",               poste:"Trésorière Adjointe",              bg:"#D97706"},
+            {id:"damba",       ini:"DF", nom:"Dr Damba Dyssou Ferdinand",   poste:"Chargé des Relations Extérieures", bg:"#0891B2"},
+            {id:"nanmadji",    ini:"NE", nom:"Nanmadji Emmanuel",           poste:"Chargé de Communication",         bg:"#E11D48"},
+            {id:"clemence",    ini:"CM", nom:"Clémence Mbakoyo",            poste:"Responsable des Projets",          bg:"#9D174D"},
+            {id:"nkouka",      ini:"NA", nom:"Nkouka Hadja Adama",          poste:"Conseillère",                      bg:"#065F46"},
+            {id:"min_kitoko",  ini:"MK", nom:"Min Kitoko Gata Ngoulou",     poste:"Conseillère",                      bg:"#4338CA"},
+            {id:"odan",        ini:"OD", nom:"Odan Debsikreo",              poste:"Conseiller",                       bg:"#1D4ED8"},
+          ].map(m => {
+            const photo = localStorage.getItem("bureau_photo_" + m.id);
+            const isAdmin = APP.user && (APP.user.role === "ADMINISTRATEUR" || APP.user.role === "SUPERVISEUR");
+            const avatarInner = photo
+              ? `<img src="${photo}" style="width:100%;height:100%;object-fit:cover;border-radius:50%" alt="${esc(m.nom)}">`
+              : `<span style="font-size:20px;font-weight:800;color:white">${m.ini}</span>`;
+            const camBtn = isAdmin ? `
+              <label title="Changer la photo" style="position:absolute;bottom:0;right:0;width:26px;height:26px;border-radius:50%;background:var(--blue);border:2px solid var(--white);display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:12px;color:white">
+                <i class="ti ti-camera"></i>
+                <input type="file" accept="image/*" style="display:none" onchange="handleBureauPhotoUpload('${m.id}',this)">
+              </label>` : "";
+            return `
+            <div class="card card-body" style="text-align:center;padding:20px 14px">
+              <div style="position:relative;width:72px;height:72px;margin:0 auto 14px">
+                <div style="width:72px;height:72px;border-radius:50%;background:${m.bg};display:flex;align-items:center;justify-content:center;border:3px solid var(--border);overflow:hidden">${avatarInner}</div>
+                ${camBtn}
+              </div>
+              <div style="font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;line-height:1.3">${m.nom}</div>
+              <div style="font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;color:var(--blue)">${m.poste}</div>
+            </div>`;
+          }).join("")}
         </div>
       </div>
 
