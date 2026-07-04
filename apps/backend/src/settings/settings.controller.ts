@@ -4,6 +4,7 @@ import { Role } from '@prisma/client';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { SettingsService } from './settings.service';
+import { UpdateBureauPhotoDto } from './dto/update-bureau-photo.dto';
 
 const VALID_IDS = ['anne_marie','tiandje','hadje','haoua','fatime','damba','nanmadji','clemence','nkouka','min_kitoko','odan'];
 
@@ -23,9 +24,9 @@ export class SettingsController {
   @Roles(Role.ADMINISTRATEUR, Role.SUPERVISEUR)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mettre à jour la photo d\'un membre du bureau' })
-  updateBureauPhoto(@Param('id') id: string, @Body() body: { photoUrl: string }) {
+  updateBureauPhoto(@Param('id') id: string, @Body() dto: UpdateBureauPhotoDto) {
     if (!VALID_IDS.includes(id)) throw new BadRequestException('Identifiant invalide.');
-    if (!body.photoUrl?.startsWith('data:image/')) throw new BadRequestException('Format invalide.');
-    return this.settings.updateBureauPhoto(id, body.photoUrl);
+    if (!dto.photoUrl?.startsWith('data:image/')) throw new BadRequestException('Format invalide.');
+    return this.settings.updateBureauPhoto(id, dto.photoUrl);
   }
 }

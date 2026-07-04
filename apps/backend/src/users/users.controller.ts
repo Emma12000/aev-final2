@@ -7,6 +7,7 @@ import { Role } from '@prisma/client';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { UpdatePhotoDto } from './dto/update-photo.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CurrentUser, JwtPayload } from '../auth/decorators/current-user.decorator';
 @ApiTags('Users')
@@ -20,8 +21,8 @@ export class UsersController {
   @Roles(Role.LECTEUR)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Mettre à jour sa photo de profil' })
-  updatePhoto(@CurrentUser() user: JwtPayload, @Body() body: { photoUrl: string }) {
-    return this.users.updatePhoto(user.sub, body.photoUrl);
+  updatePhoto(@CurrentUser() user: JwtPayload, @Body() dto: UpdatePhotoDto) {
+    return this.users.updatePhoto(user.sub, dto.photoUrl);
   }
 
   @Get()
