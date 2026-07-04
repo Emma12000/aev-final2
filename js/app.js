@@ -1387,7 +1387,7 @@ async function renderAbout() {
     </div>
 
     <footer class="site-footer" style="margin-top:32px">
-      <div class="footer-brand"><div class="footer-logo"><img src="assets/logo-aev.png" alt="AEV"></div><div><div class="footer-name">Association Espoir &amp; Vie · espoiretvie.td</div><div class="footer-dev">Conçu par <strong style="color:rgba(255,255,255,.5)">Akora Agency</strong> · N'Djaména, Tchad</div></div></div>
+      <div class="footer-brand"><div class="footer-logo"><img src="assets/logo-aev.png" alt="AEV"></div><div><div class="footer-name">Association Espoir &amp; Vie · espoiretvie.td</div><div class="footer-dev">Conçu par <strong style="color:rgba(255,255,255,.5)">Nanmadji Emmanuel</strong> · N'Djaména, Tchad</div></div></div>
       <div class="footer-links"><span class="footer-link" onclick="navigate('home')">Accueil</span><span class="footer-link" onclick="navigate('catalogue')">Catalogue</span></div>
       <div style="font-size:11px;color:rgba(255,255,255,.25)">© 2026 AEV · Tous droits réservés</div>
     </footer>`;
