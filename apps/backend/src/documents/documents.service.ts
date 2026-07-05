@@ -1,6 +1,7 @@
 import {
   Injectable, NotFoundException, ForbiddenException, BadRequestException,
 } from '@nestjs/common';
+import { fromBuffer as fileTypeFromBuffer } from 'file-type';
 import { ConfigService } from '@nestjs/config';
 import { Confidentiality, DocumentStatus, Role } from '@prisma/client';
 import { PrismaService } from '../prisma/prisma.service';
@@ -147,7 +148,6 @@ export class DocumentsService {
   // ─── Upload ───────────────────────────────────────────────────────────────
 
   private async verifyMagicBytes(file: Express.Multer.File): Promise<void> {
-    const { fileTypeFromBuffer } = await import('file-type');
     const detected = await fileTypeFromBuffer(file.buffer);
     if (!detected) {
       throw new BadRequestException('Impossible de vérifier le contenu du fichier.');
