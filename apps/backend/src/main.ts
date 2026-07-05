@@ -3,7 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import { json, urlencoded } from 'express';
+import { NestExpressApplication } from '@nestjs/platform-express';
 import helmet from 'helmet';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
@@ -12,7 +12,7 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 
 async function bootstrap() {
   const logger = new Logger('Bootstrap');
-  const app = await NestFactory.create(AppModule, { logger: ['error', 'warn', 'log'] });
+  const app = await NestFactory.create<NestExpressApplication>(AppModule, { logger: ['error', 'warn', 'log'] });
 
   const config = app.get(ConfigService);
   const port = config.get<number>('port') ?? 3001;
@@ -24,9 +24,10 @@ async function bootstrap() {
   app.use(helmet());
   app.use(cookieParser());
 
-  // Les photos de profil en base64 (max 250 Ko) dépassent la limite Express par défaut de 100 Ko
-  app.use(json({ limit: '400kb' }));
-  app.use(urlencoded({ extended: true, limit: '400kb' }));
+  // Les photos de profil en base64 (max 250 Ko) dépassent la limite par défaut de 100 Ko.
+  // useBodyParser (API Nest) : pas d'import direct d'express, non déclaré dans nos dépendances
+  app.useBodyParser('json', { limit: '400kb' });
+  app.useBodyParser('urlencoded', { extended: true, limit: '400kb' });
 
   // CORS
   app.enableCors({
