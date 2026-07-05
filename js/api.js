@@ -576,7 +576,8 @@ const API = {
   settings: {
     async bureauPhotos() {
       try {
-        return await apiFetch("/settings/bureau-photos") || {};
+        const res = await apiFetch("/settings/bureau-photos");
+        return res?.data || {};
       } catch (_) {
         return {};
       }

@@ -3,6 +3,7 @@ import { NestFactory } from '@nestjs/core';
 import { ValidationPipe, Logger } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
+import { json, urlencoded } from 'express';
 import helmet from 'helmet';
 import * as cookieParser from 'cookie-parser';
 import { AppModule } from './app.module';
@@ -22,6 +23,10 @@ async function bootstrap() {
   // Security headers
   app.use(helmet());
   app.use(cookieParser());
+
+  // Les photos de profil en base64 (max 250 Ko) dépassent la limite Express par défaut de 100 Ko
+  app.use(json({ limit: '400kb' }));
+  app.use(urlencoded({ extended: true, limit: '400kb' }));
 
   // CORS
   app.enableCors({
