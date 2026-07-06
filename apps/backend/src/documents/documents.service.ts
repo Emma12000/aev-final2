@@ -8,6 +8,7 @@ import { PrismaService } from '../prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
 import { StorageService } from './storage.service';
 import { MailService } from '../mail/mail.service';
+import { SettingsService } from '../settings/settings.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { QueryDocumentsDto } from './dto/query-documents.dto';
 import { JwtPayload } from '../auth/decorators/current-user.decorator';
@@ -25,6 +26,7 @@ export class DocumentsService {
     private readonly storage: StorageService,
     private readonly activity: ActivityService,
     private readonly mail: MailService,
+    private readonly settings: SettingsService,
     config: ConfigService,
   ) {
     this.allowedMimeTypes = config.get<string[]>('upload.allowedMimeTypes') ?? [];
@@ -125,6 +127,14 @@ export class DocumentsService {
 
   async getDownloadUrl(id: string, actor: JwtPayload) {
     const doc = await this.findOne(id, actor);
+    // Si l'accès public au téléchargement est désactivé, un visiteur non connecté
+    // peut toujours consulter mais doit se connecter pour télécharger.
+    if (!actor) {
+      const { allowPublicDownload } = await this.settings.getPlatformSettings();
+      if (!allowPublicDownload) {
+        throw new ForbiddenException('Connexion requise pour télécharger ce document.');
+      }
+    }
     const url = await this.storage.getSignedUrl(doc.fileKey);
     await this.prisma.document.update({ where: { id }, data: { downloadCount: { increment: 1 } } });
     if (actor) {
@@ -170,6 +180,8 @@ export class DocumentsService {
     const cat = await this.prisma.documentCategory.findUnique({ where: { id: dto.categoryId } });
     if (!cat) throw new NotFoundException('Catégorie introuvable.');
 
+    const { requireManualValidation, emailNotifications } = await this.settings.getPlatformSettings();
+
     const stored = await this.storage.upload(file, `documents/${cat.slug}`);
 
     const doc = await this.prisma.document.create({
@@ -181,8 +193,11 @@ export class DocumentsService {
         tags: dto.tags ?? [],
         uploadedById: actor.sub,
         ...stored,
-        // Les agents/lecteurs soumettent en attente de validation
-        status: ADMIN_ROLES.includes(actor.role) ? DocumentStatus.ACTIVE : DocumentStatus.ARCHIVED,
+        // Les agents/lecteurs soumettent en attente de validation — sauf si la
+        // validation manuelle a été désactivée dans les réglages de plateforme.
+        status: (ADMIN_ROLES.includes(actor.role) || !requireManualValidation)
+          ? DocumentStatus.ACTIVE
+          : DocumentStatus.ARCHIVED,
       },
       include: {
         category: { select: { id: true, name: true } },
@@ -193,7 +208,8 @@ export class DocumentsService {
     await this.activity.log({ userId: actor.sub, action: 'DOCUMENT_UPLOAD', resourceType: 'document', resourceId: doc.id });
 
     // Notifier l'admin si le doc part en attente de validation
-    if (doc.status !== DocumentStatus.ACTIVE) {
+    // (sauf si les notifications email sont désactivées dans les réglages)
+    if (doc.status !== DocumentStatus.ACTIVE && emailNotifications) {
       this.mail.notifyAdminNewDocument({
         docTitle:      doc.title,
         uploaderName:  doc.uploadedBy.fullName,
