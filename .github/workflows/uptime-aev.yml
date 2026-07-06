@@ -1,0 +1,64 @@
+name: Surveillance disponibilité AEV
+
+# Gardien de la plateforme : vérifie le backend (Railway) et le site (Vercel)
+# toutes les 10 minutes, 24h/24, dans le cloud GitHub — indépendamment de
+# tout ordinateur allumé. En cas de panne confirmée, ce workflow échoue et
+# GitHub envoie automatiquement un email d'alerte au propriétaire du dépôt.
+
+on:
+  schedule:
+    # Toutes les 10 minutes (minutes décalées pour éviter les pics d'infra)
+    - cron: '3,13,23,33,43,53 * * * *'
+  workflow_dispatch: {}
+  push:
+    paths:
+      - '.github/workflows/uptime-aev.yml'
+
+jobs:
+  verifier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Backend API (Railway)
+        run: |
+          echo "🔎 Vérification du backend..."
+          ok=0
+          for i in 1 2 3; do
+            code=$(curl -s -o /tmp/body -w "%{http_code}" --max-time 25 \
+              "https://aevbackend-production.up.railway.app/api/v1/health" || echo "000")
+            if [ "$code" = "200" ] && grep -q '"status":"ok"' /tmp/body; then
+              echo "✅ Backend OK (tentative $i, HTTP $code)"
+              ok=1
+              break
+            fi
+            echo "⚠️  Tentative $i échouée (HTTP $code). Nouvel essai dans 20s..."
+            sleep 20
+          done
+          if [ "$ok" != "1" ]; then
+            echo "❌ BACKEND INJOIGNABLE après 3 tentatives."
+            echo "Dernière réponse reçue :"
+            cat /tmp/body 2>/dev/null || true
+            exit 1
+          fi
+
+      - name: Site public (Vercel)
+        run: |
+          echo "🔎 Vérification du site archive.espoiretvie.td..."
+          ok=0
+          for i in 1 2 3; do
+            code=$(curl -s -o /dev/null -w "%{http_code}" --max-time 25 \
+              "https://archive.espoiretvie.td/" || echo "000")
+            if [ "$code" = "200" ]; then
+              echo "✅ Site OK (tentative $i, HTTP $code)"
+              ok=1
+              break
+            fi
+            echo "⚠️  Tentative $i échouée (HTTP $code). Nouvel essai dans 20s..."
+            sleep 20
+          done
+          if [ "$ok" != "1" ]; then
+            echo "❌ SITE INJOIGNABLE après 3 tentatives."
+            exit 1
+          fi
+
+      - name: Résumé
+        run: echo "🟢 Plateforme AEV pleinement opérationnelle (backend + site)."
