@@ -2484,17 +2484,57 @@ async function renderAdmin(sec="dashboard") {
         <div class="card card-body">
           <div class="card-title mb-16">Options de la plateforme</div>
           <div class="flex-col gap-10">
-            ${[["Validation manuelle des dépôts","Approbation admin requise avant publication"],["Accès public au téléchargement","Tous les visiteurs peuvent télécharger"],["Notifications email","Email admin à chaque nouveau dépôt"]].map(([lbl,desc])=>`
+            ${[["requireManualValidation","Validation manuelle des dépôts","Approbation admin requise avant publication"],["allowPublicDownload","Accès public au téléchargement","Tous les visiteurs peuvent télécharger"],["emailNotifications","Notifications email","Email admin à chaque nouveau dépôt"]].map(([key,lbl,desc])=>`
               <div class="flex-b" style="padding:14px 16px;border:1px solid var(--border);border-radius:var(--r-xl)">
                 <div><div style="font-size:13px;font-weight:600;color:var(--text)">${lbl}</div><div class="doc-meta mt-4">${desc}</div></div>
-                <div style="width:46px;height:26px;background:var(--blue);border-radius:13px;position:relative;cursor:pointer;flex-shrink:0" onclick="toast('Option mise à jour','ok')">
-                  <div style="width:20px;height:20px;background:white;border-radius:50%;position:absolute;right:3px;top:3px;box-shadow:0 2px 4px rgba(0,0,0,.2)"></div>
+                <div id="sw-${key}" data-on="false" onclick="togglePlatformSetting('${key}')" title="Activer / désactiver"
+                     style="width:46px;height:26px;background:#cbd5e1;border-radius:13px;position:relative;cursor:pointer;flex-shrink:0;opacity:.5;transition:background .2s,opacity .2s">
+                  <div class="platform-knob" style="width:20px;height:20px;background:white;border-radius:50%;position:absolute;left:3px;top:3px;box-shadow:0 2px 4px rgba(0,0,0,.2);transition:left .2s"></div>
                 </div>
               </div>`).join("")}
-            <button class="btn btn-danger btn-sm" style="align-self:flex-start;margin-top:8px" onclick="toast('Opération annulée','err')"><i class="ti ti-alert-triangle"></i>Zone dangereuse</button>
           </div>
         </div>
       </div>`;
+    loadPlatformSettings();
+  }
+}
+
+// ─── Réglages de plateforme (interrupteurs) ──────────────────────────────────
+function applySwitchState(key, on) {
+  const sw = document.getElementById("sw-" + key);
+  if (!sw) return;
+  sw.dataset.on = on ? "true" : "false";
+  sw.style.opacity = "1";
+  sw.style.background = on ? "var(--blue)" : "#cbd5e1";
+  const knob = sw.querySelector(".platform-knob");
+  if (knob) knob.style.left = on ? "23px" : "3px";
+}
+
+async function loadPlatformSettings() {
+  const s = await API.settings.getPlatform();
+  if (!s) return;
+  applySwitchState("requireManualValidation", s.requireManualValidation);
+  applySwitchState("allowPublicDownload",     s.allowPublicDownload);
+  applySwitchState("emailNotifications",      s.emailNotifications);
+}
+
+async function togglePlatformSetting(key) {
+  const sw = document.getElementById("sw-" + key);
+  if (!sw) return;
+  const current = sw.dataset.on === "true";
+  const next = !current;
+  applySwitchState(key, next); // mise à jour optimiste
+  try {
+    const updated = await API.settings.updatePlatform({ [key]: next });
+    if (updated) {
+      applySwitchState(key, updated[key]);
+      toast("Réglage enregistré.", "ok");
+    } else {
+      throw new Error("Réponse vide du serveur.");
+    }
+  } catch (e) {
+    applySwitchState(key, current); // annulation en cas d'erreur
+    toast(e.message || "Erreur lors de l'enregistrement.", "err");
   }
 }
 

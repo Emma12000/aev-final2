@@ -588,5 +588,22 @@ const API = {
         body: JSON.stringify({ photoUrl }),
       });
     },
+
+    async getPlatform() {
+      try {
+        const res = await apiFetch("/settings/platform");
+        return res?.data || null;
+      } catch (_) {
+        return null;
+      }
+    },
+
+    async updatePlatform(dto) {
+      const res = await apiFetch("/settings/platform", {
+        method: "PATCH",
+        body: JSON.stringify(dto),
+      });
+      return res?.data || null;
+    },
   },
 };
