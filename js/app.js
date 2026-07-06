@@ -262,7 +262,7 @@ function navigate(page, data={}, _fromHistory=false) {
   // Rendu spécifique
   const renders = {
     home:       () => renderHome(),
-    catalogue:  () => renderCatalogue(data.cat||APP.catFilter||""),
+    catalogue:  () => renderCatalogue(data.cat||""),
     search:     () => renderSearch(data.q||""),
     doc:        () => renderDoc(data.id),
     auth:       () => renderAuth(data.tab||"login"),
