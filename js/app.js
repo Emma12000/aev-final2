@@ -606,7 +606,7 @@ async function loadInlinePreview(id, fmt) {
   if (!el) return;
   try {
     if (fmt === "PDF") {
-      const res = await API.documents.download(id);
+      const res = await API.documents.previewUrl(id);
       if (!res?.url) throw new Error();
       el.style.cssText = "padding:0;display:block;overflow:hidden;border-radius:var(--r-xl);min-height:420px;background:#525659";
       el.innerHTML = `<iframe src="${res.url}" style="width:100%;height:480px;border:none;display:block" title="Aperçu PDF"></iframe>`;
@@ -3191,7 +3191,7 @@ async function openDocFullscreen(id) {
   document.addEventListener("keydown", document._previewEscHandler);
 
   try {
-    const result = await API.documents.download(id);
+    const result = await API.documents.previewUrl(id);
     if (!result?.url) throw new Error("URL indisponible");
 
     const mime = result.mimeType || "";
@@ -3204,11 +3204,8 @@ async function openDocFullscreen(id) {
     metaEl.textContent  = `${fmt} · Aperçu en lecture seule`;
     iconEl.innerHTML    = `<i class="ti ${fmtIcon}" style="color:${fmtColor}"></i>`;
 
-    // Action télécharger
-    const doDownload = () => {
-      const a = document.createElement("a");
-      a.href = result.url; a.download = name; a.target = "_blank"; a.click();
-    };
+    // Action télécharger — vrai endpoint de téléchargement (respecte les réglages)
+    const doDownload = () => memberDownloadDoc(id);
     dlBtn.onclick  = doDownload;
     if (dlBtn2) dlBtn2.onclick = doDownload;
 
