@@ -3,7 +3,7 @@
 const API_BASE = "https://aevbackend-production.up.railway.app/api/v1";
 
 // Réveille Railway dès le chargement de la page (évite le cold start au moment du login)
-fetch(API_BASE.replace("/api/v1", "/health"), { method: "GET", cache: "no-store" }).catch(() => null);
+fetch(API_BASE + "/health", { method: "GET", cache: "no-store" }).catch(() => null);
 
 // Stockage de l'access token en sessionStorage (survit aux rechargements de page,
 // disparaît à la fermeture du navigateur). Le refresh token reste dans le cookie httpOnly.
