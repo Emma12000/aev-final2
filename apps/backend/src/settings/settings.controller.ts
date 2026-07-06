@@ -5,6 +5,7 @@ import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { SettingsService } from './settings.service';
 import { UpdateBureauPhotoDto } from './dto/update-bureau-photo.dto';
+import { UpdatePlatformSettingsDto } from './dto/update-platform-settings.dto';
 
 const VALID_IDS = ['anne_marie','tiandje','hadje','haoua','fatime','damba','nanmadji','clemence','nkouka','min_kitoko','odan'];
 
@@ -28,5 +29,20 @@ export class SettingsController {
     if (!VALID_IDS.includes(id)) throw new BadRequestException('Identifiant invalide.');
     if (!dto.photoUrl?.startsWith('data:image/')) throw new BadRequestException('Format invalide.');
     return this.settings.updateBureauPhoto(id, dto.photoUrl);
+  }
+
+  @Get('platform')
+  @Roles(Role.ADMINISTRATEUR, Role.SUPERVISEUR)
+  @ApiOperation({ summary: 'Lire les réglages de la plateforme' })
+  getPlatformSettings() {
+    return this.settings.getPlatformSettings();
+  }
+
+  @Patch('platform')
+  @Roles(Role.ADMINISTRATEUR, Role.SUPERVISEUR)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Modifier les réglages de la plateforme' })
+  updatePlatformSettings(@Body() dto: UpdatePlatformSettingsDto) {
+    return this.settings.updatePlatformSettings(dto);
   }
 }

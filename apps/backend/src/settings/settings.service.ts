@@ -18,6 +18,20 @@ const BUREAU_KEYWORD: Record<string, string> = {
   odan:       'debsikreo',
 };
 
+// Réglages de plateforme stockés dans SiteSetting (clé/valeur).
+// Défaut = true pour les trois → reproduit le comportement actuel de la plateforme.
+const PLATFORM_KEYS = {
+  requireManualValidation: 'platform_require_manual_validation',
+  allowPublicDownload:     'platform_allow_public_download',
+  emailNotifications:      'platform_email_notifications',
+} as const;
+
+export interface PlatformSettings {
+  requireManualValidation: boolean;
+  allowPublicDownload: boolean;
+  emailNotifications: boolean;
+}
+
 @Injectable()
 export class SettingsService {
   constructor(private readonly prisma: PrismaService) {}
@@ -57,5 +71,39 @@ export class SettingsService {
       update: { value: photoUrl },
       select: { key: true },
     });
+  }
+
+  // ─── Réglages de plateforme ────────────────────────────────────────────────
+
+  async getPlatformSettings(): Promise<PlatformSettings> {
+    const keys = Object.values(PLATFORM_KEYS);
+    const rows = await this.prisma.siteSetting.findMany({ where: { key: { in: keys } } });
+    const values = new Map(rows.map((r) => [r.key, r.value]));
+    // Absent → true (comportement historique de la plateforme)
+    const bool = (key: string) => (values.has(key) ? values.get(key) === 'true' : true);
+    return {
+      requireManualValidation: bool(PLATFORM_KEYS.requireManualValidation),
+      allowPublicDownload:     bool(PLATFORM_KEYS.allowPublicDownload),
+      emailNotifications:      bool(PLATFORM_KEYS.emailNotifications),
+    };
+  }
+
+  async updatePlatformSettings(dto: Partial<PlatformSettings>): Promise<PlatformSettings> {
+    const updates: Array<[string, boolean]> = [];
+    if (dto.requireManualValidation !== undefined) updates.push([PLATFORM_KEYS.requireManualValidation, dto.requireManualValidation]);
+    if (dto.allowPublicDownload     !== undefined) updates.push([PLATFORM_KEYS.allowPublicDownload,     dto.allowPublicDownload]);
+    if (dto.emailNotifications      !== undefined) updates.push([PLATFORM_KEYS.emailNotifications,      dto.emailNotifications]);
+
+    await Promise.all(
+      updates.map(([key, value]) =>
+        this.prisma.siteSetting.upsert({
+          where: { key },
+          create: { key, value: String(value) },
+          update: { value: String(value) },
+        }),
+      ),
+    );
+
+    return this.getPlatformSettings();
   }
 }
