@@ -110,6 +110,33 @@ export class MailService {
     });
   }
 
+  // ─── Inscription validée par l'admin → membre ─────────────
+  async notifyMemberApproved(opts: {
+    to: string;
+    memberName: string;
+  }) {
+    await this.send({
+      to: opts.to,
+      subject: `✅ Votre inscription à Espoir & Vie est validée`,
+      html: `
+        <div style="font-family:sans-serif;max-width:560px;margin:0 auto">
+          <div style="background:#1e40af;padding:24px 32px;border-radius:8px 8px 0 0">
+            <h2 style="color:white;margin:0;font-size:18px">Association Espoir &amp; Vie</h2>
+          </div>
+          <div style="background:#f9fafb;padding:32px;border-radius:0 0 8px 8px;border:1px solid #e5e7eb">
+            <h3 style="margin:0 0 12px;color:#111827">Bienvenue ${opts.memberName} !</h3>
+            <p style="color:#374151;font-size:14px;line-height:1.6">
+              Votre inscription à la plateforme d'archives de l'<strong>Association Espoir &amp; Vie</strong> a été <span style="color:#1e40af;font-weight:700">validée par un administrateur</span>. Vous pouvez dès à présent vous connecter et accéder à votre espace membre.
+            </p>
+            <a href="${this.appUrl}" style="display:inline-block;margin-top:20px;padding:12px 24px;background:#1e40af;color:white;text-decoration:none;border-radius:6px;font-size:14px;font-weight:600">
+              Accéder à la plateforme →
+            </a>
+          </div>
+          <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:16px">Association Espoir &amp; Vie · N'Djaména, Tchad</p>
+        </div>`,
+    });
+  }
+
   // ─── Document rejeté → membre ─────────────────────────────
   async notifyMemberDocRejected(opts: {
     to: string;

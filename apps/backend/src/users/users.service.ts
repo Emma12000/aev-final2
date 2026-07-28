@@ -3,6 +3,7 @@ import { Role } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service';
 import { ActivityService } from '../activity/activity.service';
+import { MailService } from '../mail/mail.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
 
@@ -16,6 +17,7 @@ export class UsersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly activity: ActivityService,
+    private readonly mail: MailService,
   ) {}
 
   async findAll(page = 1, limit = 20, role?: Role) {
@@ -49,9 +51,14 @@ export class UsersService {
   }
 
   async update(id: string, dto: UpdateUserDto, actorId: string) {
-    await this.findOne(id);
+    const before = await this.findOne(id);
     const user = await this.prisma.user.update({ where: { id }, data: dto, select: SELECT_USER });
     await this.activity.log({ userId: actorId, action: 'USER_UPDATE', resourceType: 'user', resourceId: id });
+
+    // Email de bienvenue quand l'admin valide l'inscription (emailVerified : false → true)
+    if (!before.emailVerified && user.emailVerified) {
+      this.mail.notifyMemberApproved({ to: user.email, memberName: user.fullName }).catch(() => null);
+    }
     return user;
   }
 
