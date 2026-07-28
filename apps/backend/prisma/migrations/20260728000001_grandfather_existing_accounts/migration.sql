@@ -1,0 +1,11 @@
+-- Bloc 1 (sécurisation accès) : valider d'un coup tous les comptes déjà existants.
+--
+-- Contexte : on s'apprête à exiger la validation admin avant qu'un compte puisse
+-- se connecter. Sans cette étape, les comptes actuels (dont l'administrateur),
+-- dont emailVerified vaut false par défaut, seraient verrouillés dehors.
+--
+-- Cette migration valide donc TOUS les comptes présents au moment du déploiement.
+-- Elle est idempotente (ne touche que les lignes encore à false) et ne modifie
+-- pas le schéma. Les comptes créés APRÈS ce déploiement resteront à false et
+-- devront être validés par un administrateur.
+UPDATE "users" SET "emailVerified" = true WHERE "emailVerified" = false;
