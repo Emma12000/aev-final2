@@ -53,11 +53,10 @@ export class AuthController {
   @UseGuards(ThrottlerGuard)
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
-  @ApiOperation({ summary: 'Inscription (compte LECTEUR par défaut)' })
-  async register(@Body() dto: RegisterDto, @Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const { refreshToken, ...rest } = await this.auth.register(dto, req.ip, req.headers['user-agent']);
-    this.setRefreshCookie(res, refreshToken);
-    return rest;
+  @ApiOperation({ summary: 'Inscription — compte en attente de validation admin, aucune session ouverte' })
+  async register(@Body() dto: RegisterDto, @Req() req: Request) {
+    // Pas de connexion automatique : le compte doit être validé par un admin.
+    return this.auth.register(dto, req.ip, req.headers['user-agent']);
   }
 
   @Public()

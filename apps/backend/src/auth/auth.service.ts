@@ -18,6 +18,10 @@ import { RegisterDto } from './dto/register.dto';
 
 const BCRYPT_ROUNDS = 12;
 
+// Rôles exemptés de la validation d'inscription (jamais bloqués à la connexion).
+// Garantit qu'un administrateur ne peut jamais se retrouver verrouillé dehors.
+const STAFF_ROLES: Role[] = [Role.ADMINISTRATEUR, Role.SUPERVISEUR];
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -44,6 +48,11 @@ export class AuthService {
         await this.activity.log({ userId: user.id, action: 'LOGIN_FAILED', resourceType: 'auth', ipAddress: ip, userAgent: ua });
       }
       throw new UnauthorizedException('Email ou mot de passe incorrect.');
+    }
+
+    // Bloc 2 : un compte non validé (hors admin/superviseur) ne peut pas se connecter.
+    if (!user.emailVerified && !STAFF_ROLES.includes(user.role)) {
+      throw new UnauthorizedException('Votre compte est en attente de validation par un administrateur.');
     }
 
     await this.prisma.user.update({
@@ -87,8 +96,6 @@ export class AuthService {
       },
     });
 
-    const tokens = await this.generateTokens(user.id, user.role);
-    await this.storeRefreshToken(user.id, tokens.refreshToken);
     await this.activity.log({ userId: user.id, action: 'USER_CREATE', resourceType: 'user', resourceId: user.id, ipAddress: ip, userAgent: ua });
 
     // Envoyer email de vérification
@@ -113,8 +120,9 @@ export class AuthService {
       role:        user.role,
     }).catch(() => null);
 
+    // Bloc 2 : pas de connexion automatique — le compte attend la validation d'un admin.
     return {
-      ...tokens,
+      pending: true,
       user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, emailVerified: false, photoUrl: null },
     };
   }
@@ -246,7 +254,7 @@ export class AuthService {
           fullName: payload.name || email,
           passwordHash: '',
           role: Role.LECTEUR,
-          emailVerified: true,
+          emailVerified: false,
         },
       });
       this.mail.notifyAdminNewMember({ memberName: user.fullName, memberEmail: user.email, role: user.role }).catch(() => null);
@@ -254,6 +262,10 @@ export class AuthService {
     }
 
     if (!user.isActive) throw new UnauthorizedException('Compte désactivé.');
+    // Bloc 2 : validation admin requise avant l'accès (hors admin/superviseur).
+    if (!user.emailVerified && !STAFF_ROLES.includes(user.role)) {
+      throw new UnauthorizedException('Votre compte est en attente de validation par un administrateur.');
+    }
 
     await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
 
@@ -263,7 +275,7 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, emailVerified: true },
+      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, emailVerified: user.emailVerified },
     };
   }
 
@@ -306,7 +318,7 @@ export class AuthService {
           fullName: me.name || email,
           passwordHash: '',
           role: Role.LECTEUR,
-          emailVerified: true,
+          emailVerified: false,
         },
       });
       this.mail.notifyAdminNewMember({ memberName: user.fullName, memberEmail: user.email, role: user.role }).catch(() => null);
@@ -314,6 +326,10 @@ export class AuthService {
     }
 
     if (!user.isActive) throw new UnauthorizedException('Compte désactivé.');
+    // Bloc 2 : validation admin requise avant l'accès (hors admin/superviseur).
+    if (!user.emailVerified && !STAFF_ROLES.includes(user.role)) {
+      throw new UnauthorizedException('Votre compte est en attente de validation par un administrateur.');
+    }
 
     await this.prisma.user.update({ where: { id: user.id }, data: { lastLoginAt: new Date() } });
 
@@ -323,7 +339,7 @@ export class AuthService {
 
     return {
       ...tokens,
-      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, emailVerified: true },
+      user: { id: user.id, email: user.email, fullName: user.fullName, role: user.role, emailVerified: user.emailVerified },
     };
   }
 

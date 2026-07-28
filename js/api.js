@@ -188,7 +188,7 @@ const API = {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Erreur lors de la création du compte.");
-      TokenStore.set(data.data.accessToken);
+      // Plus de connexion auto : le compte attend la validation d'un admin.
       return data.data;
     },
 

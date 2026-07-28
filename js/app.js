@@ -662,11 +662,18 @@ async function doRegister() {
   const btn = $("#btn-register");
   if (btn) { btn.disabled = true; btn.textContent = "Création…"; }
   try {
-    const data = await API.auth.register(`${prenom} ${nom}`.trim(), email, pass);
-    APP.user = mapUser(data.user);
-    updateNavbarUser();
-    toast(`Bienvenue, ${prenom} ! Votre compte a été créé.`, "ok");
-    navigate("member");
+    await API.auth.register(`${prenom} ${nom}`.trim(), email, pass);
+    // Plus de connexion auto : le compte attend la validation d'un administrateur.
+    $("#reg-prenom").value = ""; $("#reg-nom").value = ""; $("#reg-email").value = ""; $("#reg-pass").value = "";
+    switchAuthTab("login");
+    openModal(
+      `<div style="text-align:center;padding:8px">
+        <div style="width:64px;height:64px;border-radius:50%;background:var(--blue-light);display:flex;align-items:center;justify-content:center;margin:0 auto 16px"><i class="ti ti-clock-check" style="font-size:32px;color:var(--blue)"></i></div>
+        <p style="font-size:14px;line-height:1.7;color:var(--text)">Merci <strong>${esc(prenom)}</strong>, votre inscription a bien été reçue.</p>
+        <p style="font-size:13px;line-height:1.7;color:var(--text-sec);margin-top:8px">Votre compte doit être <strong>validé par un administrateur</strong> avant que vous puissiez vous connecter. Vous recevrez un email de confirmation dès qu'il sera activé.</p>
+      </div>`,
+      "Inscription en attente de validation"
+    );
   } catch(e) {
     toast(e.message || "Impossible de créer le compte.", "err");
   } finally {
