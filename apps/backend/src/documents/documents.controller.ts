@@ -10,7 +10,6 @@ import { DocumentsService } from './documents.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { QueryDocumentsDto } from './dto/query-documents.dto';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { Public } from '../auth/decorators/public.decorator';
 import { CurrentUser, JwtPayload } from '../auth/decorators/current-user.decorator';
 
 const MAX_SIZE_BYTES = 50 * 1024 * 1024; // 50 Mo
@@ -20,29 +19,29 @@ const MAX_SIZE_BYTES = 50 * 1024 * 1024; // 50 Mo
 export class DocumentsController {
   constructor(private readonly docs: DocumentsService) {}
 
-  @Public()
   @Get()
-  @ApiOperation({ summary: 'Recherche et liste des documents' })
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Recherche et liste des documents (connexion requise)' })
   findAll(@Query() query: QueryDocumentsDto, @CurrentUser() actor: JwtPayload) {
     return this.docs.findAll(query, actor);
   }
 
-  @Public()
   @Get(':id')
-  @ApiOperation({ summary: 'Détail d\'un document' })
+  @ApiBearerAuth('access-token')
+  @ApiOperation({ summary: 'Détail d\'un document (connexion requise)' })
   findOne(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() actor: JwtPayload) {
     return this.docs.findOne(id, actor);
   }
 
-  @Public()
   @Get(':id/preview-url')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'URL signée longue durée pour les visionneuses (1h)' })
   previewUrl(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() actor: JwtPayload) {
     return this.docs.getPreviewUrl(id, actor);
   }
 
-  @Public()
   @Get(':id/download')
+  @ApiBearerAuth('access-token')
   @ApiOperation({ summary: 'Obtenir un lien signé pour télécharger le fichier' })
   download(@Param('id', ParseUUIDPipe) id: string, @CurrentUser() actor: JwtPayload) {
     return this.docs.getDownloadUrl(id, actor);

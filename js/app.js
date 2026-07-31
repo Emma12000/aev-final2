@@ -236,8 +236,8 @@ function closeModal() { $("#modal-overlay").classList.remove("open"); }
 
 // NAVIGATION
 function navigate(page, data={}, _fromHistory=false) {
-  // Guard : pages protégées inaccessibles sans connexion
-  if ((page==="member" || page==="admin") && !APP.user) {
+  // Plateforme fermée : tout accès nécessite une connexion, sauf l'écran de connexion.
+  if (!APP.user && page !== "auth") {
     page = "auth";
     data = {};
   }
@@ -966,6 +966,11 @@ function closeMobileSidebar() {
 
 function updateNavbarUser() {
   const btnZone = $("#navbar-user-zone");
+  // Plateforme fermée : les liens de contenu ne s'affichent que pour un utilisateur connecté.
+  const showLinks = !!APP.user;
+  $$("#navbar-links-desktop .nav-link[data-p]").forEach(l => { l.style.display = showLinks ? "" : "none"; });
+  const drawerLinks = document.getElementById("nav-drawer-links");
+  if (drawerLinks) drawerLinks.style.display = showLinks ? "" : "none";
   if (APP.user) {
     const isAdmin = ["admin","superviseur"].includes(APP.user.role);
     btnZone.innerHTML = `
@@ -3462,9 +3467,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   const me = await API.auth.me();
   if (me) {
     APP.user = mapUser(me);
-    updateNavbarUser();
     initChatBubble();
   }
+  // Toujours rafraîchir la navbar (masque les liens de contenu si non connecté)
+  updateNavbarUser();
 
   // Initialiser Google Sign-In
   if (window.google) initGoogleSignIn();
@@ -3499,10 +3505,11 @@ document.addEventListener("DOMContentLoaded", async () => {
     window.history.replaceState({}, "", window.location.pathname);
   }
 
-  renderHome();
   if (APP.user) {
+    renderHome();
     navigate(["admin","superviseur"].includes(APP.user.role) ? "admin" : "member");
   } else {
-    navigate("home");
+    // Plateforme fermée : un visiteur non connecté ne voit que l'écran de connexion.
+    navigate("auth");
   }
 });
