@@ -2118,6 +2118,7 @@ async function renderAdmin(sec="dashboard") {
                   ${u.status==="new"?`<div class="btn-icon green" title="Valider l'inscription (attribuer un rôle)" onclick="openEditUserModal('${u.id}','${u.name.replace(/'/g,"\\'")}','${u.role}','${u.status}')"><i class="ti ti-user-check"></i></div>`:""}
                   <div class="btn-icon" title="Modifier" onclick="openEditUserModal('${u.id}','${u.name.replace(/'/g,"\\'")}','${u.role}','${u.status}')"><i class="ti ti-pencil"></i></div>
                   <div class="btn-icon ${u.status!=="inactive"?"red":""}" title="${u.status!=="inactive"?"Désactiver":"Réactiver"}" onclick="adminToggleUser('${u.id}',${u.status!=="inactive"})"><i class="ti ti-user-${u.status!=="inactive"?"off":"check"}"></i></div>
+                  ${u.id !== APP.user?.id ? `<div class="btn-icon red" title="Supprimer définitivement" onclick="adminDeleteUser('${u.id}','${u.name.replace(/'/g,"\\'")}')"><i class="ti ti-trash"></i></div>` : ""}
                 </div></td>
               </tr>`).join("")}
             </tbody>
@@ -3045,6 +3046,33 @@ async function confirmToggleUser(id, isCurrentlyActive) {
     renderAdmin("users");
   } catch(e) {
     toast(e.message || "Erreur.", "err");
+  }
+}
+
+async function adminDeleteUser(id, name) {
+  openModal(`
+    <p style="font-size:14px;color:var(--text);line-height:1.7">
+      Supprimer définitivement le membre <strong>${esc(name)}</strong> ?
+    </p>
+    <p style="font-size:13px;color:var(--text-sec);line-height:1.7;margin-top:8px">
+      Cette action est <strong>irréversible</strong> : le compte et ses données liées (favoris, historique, accès) seront effacés.
+      Si ce membre a déposé des documents, la suppression sera refusée pour protéger les archives — désactivez-le plutôt.
+    </p>
+    <div class="flex-c gap-10 mt-20">
+      <button class="btn btn-danger" onclick="confirmDeleteUser('${id}')"><i class="ti ti-trash"></i>Supprimer définitivement</button>
+      <button class="btn btn-outline" onclick="closeModal()">Annuler</button>
+    </div>`, "Supprimer le membre");
+}
+
+async function confirmDeleteUser(id) {
+  try {
+    await API.admin.deleteUser(id);
+    closeModal();
+    toast("Membre supprimé définitivement.", "err");
+    invalidateAdminCache();
+    renderAdmin("users");
+  } catch(e) {
+    toast(e.message || "Suppression impossible.", "err");
   }
 }
 

@@ -63,9 +63,21 @@ export class UsersService {
   }
 
   async remove(id: string, actorId: string) {
-    await this.findOne(id);
-    // Soft delete : désactiver plutôt que supprimer
-    await this.prisma.user.update({ where: { id }, data: { isActive: false } });
+    // Un admin ne peut pas supprimer son propre compte (anti-lockout).
+    if (id === actorId) {
+      throw new BadRequestException('Vous ne pouvez pas supprimer votre propre compte.');
+    }
+    await this.findOne(id); // 404 si introuvable
+    // Protection des archives : refuser si le membre a déposé des documents.
+    const docCount = await this.prisma.document.count({ where: { uploadedById: id } });
+    if (docCount > 0) {
+      throw new ConflictException(
+        `Ce membre a déposé ${docCount} document(s). Désactivez-le plutôt que de le supprimer, ` +
+        `ou supprimez/réattribuez d'abord ses documents.`,
+      );
+    }
+    // Suppression définitive — jetons, favoris, historique et règles d'accès partent en cascade.
+    await this.prisma.user.delete({ where: { id } });
     await this.activity.log({ userId: actorId, action: 'USER_DELETE', resourceType: 'user', resourceId: id });
   }
 

@@ -51,7 +51,10 @@ async function apiFetch(path, opts = {}) {
     try { msg = (await res.json()).message || msg; } catch(_) {}
     throw new Error(msg);
   }
-  return res.json();
+  // 204 No Content (ex. DELETE) ou corps vide : rien à parser
+  if (res.status === 204) return null;
+  const text = await res.text();
+  return text ? JSON.parse(text) : null;
 }
 
 // Mappers API → format app
