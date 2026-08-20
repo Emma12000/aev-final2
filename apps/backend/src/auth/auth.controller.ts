@@ -3,7 +3,7 @@ import {
   BadRequestException, UnauthorizedException,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { ThrottlerGuard } from '@nestjs/throttler';
+import { ThrottlerGuard, Throttle } from '@nestjs/throttler';
 import { Request, Response } from 'express';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -40,6 +40,7 @@ export class AuthController {
 
   @Public()
   @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 10, ttl: 60_000 } }) // anti-force-brute : 10 tentatives/min/IP
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Connexion — access token en réponse, refresh token en cookie httpOnly' })
@@ -51,6 +52,7 @@ export class AuthController {
 
   @Public()
   @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } }) // anti-abus : 5 inscriptions/min/IP
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Inscription — compte en attente de validation admin, aucune session ouverte' })
@@ -96,6 +98,7 @@ export class AuthController {
 
   @Public()
   @UseGuards(ThrottlerGuard)
+  @Throttle({ default: { limit: 5, ttl: 60_000 } }) // anti-abus : 5 demandes/min/IP
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Demander un lien de réinitialisation de mot de passe' })
