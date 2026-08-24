@@ -67,3 +67,22 @@ publique :
   public, pas une liste de services validée par le client.
 - Pas de musique : aucune piste fournie, et la génération locale (MusicGen)
   n'est pas installée.
+
+## Musique
+
+Piste `<audio id="bgm">` câblée, fondus pilotés par la timeline (entrée 3 s,
+baisse à −4 dB sous la signature à 50,5 s, remontée sur la carte de contact,
+sortie 4 s). Vérifié au ffprobe sur le MP4 : flux AAC stéréo 48 kHz présent, et
+les quatre paliers de volume mesurés conformes.
+
+`assets/bgm-placeholder.mp3` est un **nappage synthétisé à l'ffmpeg** (bourdon
+La mineur, trémolo lent, écho) — un gabarit de niveaux, pas une musique.
+Il est aussi mixé bas (−36 dB moyen au plein régime). À remplacer par une piste
+instrumentale réelle de 75 s minimum :
+
+    cp ta-musique.mp3 assets/bgm.mp3
+    # dans index.html : src="assets/bgm.mp3"
+    npx hyperframes check && npx hyperframes render
+
+Le catalogue BGM de `media-use` (10 000+ titres) n'a pas pu être utilisé :
+il exige le CLI `heygen` et une authentification au compte du client.

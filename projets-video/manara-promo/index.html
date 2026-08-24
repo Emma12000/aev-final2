@@ -224,6 +224,19 @@
           </div>
         </div>
       </section>
+
+      <!-- ============ MUSIQUE DE FOND ============
+           Remplacer src par la piste finale (MP3/WAV/M4A) puis relancer :
+             npx hyperframes check && npx hyperframes render
+           Les fondus sont pilotés par la timeline, pas par le fichier. -->
+      <audio
+        id="bgm"
+        src="assets/bgm-placeholder.mp3"
+        data-start="0"
+        data-duration="75"
+        data-track-index="10"
+        data-volume="1"
+      ></audio>
     </div>
 
     <script>
@@ -288,6 +301,12 @@
       tl.fromTo("#s8-c2", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: E }, 63.0);
       tl.fromTo("#s8-c3", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: E }, 63.2);
       tl.fromTo("#s8-c4", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: E }, 63.4);
+
+      /* ---------- musique : fondus pilotés par la timeline ---------- */
+      tl.fromTo("#bgm", { volume: 0 }, { volume: 0.85, duration: 3.0, ease: "none" }, 0);
+      tl.to("#bgm", { volume: 0.55, duration: 1.2, ease: "none" }, 50.5);   /* respire sous la signature */
+      tl.to("#bgm", { volume: 0.85, duration: 1.5, ease: "none" }, 61.5);   /* remonte sur la carte de contact */
+      tl.to("#bgm", { volume: 0, duration: 4.0, ease: "none" }, 71.0);      /* sortie */
 
       window.__timelines["main"] = tl;
     </script>
