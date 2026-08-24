@@ -1,0 +1,295 @@
+<!doctype html>
+<html lang="fr" data-resolution="square">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=1080, height=1080" />
+    <title>Manara Productions — présentation</title>
+    <script src="vendor/gsap.min.js"></script>
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      html, body { width: 1080px; height: 1080px; overflow: hidden; background: #08080A; }
+      body { font-family: "Inter", sans-serif; -webkit-font-smoothing: antialiased; }
+
+      :root {
+        --orange: #FA3B0F;
+        --ink: #08080A;
+        --ink-2: #101014;
+        --white: #FFFFFF;
+        --gray: #9A9AA2;
+      }
+
+      #root { position: relative; width: 1080px; height: 1080px; overflow: hidden; }
+      .clip { position: absolute; inset: 0; }
+      .scene { width: 100%; height: 100%; padding: 110px; display: flex; flex-direction: column; justify-content: center; box-sizing: border-box; }
+
+      /* ---------- background ---------- */
+      .bg-fill { position: absolute; inset: 0; background: var(--ink); }
+      .bg-glow {
+        position: absolute; left: -180px; top: -180px; width: 900px; height: 900px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(250,59,15,0.30) 0%, rgba(250,59,15,0.10) 42%, rgba(250,59,15,0) 70%);
+      }
+      .bg-glow-2 {
+        position: absolute; right: -260px; bottom: -260px; width: 980px; height: 980px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(250,59,15,0.20) 0%, rgba(250,59,15,0.06) 45%, rgba(250,59,15,0) 72%);
+      }
+      .bg-grid {
+        position: absolute; inset: 0;
+        background-image: linear-gradient(rgba(255,255,255,0.030) 1px, transparent 1px),
+                          linear-gradient(90deg, rgba(255,255,255,0.030) 1px, transparent 1px);
+        background-size: 90px 90px;
+      }
+
+      /* ---------- type ---------- */
+      .eyebrow {
+        font-family: "Inter", sans-serif; font-weight: 600; font-size: 26px;
+        letter-spacing: 0.34em; text-transform: uppercase; color: var(--orange);
+      }
+      .display {
+        font-family: "Montserrat", "Inter", sans-serif; font-weight: 800;
+        font-size: 88px; line-height: 1.08; letter-spacing: -0.015em; color: var(--white);
+        max-width: 860px; text-wrap: balance;
+      }
+      .display-sm {
+        font-family: "Montserrat", "Inter", sans-serif; font-weight: 800;
+        font-size: 76px; line-height: 1.1; letter-spacing: -0.01em; color: var(--white);
+        max-width: 860px; text-wrap: balance;
+      }
+      .body {
+        font-family: "Inter", sans-serif; font-weight: 400; font-size: 38px;
+        line-height: 1.5; color: var(--gray); max-width: 780px;
+      }
+      .accent { color: var(--orange); }
+
+      /* ---------- logo lockup ---------- */
+      .lockup { display: flex; flex-direction: column; align-items: center; gap: 46px; width: 100%; }
+      .mark-wrap { display: block; width: 300px; height: 300px; }
+      .mark-square {
+        display: block; width: 300px; height: 300px; border-radius: 56px;
+        background: var(--orange); position: relative; overflow: hidden;
+      }
+      .mark-bar {
+        position: absolute; left: 84px; top: 78px; width: 22px; height: 144px;
+        border-radius: 11px; background: var(--white);
+      }
+      .mark-tri {
+        position: absolute; left: 126px; top: 84px; width: 0; height: 0;
+        border-top: 66px solid transparent; border-bottom: 66px solid transparent;
+        border-left: 92px solid var(--white);
+      }
+      .wordmark {
+        font-family: "Montserrat", "Inter", sans-serif; font-weight: 800;
+        font-size: 108px; letter-spacing: 0.03em; color: var(--white); display: block;
+        text-align: center; line-height: 1;
+      }
+      .subword {
+        font-family: "Montserrat", "Inter", sans-serif; font-weight: 500;
+        font-size: 32px; letter-spacing: 0.56em; color: var(--gray);
+        display: block; text-align: center; line-height: 1; padding-left: 0.56em;
+      }
+
+      /* ---------- pillars ---------- */
+      .pillar-num {
+        font-family: "Montserrat", "Inter", sans-serif; font-weight: 800; font-size: 240px;
+        line-height: 0.9; color: rgba(250,59,15,0.20);
+        -webkit-text-stroke: 4px rgba(250,59,15,0.92); display: block;
+      }
+      .rail { display: block; width: 100%; height: 4px; background: rgba(255,255,255,0.10); position: relative; overflow: hidden; }
+      .rail-fill { display: block; position: absolute; left: 0; top: 0; height: 4px; width: 100%; background: var(--orange); transform-origin: left center; }
+
+      /* ---------- contact ---------- */
+      .contact-row { display: flex; align-items: center; gap: 26px; }
+      .contact-row-top { align-items: flex-start; }
+      .contact-row-top .contact-dot { margin-top: 15px; }
+      .contact-dot { display: block; width: 12px; height: 12px; border-radius: 50%; background: var(--orange); flex: none; }
+      .contact-txt { font-family: "Inter", sans-serif; font-weight: 500; font-size: 36px; color: var(--white); }
+      .contact-txt-dim { font-family: "Inter", sans-serif; font-weight: 400; font-size: 32px; color: var(--gray); }
+
+      .stack { display: flex; flex-direction: column; }
+    </style>
+  </head>
+  <body>
+    <div
+      id="root"
+      data-composition-id="main"
+      data-start="0"
+      data-duration="75"
+      data-width="1080"
+      data-height="1080"
+      data-fps="30"
+    >
+      <!-- ============ BACKGROUND ============ -->
+      <div id="bg" class="clip" data-start="0" data-duration="75" data-track-index="0">
+        <div class="bg-fill"></div>
+        <div class="bg-grid" id="bg-grid"></div>
+        <div class="bg-glow" id="bg-glow-a"></div>
+        <div class="bg-glow-2" id="bg-glow-b"></div>
+      </div>
+
+      <!-- ============ S1 — LOGO (0 → 7.5) ============ -->
+      <section id="s1" class="clip" data-start="0" data-duration="7.5" data-track-index="1">
+        <div class="scene" data-layout-allow-overlap="true" id="s1-in" style="align-items: center">
+          <div class="lockup">
+            <div class="mark-wrap" id="s1-mark">
+              <div class="mark-square" id="s1-square">
+                <div class="mark-bar" id="s1-bar"></div>
+                <div class="mark-tri" id="s1-tri"></div>
+              </div>
+            </div>
+            <div class="stack" style="gap: 26px; width: 100%">
+              <span class="wordmark" id="s1-word">MANARA</span>
+              <span class="subword" id="s1-sub">PRODUCTIONS</span>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ S2 — ACCROCHE (7.0 → 17.0) ============ -->
+      <section id="s2" class="clip" data-start="7.0" data-duration="10" data-track-index="2">
+        <div class="scene" data-layout-allow-overlap="true" id="s2-in">
+          <span class="eyebrow" id="s2-eye" style="display: block; margin-bottom: 54px">Agence de communication</span>
+          <div class="stack" style="gap: 14px">
+            <span class="display" id="s2-l1" style="display: block">Votre marque a quelque chose à dire.</span>
+            <span class="display accent" id="s2-l3" style="display: block; margin-top: 40px">Encore faut-il qu'on l'écoute.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ S3 — POSITIONNEMENT (16.5 → 27.0) ============ -->
+      <section id="s3" class="clip" data-start="16.5" data-duration="10.5" data-track-index="1">
+        <div class="scene" data-layout-allow-overlap="true" id="s3-in">
+          <span class="eyebrow" id="s3-eye" style="display: block; margin-bottom: 50px">Ce que nous faisons</span>
+          <span class="display-sm" id="s3-title" style="display: block; margin-bottom: 44px">Définir le message. Choisir les canaux. Passer à l'exécution.</span>
+          <span class="body" id="s3-body" style="display: block">Manara Productions accompagne marques et institutions dans la définition et la mise en œuvre de stratégies de communication efficaces — sur tous les canaux, print et digital.</span>
+        </div>
+      </section>
+
+      <!-- ============ S4 — PILIER 01 (26.5 → 35.0) ============ -->
+      <section id="s4" class="clip" data-start="26.5" data-duration="8.5" data-track-index="2">
+        <div class="scene" data-layout-allow-overlap="true" id="s4-in">
+          <span class="pillar-num" id="s4-num" style="margin-bottom: 30px">01</span>
+          <span class="display-sm" id="s4-title" style="display: block; margin-bottom: 34px">Stratégie</span>
+          <span class="body" id="s4-body" style="display: block; margin-bottom: 70px">Diagnostic, positionnement, plan de communication. On décide de ce qu'il faut dire avant de décider comment le dire.</span>
+          <span class="rail" id="s4-rail"><span class="rail-fill" id="s4-rail-fill"></span></span>
+        </div>
+      </section>
+
+      <!-- ============ S5 — PILIER 02 (34.5 → 43.0) ============ -->
+      <section id="s5" class="clip" data-start="34.5" data-duration="8.5" data-track-index="1">
+        <div class="scene" data-layout-allow-overlap="true" id="s5-in">
+          <span class="pillar-num" id="s5-num" style="margin-bottom: 30px">02</span>
+          <span class="display-sm" id="s5-title" style="display: block; margin-bottom: 34px">Print &amp; digital</span>
+          <span class="body" id="s5-body" style="display: block; margin-bottom: 70px">Identité visuelle, édition, réseaux sociaux, campagnes. Une marque qui se reconnaît sur chaque support.</span>
+          <span class="rail" id="s5-rail"><span class="rail-fill" id="s5-rail-fill"></span></span>
+        </div>
+      </section>
+
+      <!-- ============ S6 — PILIER 03 (42.5 → 51.0) ============ -->
+      <section id="s6" class="clip" data-start="42.5" data-duration="8.5" data-track-index="2">
+        <div class="scene" data-layout-allow-overlap="true" id="s6-in">
+          <span class="pillar-num" id="s6-num" style="margin-bottom: 30px">03</span>
+          <span class="display-sm" id="s6-title" style="display: block; margin-bottom: 34px">Création &amp; production</span>
+          <span class="body" id="s6-body" style="display: block; margin-bottom: 70px">De l'idée à l'image finale : écriture, tournage, montage, diffusion. La production reste chez nous, de bout en bout.</span>
+          <span class="rail" id="s6-rail"><span class="rail-fill" id="s6-rail-fill"></span></span>
+        </div>
+      </section>
+
+      <!-- ============ S7 — SIGNATURE (50.5 → 62.0) ============ -->
+      <section id="s7" class="clip" data-start="50.5" data-duration="11.5" data-track-index="1">
+        <div class="scene" data-layout-allow-overlap="true" id="s7-in">
+          <div class="stack" style="gap: 18px">
+            <span class="display" id="s7-l1" style="display: block">La communication de qualité.</span>
+            <span class="display accent" id="s7-l3" style="display: block; margin-top: 46px">La création et la production d'excellence.</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ S8 — CONTACT (61.5 → 75.0) ============ -->
+      <section id="s8" class="clip" data-start="61.5" data-duration="13.5" data-track-index="2">
+        <div class="scene" data-layout-allow-overlap="true" id="s8-in">
+          <div class="stack" id="s8-lock" style="gap: 30px; margin-bottom: 76px">
+            <div class="mark-square" id="s8-square" style="width: 150px; height: 150px; border-radius: 28px">
+              <div class="mark-bar" style="left: 42px; top: 39px; width: 11px; height: 72px; border-radius: 6px"></div>
+              <div class="mark-tri" style="left: 63px; top: 42px; border-top-width: 33px; border-bottom-width: 33px; border-left-width: 46px"></div>
+            </div>
+            <span class="wordmark" id="s8-word" style="font-size: 72px; text-align: left">MANARA</span>
+            <span class="subword" id="s8-sub" style="font-size: 22px; text-align: left; letter-spacing: 0.52em">PRODUCTIONS</span>
+          </div>
+          <div class="stack" style="gap: 30px">
+            <div class="contact-row" id="s8-c1"><span class="contact-dot"></span><span class="contact-txt">productions.manara.td</span></div>
+            <div class="contact-row" id="s8-c2"><span class="contact-dot"></span><span class="contact-txt">+235 69 29 69 43</span></div>
+            <div class="contact-row" id="s8-c3"><span class="contact-dot"></span><span class="contact-txt">productions@manara.td</span></div>
+            <div class="contact-row contact-row-top" id="s8-c4"><span class="contact-dot"></span><span class="contact-txt-dim">Rue 3037, Avenue Charles de Gaulle — N'Djamena, Tchad</span></div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      window.__timelines = window.__timelines || {};
+      const tl = gsap.timeline({ paused: true });
+      const E = "power3.out";
+
+      /* ---- background drift (whole piece) ---- */
+      tl.fromTo("#bg-glow-a", { x: -40, y: -40 }, { x: 60, y: 40, duration: 75, ease: "none" }, 0);
+      tl.fromTo("#bg-glow-b", { x: 50, y: 50 }, { x: -60, y: -30, duration: 75, ease: "none" }, 0);
+      tl.fromTo("#bg-grid", { opacity: 0.5 }, { opacity: 1, duration: 75, ease: "none" }, 0);
+
+      /* ---------- S1 — logo reveal (0 → 7.5) ---------- */
+      tl.fromTo("#s1-in", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: E }, 0);
+      tl.fromTo("#s1-square", { scale: 0.6, opacity: 0, borderRadius: 150 }, { scale: 1, opacity: 1, borderRadius: 56, duration: 1.1, ease: "power4.out" }, 0.3);
+      tl.fromTo("#s1-bar", { x: -70, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: "power3.out" }, 1.15);
+      tl.fromTo("#s1-tri", { x: 60, opacity: 0, scale: 0.7 }, { x: 0, opacity: 1, scale: 1, duration: 0.7, ease: "power3.out" }, 1.3);
+      tl.fromTo("#s1-word", { y: 46, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: E }, 1.85);
+      tl.fromTo("#s1-sub", { y: 26, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: E }, 2.15);
+      tl.fromTo("#s1-mark", { y: 0 }, { y: -14, duration: 4.4, ease: "sine.inOut" }, 2.6);
+      tl.to("#s1-in", { opacity: 0, duration: 0.5, ease: "power2.in" }, 7.0);
+
+      /* ---------- S2 — accroche (7.0 → 17.0) ---------- */
+      tl.fromTo("#s2-in", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: E }, 7.0);
+      tl.fromTo("#s2-eye", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: E }, 7.3);
+      tl.fromTo("#s2-l1", { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: E }, 7.7);
+      tl.fromTo("#s2-l3", { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: E }, 9.6);
+      tl.to("#s2-in", { opacity: 0, duration: 0.5, ease: "power2.in" }, 16.5);
+
+      /* ---------- S3 — positionnement (16.5 → 27.0) ---------- */
+      tl.fromTo("#s3-in", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: E }, 16.5);
+      tl.fromTo("#s3-eye", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: E }, 16.8);
+      tl.fromTo("#s3-title", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: E }, 17.1);
+      tl.fromTo("#s3-body", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: E }, 17.9);
+      tl.to("#s3-in", { opacity: 0, duration: 0.5, ease: "power2.in" }, 26.5);
+
+      /* ---------- Pillars ---------- */
+      function pillar(n, t0, t1) {
+        tl.fromTo("#s" + n + "-in", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: E }, t0);
+        tl.fromTo("#s" + n + "-num", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: E }, t0 + 0.25);
+        tl.fromTo("#s" + n + "-title", { y: 40, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: E }, t0 + 0.5);
+        tl.fromTo("#s" + n + "-body", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: E }, t0 + 0.75);
+        tl.fromTo("#s" + n + "-rail-fill", { scaleX: 0 }, { scaleX: 1, duration: t1 - t0 - 1.1, ease: "none" }, t0 + 0.6);
+        tl.to("#s" + n + "-in", { opacity: 0, duration: 0.5, ease: "power2.in" }, t1 - 0.5);
+      }
+      pillar(4, 26.5, 35.0);
+      pillar(5, 34.5, 43.0);
+      pillar(6, 42.5, 51.0);
+
+      /* ---------- S7 — signature (50.5 → 62.0) ---------- */
+      tl.fromTo("#s7-in", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: E }, 50.5);
+      tl.fromTo("#s7-l1", { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: E }, 50.9);
+      tl.fromTo("#s7-l3", { y: 44, opacity: 0 }, { y: 0, opacity: 1, duration: 0.9, ease: E }, 53.0);
+      tl.to("#s7-in", { opacity: 0, duration: 0.5, ease: "power2.in" }, 61.5);
+
+      /* ---------- S8 — contact (61.5 → 75.0) ---------- */
+      tl.fromTo("#s8-in", { opacity: 0 }, { opacity: 1, duration: 0.5, ease: E }, 61.5);
+      tl.fromTo("#s8-square", { scale: 0.7, opacity: 0 }, { scale: 1, opacity: 1, duration: 0.8, ease: "power4.out" }, 61.8);
+      tl.fromTo("#s8-word", { y: 30, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: E }, 62.1);
+      tl.fromTo("#s8-sub", { y: 20, opacity: 0 }, { y: 0, opacity: 1, duration: 0.8, ease: E }, 62.3);
+      tl.fromTo("#s8-c1", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: E }, 62.8);
+      tl.fromTo("#s8-c2", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: E }, 63.0);
+      tl.fromTo("#s8-c3", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: E }, 63.2);
+      tl.fromTo("#s8-c4", { x: -30, opacity: 0 }, { x: 0, opacity: 1, duration: 0.7, ease: E }, 63.4);
+
+      window.__timelines["main"] = tl;
+    </script>
+  </body>
+</html>
