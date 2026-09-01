@@ -18,7 +18,9 @@
     "db:migrate": "pnpm --filter @aev/backend run db:migrate",
     "db:seed": "pnpm --filter @aev/backend run db:seed",
     "db:generate": "pnpm --filter @aev/backend run db:generate",
-    "db:studio": "pnpm --filter @aev/backend run db:studio"
+    "db:studio": "pnpm --filter @aev/backend run db:studio",
+    "motion:studio": "pnpm --filter @aev/motion run studio",
+    "motion:render": "pnpm --filter @aev/motion run render"
   },
   "devDependencies": {
     "turbo": "^2.0.0",

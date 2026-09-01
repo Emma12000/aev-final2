@@ -1,0 +1,119 @@
+import React from 'react';
+import { AbsoluteFill } from 'remotion';
+import { theme } from '../theme';
+import { displayFont, bodyFont } from '../fonts';
+import { Scene } from '../components/Layers';
+import { Counter, Entrance, WordReveal } from '../components/Motion';
+import type { PublicStats } from '../data';
+
+const Stat: React.FC<{ value: number; label: string; delay: number; suffix?: string }> = ({
+  value,
+  label,
+  delay,
+  suffix,
+}) => (
+  <Entrance delay={delay} preset="snappy" distance={26}>
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: 10,
+        padding: '30px 44px',
+        borderRadius: 20,
+        background: 'rgba(255,255,255,0.05)',
+        border: '1px solid rgba(168,220,240,0.18)',
+        minWidth: 300,
+      }}
+    >
+      <Counter
+        target={value}
+        delay={delay + 4}
+        suffix={suffix}
+        style={{
+          fontFamily: displayFont,
+          fontSize: 76,
+          fontWeight: 700,
+          color: theme.colors.text,
+          letterSpacing: '-0.03em',
+        }}
+      />
+      <span
+        style={{
+          fontFamily: bodyFont,
+          fontSize: 24,
+          fontWeight: 500,
+          color: theme.colors.textDim,
+          letterSpacing: '0.06em',
+        }}
+      >
+        {label}
+      </span>
+    </div>
+  </Entrance>
+);
+
+/** Le chiffre-clé : volume total de l'archive publique, puis les compléments en cascade. */
+export const KeyFigure: React.FC<{ stats: PublicStats }> = ({ stats }) => (
+  <Scene>
+    <AbsoluteFill
+      style={{
+        alignItems: 'center',
+        justifyContent: 'center',
+        flexDirection: 'column',
+        gap: 56,
+        padding: '0 140px',
+      }}
+    >
+      <WordReveal
+        text="Une mémoire institutionnelle accessible"
+        delay={4}
+        style={{
+          fontFamily: bodyFont,
+          fontSize: 32,
+          fontWeight: 500,
+          color: theme.colors.textDim,
+          letterSpacing: '0.14em',
+          textTransform: 'uppercase',
+          justifyContent: 'center',
+        }}
+      />
+
+      <Entrance delay={14} preset="smooth" distance={46}>
+        <Counter
+          target={stats.totals.documents}
+          delay={18}
+          style={{
+            fontFamily: displayFont,
+            fontSize: 300,
+            fontWeight: 700,
+            color: theme.colors.primary,
+            letterSpacing: '-0.05em',
+            lineHeight: 0.92,
+            textShadow: `0 0 90px ${theme.colors.glow}`,
+            display: 'block',
+          }}
+        />
+      </Entrance>
+
+      <Entrance delay={30} preset="snappy" distance={22}>
+        <div
+          style={{
+            fontFamily: bodyFont,
+            fontSize: 40,
+            fontWeight: 500,
+            color: theme.colors.text,
+            textAlign: 'center',
+          }}
+        >
+          documents publics archivés et consultables
+        </div>
+      </Entrance>
+
+      <div style={{ display: 'flex', gap: 32, marginTop: 14 }}>
+        <Stat value={stats.totals.pages} label="pages numérisées" delay={46} />
+        <Stat value={stats.totals.categories} label="fonds documentaires" delay={51} />
+        <Stat value={stats.totals.megabytes} label="Mo préservés" delay={56} />
+      </div>
+    </AbsoluteFill>
+  </Scene>
+);

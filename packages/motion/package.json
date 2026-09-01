@@ -1,0 +1,24 @@
+{
+  "name": "@aev/motion",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Moteur de redevabilité vidéo — génère les bilans animés AEV depuis les données de la plateforme",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "render": "node scripts/render.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.410",
+    "@remotion/fonts": "4.0.410",
+    "@remotion/google-fonts": "4.0.410",
+    "@remotion/transitions": "4.0.410",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "4.0.410"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.3",
+    "typescript": "^5.5.0"
+  }
+}
