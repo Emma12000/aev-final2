@@ -1,11 +1,7 @@
 import React from 'react';
 import { Composition } from 'remotion';
-import {
-  BilanTrimestriel,
-  bilanDefaultProps,
-  FPS,
-  TOTAL_FRAMES,
-} from './BilanTrimestriel';
+import { BilanTrimestriel, bilanDefaultProps } from './BilanTrimestriel';
+import { FPS, TOTAL_FRAMES } from './timeline';
 
 export const RemotionRoot: React.FC = () => (
   <>

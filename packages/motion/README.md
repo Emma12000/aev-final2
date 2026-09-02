@@ -15,10 +15,14 @@ Rendu avec [Remotion](https://remotion.dev) (React → vidéo, image par image).
 
 Cinq scènes : ouverture de marque → chiffre-clé → rythme de versement sur 12 mois
 → répartition par fonds → croissance et appel à consulter l'archive.
+Bande son incluse : lit musical original et effets synchronisés.
 
 ## Utilisation
 
 ```bash
+# Bande son (déjà appelé automatiquement par studio et render)
+pnpm --filter @aev/motion audio
+
 # Aperçu interactif (données de démonstration)
 pnpm motion:studio
 
@@ -52,16 +56,21 @@ export REMOTION_BROWSER_EXECUTABLE=/chemin/vers/headless_shell
    vidéo avec le jeu de démonstration, signalée par un avertissement en clair.
    Toute vidéo destinée à un bailleur se rend avec `--strict`.
 3. **Aucun appel réseau au rendu.** Les polices sont auto-hébergées dans
-   `public/fonts/`. Un CI hors ligne produirait sinon une vidéo en police
-   système, sans erreur.
+   `public/fonts/` et la bande son est synthétisée localement. Un CI hors ligne
+   produirait sinon une vidéo en police système ou muette, sans erreur.
+4. **Aucune licence musicale à gérer.** Tout l'audio est synthétisé par
+   `scripts/gen-audio.mjs` : création originale, aucun sample tiers, aucun
+   risque de revendication sur YouTube ou Meta.
 
 ## Architecture
 
 ```
 src/
 ├── theme.ts              # Couleurs, polices, easings, ressorts, rythme — source unique
+├── timeline.ts           # Durées, départs de scène, coupes — lu par le montage ET le son
 ├── fonts.ts              # Inter + Playfair Display, auto-hébergées
 ├── data.ts               # Contrat API, jeu de démonstration, formatage FR
+├── Sound.tsx             # Feuille de conduite audio
 ├── Root.tsx              # Déclaration des compositions
 ├── BilanTrimestriel.tsx  # Montage : scènes + transitions
 ├── components/
@@ -78,11 +87,31 @@ Aucune interpolation linéaire ; entrées sur 3 propriétés (opacité + transla
 pile à 5 couches sur chaque scène ; une seule couleur héros par image ; toutes
 les durées dérivées du `fps`.
 
+## Bande son
+
+`scripts/gen-audio.mjs` synthétise tout l'audio en WAV 16 bits — création
+originale, aucun sample tiers, résultat déterministe. Les fichiers ne sont donc
+pas versionnés : `render` et `studio` les régénèrent s'ils manquent.
+
+- **Lit musical** en fa majeur (F – B♭ – Dm – C – F), nappe de cordes chaude,
+  basse tenue, arpège discret, aucune batterie. Registre institutionnel, pas
+  électro. **Les changements d'accord tombent sur les quatre coupes du montage** :
+  c'est cette synchronisation-là que l'œil ressent, bien plus qu'une grille de
+  tempo rigide.
+- **Effets** : souffle et impact sur chaque coupe, pointe à l'apparition d'un
+  élément, tic sur les barres du graphe, montée avant le chiffre de croissance,
+  scintillement sur le logo et l'adresse finale.
+- **Calage** : chaque effet démarre 3 frames avant que l'élément n'atterrisse.
+  En avance, l'oreille entend « synchrone » ; en retard, elle entend « cassé ».
+- **Niveaux** : lit à 0,28 avec fondus d'entrée et de sortie, effets entre 0,2
+  et 0,6. Pic mesuré à 0,689 — aucune saturation.
+
+Vérification sans écoute possible : rendre la piste seule
+(`--codec wav --config`) et analyser l'enveloppe RMS par frame. Les quatre
+impacts doivent tripler le niveau aux frames 102, 240, 414 et 588.
+
 ## Limites connues
 
-- **Pas de bande son.** Une vidéo institutionnelle muette perd environ la moitié
-  de sa qualité perçue : prochaine étape, un lit musical discret et des SFX sur
-  les temps forts.
 - **`public/logo-aev.png` est un JPEG à fond noir**, détouré géométriquement en
   cercle par `components/Logo.tsx`. Fournir un PNG à fond transparent et
   simplifier ce composant.

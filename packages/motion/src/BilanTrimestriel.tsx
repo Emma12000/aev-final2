@@ -10,26 +10,8 @@ import { Evolution } from './scenes/Evolution';
 import { Categories } from './scenes/Categories';
 import { Outro } from './scenes/Outro';
 import { sampleStats, type PublicStats } from './data';
-
-export const FPS = 30;
-
-const s = theme.timing.sceneSeconds;
-const f = (seconds: number) => Math.round(seconds * FPS);
-
-export const SCENE_FRAMES = {
-  intro: f(s.intro),
-  keyFigure: f(s.keyFigure),
-  evolution: f(s.evolution),
-  categories: f(s.categories),
-  outro: f(s.outro),
-};
-
-const TRANSITION = theme.timing.transitionFrames;
-const TRANSITION_COUNT = 4;
-
-/** Les transitions se chevauchent : la durée totale retranche chaque recouvrement. */
-export const TOTAL_FRAMES =
-  Object.values(SCENE_FRAMES).reduce((a, b) => a + b, 0) - TRANSITION * TRANSITION_COUNT;
+import { SCENE_FRAMES, TRANSITION } from './timeline';
+import { Sound } from './Sound';
 
 // Type (et non interface) : Remotion contraint les props à `Record<string, unknown>`,
 // ce qu'une interface ne satisfait pas faute de signature d'index implicite.
@@ -45,6 +27,8 @@ export const bilanDefaultProps: BilanProps = {
 
 export const BilanTrimestriel: React.FC<BilanProps> = ({ stats, portalUrl }) => (
   <AbsoluteFill style={{ backgroundColor: theme.colors.bg }}>
+    <Sound />
+
     <TransitionSeries>
       <TransitionSeries.Sequence durationInFrames={SCENE_FRAMES.intro}>
         <Intro periodLabel={stats.period.label} />

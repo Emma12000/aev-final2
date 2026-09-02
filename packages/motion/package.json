@@ -4,6 +4,8 @@
   "private": true,
   "description": "Moteur de redevabilité vidéo — génère les bilans animés AEV depuis les données de la plateforme",
   "scripts": {
+    "audio": "node scripts/gen-audio.mjs",
+    "prestudio": "node scripts/gen-audio.mjs",
     "studio": "remotion studio src/index.ts",
     "render": "node scripts/render.mjs",
     "typecheck": "tsc --noEmit"

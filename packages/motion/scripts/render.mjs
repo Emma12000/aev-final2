@@ -11,7 +11,7 @@
  * vidéo destinée à être diffusée.
  */
 import { spawnSync } from 'node:child_process';
-import { mkdirSync, writeFileSync } from 'node:fs';
+import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
@@ -27,6 +27,17 @@ const apiUrl = arg('api', process.env.AEV_API_URL ?? 'http://localhost:3001/api/
 const period = arg('period');
 const portalUrl = arg('portal', process.env.AEV_PORTAL_URL ?? 'archives.espoiretvie.org');
 const strict = flag('strict');
+
+// La bande son est synthétisée, pas versionnée : le générateur est déterministe,
+// donc la régénérer donne exactement les mêmes fichiers qu'ailleurs.
+if (!existsSync(resolve(root, 'public/sfx/bed.wav'))) {
+  console.log('→ génération de la bande son');
+  const audio = spawnSync('node', ['scripts/gen-audio.mjs'], { cwd: root, stdio: 'inherit' });
+  if (audio.status !== 0) {
+    console.error('✖ Échec de la génération audio.');
+    process.exit(1);
+  }
+}
 
 const loadStats = async () => {
   const url = new URL(`${apiUrl.replace(/\/$/, '')}/public-stats`);
