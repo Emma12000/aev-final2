@@ -12,6 +12,10 @@ Rendu avec [Remotion](https://remotion.dev) (React → vidéo, image par image).
 | Composition | Format | Durée | Usage |
 |---|---|---|---|
 | `BilanTrimestriel` | 1920×1080, 30 fps | ~24 s | Bailleurs, partenaires, site, LinkedIn |
+| `BilanVertical` | 1080×1920, 30 fps | ~24 s | Reels, Shorts, TikTok, statuts WhatsApp |
+
+Les deux partagent le montage, les données et la bande son **à la frame près** :
+seule la mise en page change. Un ajustement de rythme profite aux deux formats.
 
 Cinq scènes : ouverture de marque → chiffre-clé → rythme de versement sur 12 mois
 → répartition par fonds → croissance et appel à consulter l'archive.
@@ -29,14 +33,18 @@ pnpm motion:studio
 # Rendu depuis l'API locale
 pnpm motion:render -- --period=2026-Q1
 
+# Version verticale pour les réseaux sociaux
+pnpm motion:render -- --period=2026-Q1 --format=vertical
+
 # Rendu de production : échoue si l'API est injoignable, au lieu de
 # publier silencieusement des chiffres de démonstration
 AEV_API_URL=https://api.aev.example/api/v1 \
   pnpm motion:render -- --period=2026-Q1 --strict
 ```
 
-Options : `--period=YYYY-Qn|YYYY`, `--api=`, `--portal=`, `--out=`, `--strict`.
-La vidéo est écrite dans `out/aev-bilan-<période>.mp4`.
+Options : `--period=YYYY-Qn|YYYY`, `--format=paysage|vertical`, `--api=`,
+`--portal=`, `--out=`, `--strict`. La vidéo est écrite dans
+`out/aev-bilan-<période>[-vertical].mp4`.
 
 ### Rendu dans un conteneur sans Chromium téléchargeable
 
@@ -68,6 +76,7 @@ export REMOTION_BROWSER_EXECUTABLE=/chemin/vers/headless_shell
 src/
 ├── theme.ts              # Couleurs, polices, easings, ressorts, rythme — source unique
 ├── timeline.ts           # Durées, départs de scène, coupes — lu par le montage ET le son
+├── layout.ts             # Jetons de mise en page par format — évite de dupliquer les scènes
 ├── fonts.ts              # Inter + Playfair Display, auto-hébergées
 ├── data.ts               # Contrat API, jeu de démonstration, formatage FR
 ├── Sound.tsx             # Feuille de conduite audio
@@ -79,6 +88,25 @@ src/
 │   └── Logo.tsx          # Détourage circulaire du logo (fichier source à fond noir)
 └── scenes/               # Intro, KeyFigure, Evolution, Categories, Outro
 ```
+
+## Les deux formats
+
+Les scènes ne connaissent pas leurs dimensions : elles lisent les jetons de
+`layout.ts` via `useLayout()`. Dupliquer cinq scènes pour la version verticale
+aurait garanti la divergence dès la première retouche.
+
+Trois scènes changent de structure, pas seulement de taille :
+
+- **Chiffre-clé** : les trois cartes deviennent une rangée compacte à hauteur
+  égale, texte centré.
+- **Rythme de versement** : les douze barres restent affichées — en réduire le
+  nombre changerait ce que la vidéo raconte — mais un intitulé de mois sur deux
+  seulement, et les valeurs uniquement sur le pic.
+- **Répartition par fonds** : l'intitulé et le total passent au-dessus de la
+  barre ; le tryptique du 16:9 ne tient pas sur 1080 px.
+
+Zone de sécurité 9:16 : `padY` à 250 px maintient le contenu critique dans les
+75 % centraux, là où l'interface des plateformes ne le recouvre pas.
 
 ## Règles de motion design appliquées
 
@@ -115,5 +143,3 @@ impacts doivent tripler le niveau aux frames 102, 240, 414 et 588.
 - **`public/logo-aev.png` est un JPEG à fond noir**, détouré géométriquement en
   cercle par `components/Logo.tsx`. Fournir un PNG à fond transparent et
   simplifier ce composant.
-- **Format paysage uniquement.** La déclinaison verticale 1080×1920 pour Reels,
-  Shorts et TikTok reste à faire.

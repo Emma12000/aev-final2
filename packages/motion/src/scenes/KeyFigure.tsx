@@ -5,24 +5,37 @@ import { displayFont, bodyFont } from '../fonts';
 import { Scene } from '../components/Layers';
 import { Counter, Entrance, WordReveal } from '../components/Motion';
 import type { PublicStats } from '../data';
+import { useLayout, type Layout } from '../layout';
 
-const Stat: React.FC<{ value: number; label: string; delay: number; suffix?: string }> = ({
-  value,
-  label,
-  delay,
-  suffix,
-}) => (
-  <Entrance delay={delay} preset="snappy" distance={26}>
+const Stat: React.FC<{
+  value: number;
+  label: string;
+  delay: number;
+  suffix?: string;
+  layout: Layout;
+}> = ({ value, label, delay, suffix, layout: L }) => (
+  // En 9:16 les trois cartes partagent la largeur à parts égales : `Entrance`
+  // porte le `flex`, la carte n'est pas elle-même l'enfant du conteneur flex.
+  <Entrance
+    delay={delay}
+    preset="snappy"
+    distance={26}
+    style={L.portrait ? { flex: 1, minWidth: 0 } : undefined}
+  >
     <div
       style={{
         display: 'flex',
         flexDirection: 'column',
+        alignItems: L.portrait ? 'center' : 'flex-start',
+        textAlign: L.portrait ? 'center' : 'left',
         gap: 10,
-        padding: '30px 44px',
+        padding: L.statPad,
         borderRadius: 20,
         background: 'rgba(255,255,255,0.05)',
         border: '1px solid rgba(168,220,240,0.18)',
-        minWidth: 300,
+        minWidth: L.portrait ? 0 : 300,
+        height: '100%',
+        boxSizing: 'border-box',
       }}
     >
       <Counter
@@ -31,7 +44,7 @@ const Stat: React.FC<{ value: number; label: string; delay: number; suffix?: str
         suffix={suffix}
         style={{
           fontFamily: displayFont,
-          fontSize: 76,
+          fontSize: L.statValue,
           fontWeight: 700,
           color: theme.colors.text,
           letterSpacing: '-0.03em',
@@ -40,7 +53,7 @@ const Stat: React.FC<{ value: number; label: string; delay: number; suffix?: str
       <span
         style={{
           fontFamily: bodyFont,
-          fontSize: 24,
+          fontSize: L.statLabel,
           fontWeight: 500,
           color: theme.colors.textDim,
           letterSpacing: '0.06em',
@@ -53,23 +66,26 @@ const Stat: React.FC<{ value: number; label: string; delay: number; suffix?: str
 );
 
 /** Le chiffre-clé : volume total de l'archive publique, puis les compléments en cascade. */
-export const KeyFigure: React.FC<{ stats: PublicStats }> = ({ stats }) => (
-  <Scene>
-    <AbsoluteFill
-      style={{
-        alignItems: 'center',
-        justifyContent: 'center',
-        flexDirection: 'column',
-        gap: 56,
-        padding: '0 140px',
-      }}
-    >
+export const KeyFigure: React.FC<{ stats: PublicStats }> = ({ stats }) => {
+  const L = useLayout();
+
+  return (
+    <Scene>
+      <AbsoluteFill
+        style={{
+          alignItems: 'center',
+          justifyContent: 'center',
+          flexDirection: 'column',
+          gap: L.portrait ? 40 : 56,
+          padding: `0 ${L.padX}px`,
+        }}
+      >
       <WordReveal
         text="Une mémoire institutionnelle accessible"
         delay={4}
         style={{
           fontFamily: bodyFont,
-          fontSize: 32,
+          fontSize: L.eyebrow,
           fontWeight: 500,
           color: theme.colors.textDim,
           letterSpacing: '0.14em',
@@ -84,7 +100,7 @@ export const KeyFigure: React.FC<{ stats: PublicStats }> = ({ stats }) => (
           delay={18}
           style={{
             fontFamily: displayFont,
-            fontSize: 300,
+            fontSize: L.hero,
             fontWeight: 700,
             color: theme.colors.primary,
             letterSpacing: '-0.05em',
@@ -99,7 +115,7 @@ export const KeyFigure: React.FC<{ stats: PublicStats }> = ({ stats }) => (
         <div
           style={{
             fontFamily: bodyFont,
-            fontSize: 40,
+            fontSize: L.body,
             fontWeight: 500,
             color: theme.colors.text,
             textAlign: 'center',
@@ -109,11 +125,22 @@ export const KeyFigure: React.FC<{ stats: PublicStats }> = ({ stats }) => (
         </div>
       </Entrance>
 
-      <div style={{ display: 'flex', gap: 32, marginTop: 14 }}>
-        <Stat value={stats.totals.pages} label="pages numérisées" delay={46} />
-        <Stat value={stats.totals.categories} label="fonds documentaires" delay={51} />
-        <Stat value={stats.totals.megabytes} label="Mo préservés" delay={56} />
-      </div>
-    </AbsoluteFill>
-  </Scene>
-);
+        <div
+          style={{
+            display: 'flex',
+            flexDirection: 'row',
+            width: '100%',
+            alignItems: 'stretch',
+            justifyContent: 'center',
+            gap: L.portrait ? 14 : 32,
+            marginTop: 14,
+          }}
+        >
+          <Stat value={stats.totals.pages} label="pages numérisées" delay={46} layout={L} />
+          <Stat value={stats.totals.categories} label="fonds documentaires" delay={51} layout={L} />
+          <Stat value={stats.totals.megabytes} label="Mo préservés" delay={56} layout={L} />
+        </div>
+      </AbsoluteFill>
+    </Scene>
+  );
+};

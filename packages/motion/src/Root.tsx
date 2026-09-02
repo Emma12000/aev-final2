@@ -14,5 +14,17 @@ export const RemotionRoot: React.FC = () => (
       height={1080}
       defaultProps={bilanDefaultProps}
     />
+
+    {/* Même montage, même bande son, même durée — seule la mise en page change.
+        Reels, Shorts et TikTok. */}
+    <Composition
+      id="BilanVertical"
+      component={BilanTrimestriel}
+      durationInFrames={TOTAL_FRAMES}
+      fps={FPS}
+      width={1080}
+      height={1920}
+      defaultProps={bilanDefaultProps}
+    />
   </>
 );

@@ -4,14 +4,21 @@ import { theme } from '../theme';
 import { displayFont, bodyFont } from '../fonts';
 import { Scene } from '../components/Layers';
 import { Entrance, Underline } from '../components/Motion';
+import { useLayout } from '../layout';
 import { formatMonth, type PublicStats } from '../data';
 
-const CHART_HEIGHT = 420;
-
-/** Douze mois de versements. La barre la plus haute porte l'accent — un seul point d'emphase. */
+/**
+ * Douze mois de versements. La barre la plus haute porte l'accent — un seul
+ * point d'emphase par image.
+ *
+ * En 9:16 les douze intitulés de mois ne tiennent pas sur 1080 px : on n'affiche
+ * qu'un mois sur deux et on retire les valeurs sauf sur le pic. Les douze barres
+ * restent affichées — réduire la série changerait ce que la vidéo raconte.
+ */
 export const Evolution: React.FC<{ stats: PublicStats }> = ({ stats }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
+  const L = useLayout();
 
   const max = Math.max(...stats.monthly.map((m) => m.count), 1);
   const peakIndex = stats.monthly.reduce(
@@ -27,13 +34,15 @@ export const Evolution: React.FC<{ stats: PublicStats }> = ({ stats }) => {
 
   return (
     <Scene>
-      <AbsoluteFill style={{ padding: '120px 140px', flexDirection: 'column', gap: 20 }}>
+      <AbsoluteFill
+        style={{ padding: `${L.padY}px ${L.padX}px`, flexDirection: 'column', gap: 20 }}
+      >
         <Entrance delay={2} preset="snappy" distance={24}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             <div
               style={{
                 fontFamily: displayFont,
-                fontSize: 72,
+                fontSize: L.display,
                 fontWeight: 700,
                 color: theme.colors.text,
                 letterSpacing: '-0.03em',
@@ -45,7 +54,7 @@ export const Evolution: React.FC<{ stats: PublicStats }> = ({ stats }) => {
             <div
               style={{
                 fontFamily: bodyFont,
-                fontSize: 28,
+                fontSize: L.sub,
                 fontWeight: 400,
                 color: theme.colors.textDim,
               }}
@@ -61,7 +70,7 @@ export const Evolution: React.FC<{ stats: PublicStats }> = ({ stats }) => {
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'flex-end',
-            gap: 26,
+            gap: L.chartGap,
             marginTop: 40,
             borderBottom: `2px solid ${theme.colors.grid}`,
             paddingBottom: 18,
@@ -71,7 +80,9 @@ export const Evolution: React.FC<{ stats: PublicStats }> = ({ stats }) => {
           {stats.monthly.map((month, i) => {
             const p = spring({ frame: frame - 4 - i * 4, fps, config: theme.spring.smooth });
             const isPeak = i === peakIndex;
-            const height = interpolate(p, [0, 1], [0, (month.count / max) * CHART_HEIGHT]);
+            const height = interpolate(p, [0, 1], [0, (month.count / max) * L.chartHeight]);
+            const showValue = !L.portrait || isPeak;
+            const showMonth = !L.portrait || i % L.monthLabelEvery === 0 || isPeak;
 
             return (
               <div
@@ -87,10 +98,10 @@ export const Evolution: React.FC<{ stats: PublicStats }> = ({ stats }) => {
                 <span
                   style={{
                     fontFamily: bodyFont,
-                    fontSize: 26,
+                    fontSize: L.monthLabel + 2,
                     fontWeight: 600,
                     color: isPeak ? theme.colors.text : theme.colors.textDim,
-                    opacity: p,
+                    opacity: showValue ? p : 0,
                     fontVariantNumeric: 'tabular-nums',
                   }}
                 >
@@ -100,7 +111,7 @@ export const Evolution: React.FC<{ stats: PublicStats }> = ({ stats }) => {
                   style={{
                     width: '100%',
                     height,
-                    borderRadius: '12px 12px 4px 4px',
+                    borderRadius: L.portrait ? '8px 8px 3px 3px' : '12px 12px 4px 4px',
                     background: isPeak
                       ? `linear-gradient(180deg, ${theme.colors.accent}, ${theme.colors.accent}99)`
                       : `linear-gradient(180deg, ${theme.colors.primary}, ${theme.colors.primary}55)`,
@@ -110,10 +121,10 @@ export const Evolution: React.FC<{ stats: PublicStats }> = ({ stats }) => {
                 <span
                   style={{
                     fontFamily: bodyFont,
-                    fontSize: 24,
+                    fontSize: L.monthLabel,
                     fontWeight: 500,
                     color: theme.colors.textDim,
-                    opacity: p,
+                    opacity: showMonth ? p : 0,
                   }}
                 >
                   {formatMonth(month.month)}

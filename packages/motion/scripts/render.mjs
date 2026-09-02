@@ -3,6 +3,7 @@
  * Rendu d'un bilan AEV.
  *
  *   pnpm --filter @aev/motion render -- --period=2026-Q1
+ *   pnpm --filter @aev/motion render -- --period=2026-Q1 --format=vertical
  *   pnpm --filter @aev/motion render -- --period=2026-Q1 --strict
  *
  * Les chiffres sont récupérés côté Node PUIS injectés dans la composition via --props.
@@ -27,6 +28,17 @@ const apiUrl = arg('api', process.env.AEV_API_URL ?? 'http://localhost:3001/api/
 const period = arg('period');
 const portalUrl = arg('portal', process.env.AEV_PORTAL_URL ?? 'archives.espoiretvie.org');
 const strict = flag('strict');
+
+const FORMATS = {
+  paysage: { composition: 'BilanTrimestriel', suffix: '', label: '1920x1080' },
+  vertical: { composition: 'BilanVertical', suffix: '-vertical', label: '1080x1920' },
+};
+const formatKey = arg('format', 'paysage');
+const format = FORMATS[formatKey];
+if (!format) {
+  console.error(`✖ Format inconnu : ${formatKey}. Attendu : ${Object.keys(FORMATS).join(' | ')}.`);
+  process.exit(1);
+}
 
 // La bande son est synthétisée, pas versionnée : le générateur est déterministe,
 // donc la régénérer donne exactement les mêmes fichiers qu'ailleurs.
@@ -66,7 +78,7 @@ const loadStats = async () => {
 // defaultProps (sampleStats), sans dépendre d'un import TypeScript depuis Node.
 const stats = await loadStats();
 const label = stats?.period.label ?? 'demo';
-const out = arg('out', `out/aev-bilan-${label}.mp4`);
+const out = arg('out', `out/aev-bilan-${label}${format.suffix}.mp4`);
 
 mkdirSync(resolve(root, 'out'), { recursive: true });
 
@@ -74,7 +86,7 @@ const remotionArgs = [
   'remotion',
   'render',
   'src/index.ts',
-  'BilanTrimestriel',
+  format.composition,
   out,
   '--codec',
   'h264',
@@ -92,6 +104,6 @@ if (stats) {
 const browser = process.env.REMOTION_BROWSER_EXECUTABLE;
 if (browser) remotionArgs.push(`--browser-executable=${browser}`);
 
-console.log(`→ rendu ${label} vers ${out}`);
+console.log(`→ rendu ${label} en ${format.label} vers ${out}`);
 const result = spawnSync('npx', remotionArgs, { cwd: root, stdio: 'inherit' });
 process.exit(result.status ?? 1);

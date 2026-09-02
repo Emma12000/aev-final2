@@ -6,12 +6,14 @@ import { Scene } from '../components/Layers';
 import { Logo } from '../components/Logo';
 import { Entrance, Underline, useBreathe } from '../components/Motion';
 import { formatPeriod } from '../data';
+import { useLayout } from '../layout';
 
 /** Sting d'ouverture : marque (0–0.8 s) → nom (0.6–1.8 s) → période (1.3 s) → respiration → sortie. */
 export const Intro: React.FC<{ periodLabel: string }> = ({ periodLabel }) => {
   const frame = useCurrentFrame();
   const { fps } = useVideoConfig();
   const breathe = useBreathe(26, 0.012);
+  const L = useLayout();
 
   const logoIn = spring({ frame, fps, config: theme.spring.bouncy });
   const halo = interpolate(frame, [0, 30], [0, 1], {
@@ -51,14 +53,15 @@ export const Intro: React.FC<{ periodLabel: string }> = ({ periodLabel }) => {
               filter: 'blur(18px)',
             }}
           />
-          <Logo size={300} style={{ position: 'relative' }} />
+          <Logo size={L.logoIntro} style={{ position: 'relative' }} />
         </div>
 
         <Entrance delay={16} preset="smooth" distance={28}>
           <div
             style={{
               fontFamily: displayFont,
-              fontSize: 92,
+              fontSize: L.brand,
+              maxWidth: L.portrait ? 900 : undefined,
               fontWeight: 700,
               color: theme.colors.text,
               letterSpacing: '-0.03em',
@@ -75,7 +78,7 @@ export const Intro: React.FC<{ periodLabel: string }> = ({ periodLabel }) => {
             <div
               style={{
                 fontFamily: bodyFont,
-                fontSize: 34,
+                fontSize: L.eyebrow,
                 fontWeight: 500,
                 color: theme.colors.textDim,
                 letterSpacing: '0.16em',
